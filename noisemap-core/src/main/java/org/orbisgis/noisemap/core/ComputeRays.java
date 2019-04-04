@@ -812,37 +812,6 @@ public class ComputeRays implements Runnable {
         return Wj / (4 * Math.PI * Math.max(1, distance * distance));
     }
 
-    private boolean[] findBuildingOnPath(Coordinate srcCoord,
-                                         Coordinate receiverCoord, boolean vertivalDiffraction) {
-
-        boolean somethingHideReceiver = false;
-        boolean buildingOnPath = false;
-        boolean[] somethingOnPath = new boolean[2];
-        if (!vertivalDiffraction || !data.freeFieldFinder.isHasBuildingWithHeight()) {
-            somethingHideReceiver = !data.freeFieldFinder.isFreeField(receiverCoord, srcCoord);
-        } else {
-            List<TriIdWithIntersection> propagationPath = new ArrayList<>();
-            if (!data.freeFieldFinder.computePropagationPath(receiverCoord, srcCoord, false, propagationPath, false)) {
-                // Propagation path not found, there is not direct field
-                somethingHideReceiver = true;
-            } else {
-                if (!propagationPath.isEmpty()) {
-                    for (TriIdWithIntersection inter : propagationPath) {
-                        if (inter.isIntersectionOnBuilding() || inter.isIntersectionOnTopography()) {
-                            somethingHideReceiver = true;
-                        }
-                        if (inter.getBuildingId() != 0) {
-                            buildingOnPath = true;
-                        }
-                    }
-                }
-            }
-        }
-        somethingOnPath[0] = somethingHideReceiver;
-        somethingOnPath[1] = buildingOnPath;
-        return somethingOnPath;
-    }
-
     List<PropagationPath> directPath(Coordinate srcCoord,
                                              Coordinate receiverCoord, boolean verticalDiffraction,boolean horizontalDiffraction,  List<PropagationDebugInfo> debugInfo) {
 
@@ -854,7 +823,7 @@ public class ComputeRays implements Runnable {
         // Create the direct Line
 
         boolean freefield = true;
-        boolean somethingHideReceiver = false;
+        boolean topographyHideReceiver = false;
         boolean buildingOnPath = false;
 
         List<TriIdWithIntersection> inters = new ArrayList<>();
@@ -862,15 +831,19 @@ public class ComputeRays implements Runnable {
         for(TriIdWithIntersection intersection : inters) {
             if(intersection.getBuildingId() > 0) {
                 buildingOnPath = true;
+                topographyHideReceiver = true;
             }
             if(intersection.isIntersectionOnBuilding() || intersection.isIntersectionOnTopography()) {
                 freefield = false;
+                if(intersection.isIntersectionOnBuilding()) {
+                    topographyHideReceiver = false;
+                }
             }
         }
 
         // double fav_probability = favrose[(int) (Math.round(calcRotationAngleInDegrees(srcCoord, receiverCoord) / 30))];
 
-        if (!somethingHideReceiver && !buildingOnPath) {
+        if (!topographyHideReceiver && !buildingOnPath) {
             PropagationPath propagationPath = computeFreefield(receiverCoord, srcCoord,inters, debugInfo);
             propagationPaths.add(propagationPath);
         }
@@ -879,14 +852,14 @@ public class ComputeRays implements Runnable {
         // todo include rayleigh criterium
         if (verticalDiffraction && buildingOnPath && !freefield) {
             PropagationPath propagationPath3 = computeFreefield(receiverCoord, srcCoord, inters, debugInfo);
-            PropagationPath propagationPath = computeHorizontalEdgeDiffraction(somethingHideReceiver, receiverCoord, srcCoord, debugInfo);
+            PropagationPath propagationPath = computeHorizontalEdgeDiffraction(topographyHideReceiver, receiverCoord, srcCoord, debugInfo);
             propagationPath.getSRList().addAll(propagationPath3.getSRList());
             propagationPaths.add(propagationPath);
 
 
         }
 
-        if (somethingHideReceiver && data.diffractionOrder > 0 && horizontalDiffraction ) {
+        if (topographyHideReceiver && data.diffractionOrder > 0 && horizontalDiffraction ) {
             // todo if one of the points > roof or < floor, get out this path
             PropagationPath propagationPath = new PropagationPath();
             PropagationPath propagationPath2 = new PropagationPath();
