@@ -835,8 +835,8 @@ public class ComputeRays implements Runnable {
             }
             if(intersection.isIntersectionOnBuilding() || intersection.isIntersectionOnTopography()) {
                 freefield = false;
-                if(intersection.isIntersectionOnBuilding()) {
-                    topographyHideReceiver = false;
+                if(intersection.isIntersectionOnTopography()) {
+                    topographyHideReceiver = true;
                 }
             }
         }
