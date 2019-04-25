@@ -20,7 +20,7 @@ Applications:
 
 Using Groovy (H2GIS or PostGIS):
 
-* [Digital elevation model](06 Modelling-barrier-using-digital-elevation-model.md) - Make noise map with digital elevation model
+* [Digital elevation model](06-Modelling-barrier-using-digital-elevation-model.md) - Make noise map with digital elevation model
 * [Scripting with Groovy|](10-Scripting-with-Groovy.md) - Use NoiseModelling without Graphical User Interface
 
 Using Python (H2GIS):
