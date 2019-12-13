@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.GZIPInputStream
@@ -272,30 +273,30 @@ def run(input) {
         AtomicBoolean doInsertResults = new AtomicBoolean(true);
         ResultsInsertThread resultsInsertThread = new ResultsInsertThread(doInsertResults, sql)
         new Thread(resultsInsertThread).start()
-        ExecutorService executorService = Executors.newFixedThreadPool(12);
+        ThreadPoolExecutor executorService = (ThreadPoolExecutor)Executors.newFixedThreadPool(12);
         while (entry2 != null) {
             switch (entry2.getName()) {
                 case 'rays.gz':
                     System.println(entry2.getName())
                     System.println(entry2)
                     String filePath = workingDir + entry2.getName()
-//                    extractFile(zipInputStream2, filePath)
-//
-//                    System.out.println(filePath)
-//                    FileInputStream fileInput = new FileInputStream(new File(filePath))
-                    GZIPInputStream gzipInputStream = new GZIPInputStream(zipInputStream2, GZIP_CACHE_SIZE)
+                    extractFile(zipInputStream2, filePath)
+
+                    System.out.println(filePath)
+                    FileInputStream fileInput = new FileInputStream(new File(filePath))
+                    GZIPInputStream gzipInputStream = new GZIPInputStream(fileInput, GZIP_CACHE_SIZE)
                     DataInputStream dataInputStream = new DataInputStream(gzipInputStream)
 
                     List<PointToPointPathsMultiRuns> pointToPointPathsMultiRuns = new ArrayList<>();
-                    while (zipInputStream2.available() > 0) {
+                    while (fileInput.available() > 0) {
 
                         PointToPointPathsMultiRuns paths = new PointToPointPathsMultiRuns()
                         paths.readPropagationPathListStream(dataInputStream)
                         int idReceiver = (Integer) paths.receiverId
-                        int idSource = (Integer) paths.sourceId
 
                         if (idReceiver != oldIdReceiver) {
-                            // todo Add thread
+                            System.out.println(String.format("Receiver %d ( %d queued receivers)", idReceiver, executorService.getQueue().size()))
+                            // Add thread
                             ReceiverSimulationProcess receiverSimulationProcess =
                                     new ReceiverSimulationProcess(resultsInsertThread.getConcurrentLinkedQueue(),
                                             multiRunsProcessData, pointToPointPathsMultiRuns)
