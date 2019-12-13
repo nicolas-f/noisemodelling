@@ -8,19 +8,56 @@ package org.noise_planet.noisemodelling.wps.Database_Manager
 import geoserver.GeoServer
 import geoserver.catalog.Store
 import org.geotools.jdbc.JDBCDataStore
-import org.h2gis.utilities.JDBCUtilities
-import org.h2gis.utilities.SFSUtilities
+
 import org.h2gis.utilities.TableLocation
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
+import org.h2gis.utilities.JDBCUtilities
+import org.h2gis.utilities.SFSUtilities
+
 import org.locationtech.jts.io.WKTWriter
 
 import java.sql.Connection
-import java.sql.ResultSet
 import java.sql.Statement
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import org.h2gis.api.ProgressVisitor;
+import org.h2gis.functions.io.utility.FileUtil;
+import org.h2gis.utilities.JDBCUtilities;
+import org.h2gis.utilities.SFSUtilities;
+import org.h2gis.utilities.TableLocation;
+import org.locationtech.jts.geom.Geometry;
+
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.*;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import groovy.sql.Sql
+
+import org.h2gis.functions.io.csv.*
+import org.h2gis.functions.io.dbf.*
+import org.h2gis.functions.io.geojson.*
+import org.h2gis.functions.io.json.*
+import org.h2gis.functions.io.kml.*
+import org.h2gis.functions.io.shp.*
+import org.h2gis.functions.io.tsv.*
+import org.h2gis.api.EmptyProgressVisitor
+import org.h2gis.utilities.wrapper.ConnectionWrapper
+
+import org.noisemodellingwps.utilities.WpsConnectionWrapper
+
 title = 'Visualize a Table'
-description = 'Groups all the geometries of a table and returns them in WKT OGC format. Be careful, this treatment can be blocking if the table is large.'
+description = 'Visualize a Table'
 
 inputs = [
    databaseName: [name: 'Name of the database', title: 'Name of the database', description : 'Name of the database (default : first found db)', min : 0, max : 1, type: String.class],
@@ -31,11 +68,7 @@ outputs = [
     result: [name: 'Result', title: 'Result', type: Geometry.class]
 ]
 
-
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if(dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
+def static Connection openPostgreSQLDataStoreConnection(String dbName) {
     Store store = new GeoServer().catalog.getStore(dbName)
     JDBCDataStore jdbcDataStore = (JDBCDataStore)store.getDataStoreInfo().getDataStore(null)
     return jdbcDataStore.getDataSource().getConnection()
@@ -44,11 +77,11 @@ static Connection openGeoserverDataStoreConnection(String dbName) {
 def run(input) {
 
     // Get name of the database
-    String dbName = ""
+    String dbName = "h2gisdb"
     if (input['databaseName']){dbName = input['databaseName'] as String}
 
     // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable { Connection connection ->
+    openPostgreSQLDataStoreConnection(dbName).withCloseable { Connection connection ->
         Statement sql = connection.createStatement();
 
 
@@ -59,18 +92,22 @@ def run(input) {
         // Read Geometry Index and type
         List<String> spatialFieldNames = SFSUtilities.getGeometryFields(connection, TableLocation.parse(tableName, JDBCUtilities.isH2DataBase(connection.getMetaData())))
         if (spatialFieldNames.isEmpty()) {
-            System.err.println("The table %s does not contain a geometry field")
-            return [result: new GeometryFactory().createGeometryCollection()]
+            System.out.println("The table %s does not contain a geometry field")
         }
 
 
-        ResultSet rs = sql.executeQuery(String.format("select ST_ACCUM(ST_TRANSFORM(ST_SetSRID("+spatialFieldNames.get(0)+",2154),4326)) the_geom from %s", tableName))
+        ResultSet rs = sql.executeQuery(String.format("select ST_ACCUM(ST_TRANSFORM(ST_SetSRID(the_geom,2154),4326)) the_geom from %s", tableName))
+        //ResultSet rs = sql.executeQuery(String.format("select ST_ACCUM(the_geom) the_geom from %s", tableName))
 
         Geometry geom = null
         while (rs.next()) {
-            geom = (Geometry) rs.getObject(1)
+            ResultSetMetaData resultSetMetaData = rs.getMetaData()
+            def geoFieldIndex = JDBCUtilities.getFieldIndex(resultSetMetaData, spatialFieldNames.get(0))
+            geom = (Geometry) rs.getObject(geoFieldIndex)
         }
 
+        System.out.println("-------------------------------------")
+        //System.out.println(geom.hasM())
 
         // print to Console windows
         return [result: geom]

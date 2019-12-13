@@ -28,18 +28,14 @@ description = 'Calculates a delaunay grid of receivers based on a single Geometr
 inputs = [buildingTableName : [name: 'Buildings table name', title: 'Buildings table name', type: String.class],
           fence  : [name: 'Fence', title: 'Fence', min: 0, max: 1, type: Geometry.class],
           sourcesTableName  : [name: 'Sources table name', title: 'Sources table name', type: String.class],
-          databaseName   : [name: 'Name of the database', title: 'Name of the database', description: 'Name of the database (default : first found db)', min: 0, max: 1, type: String.class],
+          databaseName   : [name: 'Name of the database', title: 'Name of the database', description: 'Name of the database. (default : h2gisdb)', min: 0, max: 1, type: String.class],
           outputTableName: [name: 'outputTableName', description: 'Do not write the name of a table that contains a space. (default : RECEIVERS)', title: 'Name of output table', min: 0, max: 1, type: String.class]]
 
 outputs = [tableNameCreated: [name: 'tableNameCreated', title: 'tableNameCreated', type: String.class]]
 
-
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if(dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
+def static Connection openPostgreSQLDataStoreConnection(String dbName) {
     Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore)store.getDataStoreInfo().getDataStore(null)
+    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
     return jdbcDataStore.getDataSource().getConnection()
 }
 
@@ -74,19 +70,19 @@ def run(input) {
     }
 
     // Get name of the database
-    String dbName = ""
+    String dbName = "h2gisdb"
     if (input['databaseName']) {
         dbName = input['databaseName'] as String
     }
 
     // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable { Connection connection ->
+    openPostgreSQLDataStoreConnection(dbName).withCloseable { Connection connection ->
         //Statement sql = connection.createStatement()
         Sql sql = new Sql(connection)
         connection = new ConnectionWrapper(connection)
         RootProgressVisitor progressLogger = new RootProgressVisitor(2, true, 1)
 
-        // Delete previous receivers grid
+        System.out.println("Delete previous receivers grid...")
         sql.execute(String.format("DROP TABLE IF EXISTS %s", receivers_table_name))
         sql.execute("DROP TABLE IF EXISTS TRIANGLES")
 
@@ -98,6 +94,8 @@ def run(input) {
         TriangleNoiseMap noiseMap = new TriangleNoiseMap(building_table_name, sources_table_name)
 
         if (input['fence']) {
+            System.out.println("--------------------------------------------")
+            System.out.println((String) fence)
             sql.execute(String.format("DROP TABLE IF EXISTS FENCE"))
             sql.execute(String.format("CREATE TABLE FENCE AS SELECT ST_AsText('"+ fence + "') the_geom"))
             sql.execute(String.format("DROP TABLE IF EXISTS FENCE_2154"))
@@ -115,9 +113,9 @@ def run(input) {
         // No receivers closer than road width distance
         noiseMap.setRoadWidth(2.0)
         // No triangles larger than provided area
-        noiseMap.setMaximumArea(100.0)
+        noiseMap.setMaximumArea(1000.0)
         // Densification of receivers near sound sources
-        noiseMap.setSourceDensification(8.0)
+        noiseMap.setSourceDensification(2.0)
 
         noiseMap.initialize(connection, new EmptyProgressVisitor())
         AtomicInteger pk = new AtomicInteger(0)
@@ -135,7 +133,7 @@ def run(input) {
 
 
     }
-
+    System.out.println("Process Done !")
     return [tableNameCreated: "Process done !"]
 }
 

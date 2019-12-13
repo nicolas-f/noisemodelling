@@ -27,16 +27,15 @@ import org.h2gis.utilities.wrapper.ConnectionWrapper
 
 import org.noisemodellingwps.utilities.WpsConnectionWrapper
 
-title = 'Drop_a_Table'
-description = 'Delete a table from the database'
+title = 'Clean all the database'
+description = 'Delete all tables from the database.'
 
 inputs = [
-  databaseName: [name: 'Name of the database', title: 'Name of the database', description : 'Name of the database (default : h2gisdb)', min : 0, max : 1, type: String.class],
-  tableToDrop: [name: 'tableToDrop', description : 'Do not write the name of a table that contains a space.', title: 'Name of the table to drop', type: String.class]
+    databaseName: [name: 'Name of the database', description : 'Name of the database', title: 'Name of the database', type: String.class]
 ]
 
 outputs = [
-    result: [name: 'result', title: 'result', type: String.class]
+    result: [name: 'Result', title: 'Result', type: String.class]
 ]
 
 def static Connection openPostgreSQLDataStoreConnection(String dbName) {
@@ -46,21 +45,34 @@ def static Connection openPostgreSQLDataStoreConnection(String dbName) {
 }
 
 def run(input) {
-
     // Get name of the database
     String dbName = "h2gisdb"
     if (input['databaseName']){dbName = input['databaseName'] as String}
 
     // Open connection
     openPostgreSQLDataStoreConnection(dbName).withCloseable { Connection connection ->
-        // Execute
-        String table = input["tableToDrop"] as String
-        table = table.toUpperCase()
-        Statement stmt = connection.createStatement()
-        String dropTable = "Drop table if exists " + table
-        stmt.execute(dropTable)
+
+        List<String> ignorelst = ["SPATIAL_REF_SYS", "GEOMETRY_COLUMNS"]
+        // Excute code
+        StringBuilder sb = new StringBuilder()
+
+        // Remove all tables from the database
+        List<String> tables = JDBCUtilities.getTableNames(connection.getMetaData(), null, "PUBLIC", "%", null)
+        tables.each { t ->
+            TableLocation tab = TableLocation.parse(t)
+            if(!ignorelst.contains(tab.getTable())) {
+                if(sb.size() > 0) {
+                    sb.append(" || ")
+                }
+                sb.append(tab.getTable())
+
+                Statement stmt = connection.createStatement()
+                stmt.execute("drop table if exists " + tab)
+            }
+        }
+
 
         // print to Console windows
-        return [result: table + " was dropped !"]
+        return [result : "The table(s) " + sb.toString() + " was/were dropped"]
     }
 }

@@ -47,14 +47,8 @@ import java.sql.SQLException
 import java.util.ArrayList
 import java.util.List
 
-
 title = 'Compute Road Emission'
-description = 'Compute Road Emission Noise Map from Estimated Annual average daily flows (AADF) estimates. ' +
-        'This block allows to calculate a road traffic noise emission map ' +
-        'from the AADF estimates given in the ROADS.shp file of the tutorial.' +
-        'The average traffic is first converted to hourly traffic before the calculation of Lday, Levening and Lnight using' +
-        'distribution in Berengier et al., 2019 : "DEUFRABASE: A Simple Tool for the Evaluation of the Noise Impact of ' +
-        'Pavements in Typical Road Geometries".'
+description = 'Compute Road Emission Noise Map from Estimated Annual average daily flows (TMJA) estimates. '
 
 inputs = [databaseName      : [name: 'Name of the database', title: 'Name of the database', description: 'Name of the database. (default : h2gisdb)', min: 0, max: 1, type: String.class],
           sourcesTableName  : [name: 'Sources table name', title: 'Sources table name', type: String.class]]
@@ -161,7 +155,6 @@ def run(input) {
 
         sql.execute("UPDATE LW_ROADS SET THE_GEOM = ST_UPDATEZ(The_geom,0.05);")
         sql.execute("ALTER TABLE LW_ROADS ADD pk INT AUTO_INCREMENT PRIMARY KEY;" )
-
         long computationTime = System.currentTimeMillis() - start;
         output = "The Table LW_ROADS have been created"
         return [result: output]
@@ -173,54 +166,42 @@ def run(input) {
 
 static double[][] computeLw(Long pk, Geometry geom, SpatialResultSet rs) throws SQLException {
 
-    String AAFD_FIELD_NAME = "AADF"
-
-    // Annual Average Daily Flow (AADF) estimates
-    String ROAD_CATEGORY_FIELD_NAME = "CLAS_ADM"
     def lv_hourly_distribution = [0.56, 0.3, 0.21, 0.26, 0.69, 1.8, 4.29, 7.56, 7.09, 5.5, 4.96, 5.04,
                                   5.8, 6.08, 6.23, 6.67, 7.84, 8.01, 7.12, 5.44, 3.45, 2.26, 1.72, 1.12];
     def hv_hourly_distribution = [1.01, 0.97, 1.06, 1.39, 2.05, 3.18, 4.77, 6.33, 6.72, 7.32, 7.37, 7.4,
                                   6.16, 6.22, 6.84, 6.74, 6.23, 4.88, 3.79, 3.05, 2.36, 1.76, 1.34, 1.07];
 
+    double tmja = rs.getDouble("TMJA")
+
+    double z_ini = rs.getDouble("Z_INI")
+    double z_fin = rs.getDouble("Z_FIN")
+
+    double q_vl_d = rs.getDouble("Q_VL_D")
+    double q_vl_e = rs.getDouble("Q_VL_E")
+    double q_vl_n = rs.getDouble("Q_VL_N")
+
+    double q_pl_d = rs.getDouble("Q_PL_D")
+    double q_pl_e = rs.getDouble("Q_PL_E")
+    double q_pl_n = rs.getDouble("Q_PL_N")
+
+    double v_vl_d = rs.getDouble("V_VL_D")
+    double v_vl_e = rs.getDouble("V_VL_E")
+    double v_vl_n = rs.getDouble("V_VL_N")
+
+    double v_pl_d = rs.getDouble("V_PL_D")
+    double v_pl_e = rs.getDouble("V_PL_E")
+    double v_pl_n = rs.getDouble("V_PL_N")
+
+    // Annual Average Daily Flow (AADF) estimates
+    String ROAD_CATEGORY_FIELD_NAME = "IMPORTANCE"
+
     int LDAY_START_HOUR = 6
     int LDAY_STOP_HOUR = 18
     int LEVENING_STOP_HOUR = 22
     int[] nightHours=[22, 23, 0, 1, 2, 3, 4, 5]
-    double HV_PERCENTAGE = 0.1
-
+    def HV_PERCENTAGE = 0.2 // ratio of heavy vehicule by default
     int idSource = 0
-
     idSource = idSource +1
-    // Read average 24h traffic
-    double tmja = rs.getDouble(AAFD_FIELD_NAME)
-
-    //130 km/h 1:Autoroute
-    //80 km/h  2:Nationale
-    //50 km/h  3:Départementale
-    //50 km/h  4:Voirie CUN
-    //50 km/h  5:Inconnu
-    //50 km/h  6:Privée
-    //50 km/h  7:Communale
-    int road_cat = rs.getInt(ROAD_CATEGORY_FIELD_NAME)
-
-    int roadType;
-    if (road_cat == 1) {
-        roadType = 10;
-    } else {
-        if (road_cat == 2) {
-            roadType = 42;
-        } else {
-            roadType = 62;
-        }
-    }
-    double speed_lv = 50;
-    if (road_cat == 1) {
-        speed_lv = 120;
-    } else {
-        if (road_cat == 2) {
-            speed_lv = 80;
-        }
-    }
 
     /**
      * Vehicles category Table 3 P.31 CNOSSOS_EU_JRC_REFERENCE_REPORT
@@ -252,33 +233,34 @@ static double[][] computeLw(Long pk, Geometry geom, SpatialResultSet rs) throws 
     double[] le = new double[PropagationProcessPathData.freq_lvl.size()];
     double[] ln = new double[PropagationProcessPathData.freq_lvl.size()];
 
-    double lvPerHour = 0;
-    double mvPerHour = 0;
-    double hgvPerHour = 0;
-    double wavPerHour = 0;
-    double wbvPerHour = 0;
-    double Temperature = 20.0d;
-    String roadSurface = "FR_R2";
-    double Ts_stud = 0.5;
-    double Pm_stud = 4;
-    double Junc_dist = 0;
-    int Junc_type = 0;
-    double slopePercentage = 0;
-    double speedLv = speed_lv;
-    double speedMv = speed_lv;
-    double speedHgv = speed_lv;
-    double speedWav = speed_lv;
-    double speedWbv = speed_lv;
+    double lvPerHour = 0
+    double mvPerHour = 0
+    double hgvPerHour = 0
+    double wavPerHour = 0
+    double wbvPerHour = 0
+    double Temperature = 20.0d
+    String roadSurface = "FR_R2"
+    double Ts_stud = 0
+    double Pm_stud = 0
+    double Junc_dist = 0
+    int Junc_type = 0
+    double slopePercentage = 0
+    double speedLv = 30
+    double speedMv = 30
+    double speedHgv = 30
+    double speedWav = 30
+    double speedWbv = 30
 
     for (int h = LDAY_START_HOUR; h < LDAY_STOP_HOUR; h++) {
-        lvPerHour = tmja * (1 - HV_PERCENTAGE) * (lv_hourly_distribution[h] / 100.0);
-        hgvPerHour = tmja * HV_PERCENTAGE * (hv_hourly_distribution[h] / 100.0);
-        int idFreq = 0;
+        int idFreq = 0
+        if (tmja>0 && q_vl_d==0){
+            q_vl_d = tmja * (1 - HV_PERCENTAGE) * (lv_hourly_distribution[h] / 100.0)
+            q_pl_d = tmja * HV_PERCENTAGE * (hv_hourly_distribution[h] / 100.0)
+        }
         for (int freq : PropagationProcessPathData.freq_lvl) {
-            RSParametersCnossos rsParametersCnossos = new RSParametersCnossos(speedLv, speedMv, speedHgv, speedWav,
-                    speedWbv, lvPerHour, mvPerHour, hgvPerHour, wavPerHour, wbvPerHour, freq, Temperature,
+            RSParametersCnossos rsParametersCnossos = new RSParametersCnossos(v_vl_d, speedMv, v_pl_d, speedWav,
+                    speedWbv, q_vl_d, mvPerHour, q_pl_d, wavPerHour, wbvPerHour, freq, Temperature,
                     roadSurface, Ts_stud, Pm_stud, Junc_dist, Junc_type);
-            rsParametersCnossos.setSpeedFromRoadCaracteristics(speed_lv, speed_lv, false, speed_lv, roadType);
             ld[idFreq++] += EvaluateRoadSourceCnossos.evaluate(rsParametersCnossos)
         }
     }
@@ -289,14 +271,15 @@ static double[][] computeLw(Long pk, Geometry geom, SpatialResultSet rs) throws 
 
     // Evening
     for (int h = LDAY_STOP_HOUR; h < LEVENING_STOP_HOUR; h++) {
-        lvPerHour = tmja * (1- HV_PERCENTAGE) * (lv_hourly_distribution[h] / 100.0)
-        mvPerHour = tmja * HV_PERCENTAGE * (hv_hourly_distribution[h] / 100.0)
-        int idFreq = 0
+         int idFreq = 0
+        if (tmja>0 && q_vl_e==0){
+            q_vl_e = tmja * (1 - HV_PERCENTAGE) * (lv_hourly_distribution[h] / 100.0)
+            q_pl_e = tmja * HV_PERCENTAGE * (hv_hourly_distribution[h] / 100.0)
+        }
         for(int freq : PropagationProcessPathData.freq_lvl) {
-            RSParametersCnossos rsParametersCnossos = new RSParametersCnossos(speedLv, speedMv, speedHgv, speedWav,
-                    speedWbv, lvPerHour, mvPerHour, hgvPerHour, wavPerHour, wbvPerHour, freq, Temperature,
+            RSParametersCnossos rsParametersCnossos = new RSParametersCnossos(v_vl_e, speedMv, v_pl_e, speedWav,
+                    speedWbv, q_vl_e, mvPerHour, q_pl_e, wavPerHour, wbvPerHour, freq, Temperature,
                     roadSurface, Ts_stud, Pm_stud, Junc_dist, Junc_type);
-            rsParametersCnossos.setSpeedFromRoadCaracteristics(speed_lv, speed_lv, false, speed_lv, roadType)
             le[idFreq++] += EvaluateRoadSourceCnossos.evaluate(rsParametersCnossos)
         }
     }
@@ -307,14 +290,15 @@ static double[][] computeLw(Long pk, Geometry geom, SpatialResultSet rs) throws 
 
     // Night
     for (int h : nightHours) {
-        lvPerHour = tmja * (1- HV_PERCENTAGE) * (lv_hourly_distribution[h] / 100.0)
-        mvPerHour = tmja * HV_PERCENTAGE * (hv_hourly_distribution[h] / 100.0)
         int idFreq = 0
+        if (tmja>0 && q_vl_n==0){
+            q_vl_n = tmja * (1 - HV_PERCENTAGE) * (lv_hourly_distribution[h] / 100.0)
+            q_pl_n = tmja * HV_PERCENTAGE * (hv_hourly_distribution[h] / 100.0)
+        }
         for(int freq : PropagationProcessPathData.freq_lvl) {
-            RSParametersCnossos rsParametersCnossos = new RSParametersCnossos(speedLv, speedMv, speedHgv, speedWav,
-                    speedWbv, lvPerHour, mvPerHour, hgvPerHour, wavPerHour, wbvPerHour, freq, Temperature,
+            RSParametersCnossos rsParametersCnossos = new RSParametersCnossos(v_vl_n, speedMv, v_pl_n, speedWav,
+                    speedWbv, q_vl_n, mvPerHour, q_pl_n, wavPerHour, wbvPerHour, freq, Temperature,
                     roadSurface, Ts_stud, Pm_stud, Junc_dist, Junc_type);
-            rsParametersCnossos.setSpeedFromRoadCaracteristics(speed_lv, speed_lv, false, speed_lv, roadType)
             ln[idFreq++] += EvaluateRoadSourceCnossos.evaluate(rsParametersCnossos)
         }
     }
@@ -324,5 +308,3 @@ static double[][] computeLw(Long pk, Geometry geom, SpatialResultSet rs) throws 
 
     return [ld,le,ln]
 }
-
-
