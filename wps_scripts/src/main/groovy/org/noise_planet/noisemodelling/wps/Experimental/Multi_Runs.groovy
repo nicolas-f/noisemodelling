@@ -50,6 +50,7 @@ description = 'Compute MultiRuns. A ver...'
 
 inputs = [databaseName      : [name: 'Name of the database', title: 'Name of the database', description: 'Name of the database. (default : h2gisdb)', min: 0, max: 1, type: String.class],
           workingDir : [name: 'workingDir', title: 'workingDir', description: 'workingDir (ex : C:/Desktop/), shall contain Rays.zip and MR_Input.json', type: String.class],
+          hasPop  : [name: 'hasPop', title: 'hasPop',min: 0, max: 1, type: Boolean.class],
           nbSimu  : [name: 'nSimu', title: 'nSimu',min: 0, max: 1, type: Integer.class],
           threadNumber      : [name: 'Thread number', title: 'Thread number', description: 'Number of thread to use on the computer (default = 1)', min: 0, max: 1, type: String.class]]
 
@@ -66,12 +67,26 @@ static Connection openGeoserverDataStoreConnection(String dbName) {
 
 def run(input) {
 
+    // Get name of the database
+    String dbName = ""
+    if (input['databaseName']){dbName = input['databaseName'] as String}
+
+    // Open connection
+    openGeoserverDataStoreConnection(dbName).withCloseable {
+        Connection connection ->
+            return [result : exec(connection, input)]
+    }
+
+}
+
+def exec(Connection connection, input) {
+
     MultiRunsProcessData multiRunsProcessData = new MultiRunsProcessData()
     Properties prop = new Properties()
     // -------------------
     // Get inputs
     // -------------------
-    String workingDir = "D:\\aumond\\Documents\\Boulot\\Articles\\2019_XX_XX Sensitivity"
+    String workingDir = "./"
     if (input['workingDir']) {
         workingDir = input['workingDir']
     }
@@ -86,12 +101,11 @@ def run(input) {
         n_thread = Integer.valueOf(input['threadNumber'])
     }
 
-    // Get name of the database
-    String dbName = ""
-    if (input['databaseName']) {
-        dbName = input['databaseName'] as String
-    }
 
+    boolean hasPop = false
+    if (input['hasPop']) {
+        hasPop = Boolean.valueOf(input['hasPop'])
+    }
 
     // ----------------------------------
     // Start...
@@ -100,9 +114,6 @@ def run(input) {
     System.out.println("Run ...")
 
     List<ComputeRaysOut.verticeSL> allLevels = new ArrayList<>()
-
-    // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable { Connection connection ->
 
         //Need to change the ConnectionWrapper to WpsConnectionWrapper to work under postgis database
         connection = new ConnectionWrapper(connection)
@@ -145,6 +156,8 @@ def run(input) {
                     sql.execute("DROP TABLE SOURCES_MR if exists;")
                     extractFile(zipInputStream, filePath)
                     geoJsonDriver.importFile(connection, 'SOURCES_MR', file, new EmptyProgressVisitor())
+                    sql.execute("ALTER TABLE SOURCES_MR ALTER COLUMN PK INT NOT NULL;")
+                    sql.execute("ALTER TABLE SOURCES_MR ADD PRIMARY KEY (PK);  ")
                     System.println("import Sources")
                     break
 
@@ -152,6 +165,8 @@ def run(input) {
                     sql.execute("DROP TABLE RECEIVERS_MR if exists;")
                     extractFile(zipInputStream, filePath)
                     geoJsonDriver.importFile(connection, 'RECEIVERS_MR', file, new EmptyProgressVisitor())
+                    sql.execute("ALTER TABLE RECEIVERS_MR ALTER COLUMN PK INT NOT NULL;")
+                    sql.execute("ALTER TABLE RECEIVERS_MR ADD PRIMARY KEY (PK);  ")
                     System.println("import RECEIVERS")
                     break
 
@@ -200,12 +215,12 @@ def run(input) {
          sql.execute("DROP TABLE ROADS2 if exists;")
          SHPRead.readShape(connection, "D:\\aumond\\Documents\\CENSE\\LorientMapNoise\\data\\RoadsICA2.shp", "ROADS2")
          sql.execute("DROP TABLE ROADS if exists;")
-         sql.execute('CREATE TABLE ROADS AS SELECT CAST( OSM_ID AS INTEGER ) OSM_ID , THE_GEOM, TMJA_D,TMJA_E,TMJA_N,\n' +
+         sql.execute('CREATE TABLE ROADS AS SELECT CAST( ID_WAY AS INTEGER ) ID_WAY , THE_GEOM, TMJA_D,TMJA_E,TMJA_N,\n' +
                  'PL_D,PL_E,PL_N,\n' +
                  'LV_SPEE,PV_SPEE, PVMT FROM ROADS2;')
 
-         sql.execute('ALTER TABLE ROADS ALTER COLUMN OSM_ID SET NOT NULL;')
-         sql.execute('ALTER TABLE ROADS ADD PRIMARY KEY (OSM_ID);')
+         sql.execute('ALTER TABLE ROADS ALTER COLUMN ID_WAY SET NOT NULL;')
+         sql.execute('ALTER TABLE ROADS ADD PRIMARY KEY (ID_WAY);')
          sql.execute("CREATE SPATIAL INDEX ON ROADS(THE_GEOM)")
 
          System.out.println("Road file loaded")
@@ -228,14 +243,23 @@ def run(input) {
         int GZIP_CACHE_SIZE = (int) Math.pow(2, 19)
 
         System.out.println("Start time :" + df.format(new Date()))
-
         HashMap<Integer,Double> pop = new HashMap<>()
-        // memes valeurs d e et n
         int nrcv = 0
-        sql.eachRow('SELECT pk, pop FROM RECEIVERS_MR;') { row ->
-            int id = (int) row[0]
-            pop.put(id, (Double) row[1])
-            nrcv++
+        if(hasPop){
+            // memes valeurs d e et n
+            nrcv = 0
+            sql.eachRow('SELECT pk, pop FROM RECEIVERS_MR;') { row ->
+                int id = (int) row[0]
+                pop.put(id, (Double) row[1])
+                nrcv++
+            }
+        } else{
+            nrcv = 0
+            sql.eachRow('SELECT pk FROM RECEIVERS_MR;') { row ->
+                int id = (int) row[0]
+                pop.put(id, 1.0d)
+                nrcv++
+            }
         }
 
 
@@ -248,6 +272,7 @@ def run(input) {
         int oldIdReceiver = -1
 
         sql.execute("drop table if exists MultiRunsResults;")
+
         sql.execute("create table MultiRunsResults (idRun integer,idReceiver integer, pop double precision, " +
                 "Lden63 double precision, Lden125 double precision, Lden250 double precision, Lden500 double precision, Lden1000 double precision, Lden2000 double precision, Lden4000 double precision, Lden8000 double precision);")
 
@@ -291,40 +316,43 @@ def run(input) {
                     GZIPInputStream gzipInputStream = new GZIPInputStream(fileInput, GZIP_CACHE_SIZE)
                     DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(gzipInputStream))
                     int count = 0
-                    List<PointToPointPathsMultiRuns> pointToPointPathsMultiRuns = new ArrayList<>();
+                    List<PointToPointPathsMultiRuns> pointToPointPathsMultiRuns = new ArrayList<>()
                     while (fileInput.available() > 0) {
-
+                        System.out.println(fileInput)
                         PointToPointPathsMultiRuns paths = new PointToPointPathsMultiRuns()
                         paths.readPropagationPathListStream(dataInputStream)
                         int idReceiver = (Integer) paths.receiverId
 
                         if (idReceiver != oldIdReceiver) {
                             while (executorService.getQueue().size()>1){
-                                //System.out.println(String.format("Receiver %d ( %d queued receivers)", idReceiver, executorService.getQueue().size()))
+                                System.out.println(String.format("Receiver %d ( %d queued receivers)", idReceiver, executorService.getQueue().size()))
                                 Thread.sleep(50)
                                 // Add thread
                             }
                             if (oldIdReceiver != -1){
-
+                                System.out.println(String.format("iciiiiiiiiiiiii"))
                                 ReceiverSimulationProcess receiverSimulationProcess =
                                         new ReceiverSimulationProcess(resultsInsertThread.getConcurrentLinkedQueue(),
                                                 multiRunsProcessData, pointToPointPathsMultiRuns,nSimu)
+
                                 receiverSimulationProcess.setPop(pop.get(idReceiver))
                                 executorService.execute(receiverSimulationProcess)
                                 pointToPointPathsMultiRuns = new ArrayList<>(pointToPointPathsMultiRuns.size())
                                 count ++
                                 int x = Math.round(count*100/nrcv)
-                                //String data = "  --  Propagation " + "\r" + anim.charAt( x % anim.length()) + " " + x + "%"
-                                String data = "  --  Propagation" + x + "%"
+                                String data = "  --  Propagation " + "\r" + anim.charAt( x % anim.length()) + " " + x + "%"
+                               //String data = "  --  Propagation" + x + "%"
                                 System.out.println(data)
 
                             }
                         }
-
+                        System.out.println(String.format("laaaaaaaaaa1"))
                         oldIdReceiver = idReceiver
                         pointToPointPathsMultiRuns.add(paths)
+                        System.out.println(String.format("laaaaaaaaaa2"))
                     }
                     fileInput.close()
+                    multiRunsProcessData.getTrafficLevel(0)
 
             }
             //System.out.println("3 ComputationTime :" + entry2.toString())
@@ -353,12 +381,19 @@ def run(input) {
 //CREATE INDEX ON MultiRunsResults(IDRECEIVER);
 
         sql.execute("drop table if exists MultiRunsResults_geom;")
+
+        if (hasPop){
         sql.execute("create table MultiRunsResults_geom  as select a.idRun, a.idReceiver, b.pop, b.THE_GEOM, a.Lden63, a.Lden125, a.Lden250, a.Lden500, a.Lden1000, a.Lden2000, a.Lden4000, a.Lden8000 FROM RECEIVERS_MR b LEFT JOIN MultiRunsResults a ON a.IDRECEIVER = b."+prop.getProperty("pkReceivers")+";")
+        }else{
+            sql.execute("create table MultiRunsResults_geom  as select a.idRun, a.idReceiver,  b.THE_GEOM, a.Lden63, a.Lden125, a.Lden250, a.Lden500, a.Lden1000, a.Lden2000, a.Lden4000, a.Lden8000 FROM RECEIVERS_MR b LEFT JOIN MultiRunsResults a ON a.IDRECEIVER = b."+prop.getProperty("pkReceivers")+";")
+
+        }
+
         sql.execute("drop table if exists MultiRunsResults;")
 
         // long computationTime = System.currentTimeMillis() - start;
         return [result: "Calculation Done !"]
-    }
+
 
 }
 
@@ -437,7 +472,7 @@ class ReceiverSimulationProcess implements Runnable {
         if (nSimu <1) nSimu = multiRunsProcessData.Simu.size()
 
         for (int r = 0; r < nSimu; ++r) {
-            simuSpectrum.put(r,new double[PropagationProcessPathData.freq_lvl.size()])
+            this.simuSpectrum.put(r,new double[PropagationProcessPathData.freq_lvl.size()])
         }
 
         int idReceiver = -1
@@ -495,7 +530,7 @@ class ReceiverSimulationProcess implements Runnable {
                         lN[i] = soundLevelNig[i]
                     }
 
-                    simuSpectrum.put(r,ComputeRays.sumDbArray(simuSpectrum.get(r), lDen))
+                    this.simuSpectrum.put(r,ComputeRays.sumDbArray(this.simuSpectrum.get(r), lDen))
 
                 }
 
@@ -505,8 +540,8 @@ class ReceiverSimulationProcess implements Runnable {
         }
         if (idReceiver != -1){
             for (int r = 0; r < nSimu; r++) {
-                simulationResult = new SimulationResult(r, idReceiver, pop, simuSpectrum.get(r))
-                concurrentLinkedQueue.add(simulationResult)
+                this.simulationResult = new SimulationResult(r, idReceiver, pop, this.simuSpectrum.get(r))
+                 concurrentLinkedQueue.add(simulationResult)
             }
 
         }
@@ -784,7 +819,7 @@ class MultiRunsProcessData {
     ArrayList<Integer> RoadJunction = new ArrayList<Integer>()
 
     Map<Integer, Integer> pk = new HashMap<>()
-    Map<Integer, Long> OSM_ID = new HashMap<>()
+    Map<Integer, Long> ID_WAY = new HashMap<>()
     Map<Integer,Geometry> the_geom = new HashMap<>()
 
     Map<Integer,Double> TV_D = new HashMap<>()
@@ -1231,7 +1266,7 @@ class MultiRunsProcessData {
         //////////////////////
 
 
-        sql.eachRow('SELECT '+prop.getProperty("pkSources")+', CAST(OSM_ID AS INTEGER) OSM_ID, the_geom , ' +
+        sql.eachRow('SELECT '+prop.getProperty("pkSources")+', CAST(ID_WAY AS INTEGER) ID_WAY, the_geom , ' +
                 'TV_D,TV_E,TV_N,' +
                 'HV_D,HV_E,HV_N, ' +
                 'LV_SPD_D, LV_SPD_E, LV_SPD_N, ' +
@@ -1239,7 +1274,7 @@ class MultiRunsProcessData {
                 'PVMT FROM ' + tablename + ';') { fields ->
 
             pk.put((int) fields[prop.getProperty("pkSources")] ,(int) fields[prop.getProperty("pkSources")])
-            OSM_ID.put((int) fields[prop.getProperty("pkSources")],(long) fields["OSM_ID"])
+            ID_WAY.put((int) fields[prop.getProperty("pkSources")],(long) fields["ID_WAY"])
             the_geom.put((int) fields[prop.getProperty("pkSources")], (Geometry) fields["the_geom"])
             TV_D.put((int) fields[prop.getProperty("pkSources")],(double) fields["TV_D"])
             TV_E.put((int) fields[prop.getProperty("pkSources")],(double) fields["TV_E"])
@@ -1292,7 +1327,7 @@ class PointToPointPathsMultiRuns {
      * @param in the stream to read
      * @throws IOException if an I/O-error occurs
      */
-    void readPropagationPathListStream( DataInputStream inputStream) throws IOException {
+    void readPropagationPathListStream(DataInputStream inputStream) throws IOException {
         if (propagationPathList==null){
             propagationPathList = new ArrayList<>()
         }
