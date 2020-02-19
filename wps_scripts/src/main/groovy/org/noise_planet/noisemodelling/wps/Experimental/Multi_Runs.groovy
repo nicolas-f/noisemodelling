@@ -313,14 +313,19 @@ def exec(Connection connection, input) {
 
                     System.out.println(filePath)
                     FileInputStream fileInput = new FileInputStream(new File(filePath))
-                    GZIPInputStream gzipInputStream = new GZIPInputStream(fileInput, GZIP_CACHE_SIZE)
-                    DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(gzipInputStream))
+                    GZIPInputStream gzipInputStream = new GZIPInputStream(fileInput);
+                    BufferedInputStream bos = new BufferedInputStream(gzipInputStream);
+                    DataInputStream dataInputStream = new DataInputStream(bos);
                     int count = 0
                     List<PointToPointPathsMultiRuns> pointToPointPathsMultiRuns = new ArrayList<>()
-                    while (fileInput.available() > 0) {
+                    while (dataInputStream.available() > 0) {
                         System.out.println(fileInput)
                         PointToPointPathsMultiRuns paths = new PointToPointPathsMultiRuns()
-                        paths.readPropagationPathListStream(dataInputStream)
+                        try {
+                            paths.readPropagationPathListStream(dataInputStream)
+                        } catch(EOFException ex) {
+                            break
+                        }
                         int idReceiver = (Integer) paths.receiverId
 
                         if (idReceiver != oldIdReceiver) {
