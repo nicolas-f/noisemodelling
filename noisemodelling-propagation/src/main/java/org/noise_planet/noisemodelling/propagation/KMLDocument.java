@@ -290,7 +290,7 @@ public class KMLDocument {
             doTransform(lineString);
             //Write geometry
             xmlOut.writeCharacters(KMLWriter.writeGeometry(lineString, Double.NaN,
-                    wgs84Precision, false, KMLWriter.ALTITUDE_MODE_ABSOLUTE));
+                    wgs84Precision, false, KMLWriter.ALTITUDE_MODE_RELATIVETOGROUND));
             xmlOut.writeEndElement();//Write Placemark
         }
         xmlOut.writeEndElement();//Folder

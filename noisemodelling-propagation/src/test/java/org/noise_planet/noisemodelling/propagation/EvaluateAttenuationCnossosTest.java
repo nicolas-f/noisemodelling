@@ -1,5 +1,7 @@
 package org.noise_planet.noisemodelling.propagation;
 
+import org.cts.crs.CRSException;
+import org.cts.op.CoordinateOperationException;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -11,6 +13,7 @@ import org.locationtech.jts.io.WKTReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.*;
 
@@ -1760,6 +1763,70 @@ public class EvaluateAttenuationCnossosTest {
         assertEquals(14.6, ComputeRays.wToDba(ComputeRays.sumArray(roadLvl.length, ComputeRays.dbaToW(propDataOut.getVerticesSoundLevel().get(0).value))), 0.1);
     }
 
+
+
+    /**
+     * Test reported issue with receiver over building
+     */
+    @Test
+    public void testSourceOverBuilding() throws LayerDelaunayError, ParseException, IOException {
+
+        WKTReader wktReader = new WKTReader();
+        GeometryFactory factory = new GeometryFactory();
+        //Scene dimension
+        Geometry fence = wktReader.read("POLYGON ((223805.3 6758225.7, 223893.4 6758256, 223854.3 6758356.1, 223762.3 6758328.6, 223805.3 6758225.7))");
+        Envelope cellEnvelope = fence.getEnvelopeInternal();
+
+        //Create obstruction test object
+        MeshBuilder mesh = new MeshBuilder();
+
+        mesh.addGeometry(wktReader.read("POLYGON ((223817.3 6758309.8, 223829.3 6758314.3, 223838.7 6758289.2, 223826.5 6758284.7, 223817.3 6758309.8))"), 10);
+
+        mesh.finishPolygonFeeding(cellEnvelope);
+
+        //Retrieve Delaunay triangulation of scene
+        FastObstructionTest manager = new FastObstructionTest(mesh.getPolygonWithHeight(), mesh.getTriangles(),
+                mesh.getTriNeighbors(), mesh.getVertices());
+
+        double[] srcLvl = ComputeRays.dbaToW(new double[]{25.65, 38.15, 54.35, 60.35, 74.65, 66.75, 59.25, 53.95});
+
+        DirectPropagationProcessData rayData = new DirectPropagationProcessData(manager);
+        rayData.addReceiver(new Coordinate(223822.5381908185, 6758315.079663847, 1.6));
+        rayData.addSource(factory.createPoint(new Coordinate(223827.98767450615, 6758301.845203462, 11)), srcLvl);
+        rayData.setComputeHorizontalDiffraction(true);
+        rayData.setComputeVerticalDiffraction(true);
+
+        rayData.maxSrcDist = 2000;
+
+        PropagationProcessPathData attData = new PropagationProcessPathData();
+        attData.setHumidity(70);
+        attData.setTemperature(10);
+        RayOut propDataOut = new RayOut(true, attData, rayData);
+        ComputeRays computeRays = new ComputeRays(rayData);
+        computeRays.setThreadCount(1);
+        computeRays.run(propDataOut);
+
+
+        KMLDocument.exportScene("target/scene.kml", manager, propDataOut);
+        try {
+            FileOutputStream outData = new FileOutputStream("target/scene.kml");
+            KMLDocument kmlDocument = new KMLDocument(outData);
+            kmlDocument.setInputCRS("EPSG:2154");
+            kmlDocument.writeHeader();
+            if(propDataOut != null) {
+                kmlDocument.writeRays(propDataOut.getPropagationPaths());
+            }
+            if(manager != null && manager.isHasBuildingWithHeight()) {
+                kmlDocument.writeBuildings(manager);
+            }
+            kmlDocument.writeFooter();
+        } catch (XMLStreamException | CoordinateOperationException | CRSException ex) {
+            throw new IOException(ex);
+        }
+
+        assertEquals(3, propDataOut.propagationPaths.size());
+
+    }
 
 
 
