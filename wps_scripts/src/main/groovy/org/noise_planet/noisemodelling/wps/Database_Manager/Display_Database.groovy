@@ -83,10 +83,13 @@ def exec(Connection connection, input) {
 
     // Get every table names
     List<String> tables = JDBCUtilities.getTableNames(connection.getMetaData(), null, "PUBLIC", "%", null)
+
+    boolean tableDisplayed = false
     // Loop over the tables
     tables.each { t ->
         TableLocation tab = TableLocation.parse(t)
         if (!ignorelst.contains(tab.getTable())) {
+            tableDisplayed = true
             sb.append(tab.getTable())
             sb.append("</br>")
             if (showColumnName) {
@@ -106,7 +109,9 @@ def exec(Connection connection, input) {
             sb.append("</br>")
         }
     }
-
+    if(!tableDisplayed) {
+        sb.append("The database is empty - please import files using Import_File process")
+    }
     // print to command window
     logger.info('End : Display database')
 
