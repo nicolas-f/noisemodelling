@@ -346,8 +346,15 @@ def exec(Connection connection, input) {
         for (int j = 0; j < pointNoiseMap.getGridDim(); j++) {
             IComputeRaysOut out = pointNoiseMap.evaluateCell(connection, i, j, progressVisitor, receivers)
             if (out instanceof ComputeRaysOut) {
+                // Index and store (in memory) levels by source identifier (position)
                 for(ComputeRaysOut.VerticeSL att : ((ComputeRaysOut) out).getVerticesSoundLevel()) {
-                    ArrayList<ComputeRaysOut.VerticeSL> srcReceivers = levelsBySource.getOrDefault(att.sourceId, new ArrayList<ComputeRaysOut.VerticeSL>())
+                    ArrayList<ComputeRaysOut.VerticeSL> srcReceivers
+                    if(!levelsBySource.containsKey(att.sourceId as Long)) {
+                        srcReceivers = new ArrayList<ComputeRaysOut.VerticeSL>()
+                        levelsBySource.put(att.sourceId as Long, srcReceivers)
+                    } else {
+                        srcReceivers = levelsBySource.get(att.sourceId as Long)
+                    }
                     srcReceivers.add(att)
                 }
             }
@@ -412,7 +419,7 @@ def exec(Connection connection, input) {
 
     int soundLevelsTime = -1
 
-    sql.eachRow('SELECT PK, PHI, T, idSource, IDNOISESPHERE FROM ' + sources_time_table_name + '_with_pkPosition ORDER BY T ASC') { row ->
+    sql.eachRow('SELECT PK, PHI, T, idSource, IDNOISESPHERE FROM ' + sources_time_table_name + ' ORDER BY T,idSource ASC') { row ->
         int idPositionDynamic = row.PK as Integer
         int idSphere = row.IDNOISESPHERE as Integer
         int idSource = row.IDSOURCE
@@ -425,7 +432,7 @@ def exec(Connection connection, input) {
                 for (Map.Entry<Integer, double[]> entry : soundLevels.entrySet()) {
                     Integer key = entry.getKey()
                     double[] value = entry.getValue()
-                    ps.addBatch(t as Integer, key as Integer,
+                    ps.addBatch(soundLevelsTime as Integer, key as Integer,
                             value[0] as Double, value[1] as Double, value[2] as Double,
                             value[3] as Double, value[4] as Double, value[5] as Double,
                             value[6] as Double, value[7] as Double, value[8] as Double,
@@ -442,7 +449,7 @@ def exec(Connection connection, input) {
 
         for(ComputeRaysOut.VerticeSL att : levelsBySource.get(idPositionDynamic as Long)) {
             int idReceiver = (Integer) att.receiverId
-            Coordinate A = geomFixedSources.get(idSource)
+            Coordinate A = geomFixedSources.get(idPositionDynamic)
             Coordinate B = geomReceivers.get(idReceiver)
             Vector3D vector = new Vector3D(A, B)
 
@@ -456,7 +463,7 @@ def exec(Connection connection, input) {
                 phi = phi + 360
             double theta = 180 - (Math.acos(vector.getZ() / r) * 180 / 3.14)
 
-            double[] soundLevel = allLevels.get(i).value
+            double[] soundLevel = att.value
             double[] sourceLev = droneThirdProcessData.getDroneLevel(idSphere, theta, phi)
             if (soundLevels.containsKey(idReceiver)) {
                 soundLevel = ComputeRays.sumDbArray(sumLinearArray(soundLevel, sourceLev), soundLevels.get(idReceiver))
@@ -472,7 +479,7 @@ def exec(Connection connection, input) {
         for (Map.Entry<Integer, double[]> entry : soundLevels.entrySet()) {
             Integer key = entry.getKey()
             double[] value = entry.getValue()
-            ps.addBatch(t as Integer, key as Integer,
+            ps.addBatch(soundLevelsTime as Integer, key as Integer,
                     value[0] as Double, value[1] as Double, value[2] as Double,
                     value[3] as Double, value[4] as Double, value[5] as Double,
                     value[6] as Double, value[7] as Double, value[8] as Double,
