@@ -127,24 +127,22 @@ def exec(Connection connection, input) {
         else {
             stmt.execute("CREATE table temp as select ST_Transform(the_geom," + newSrid.toInteger() + ") THE_GEOM" + sbFields + " FROM " + TableLocation.parse(tableName).toString())
             stmt.execute("DROP TABLE" + TableLocation.parse(tableName).toString())
-            stmt.execute("CREATE TABLE" + TableLocation.parse(tableName).toString() + " AS SELECT * FROM TEMP")
-            stmt.execute("DROP TABLE TEMP")
+            stmt.execute("ALTER TABLE temp RENAME TO " + TableLocation.parse(tableName).toString())
             if (pkField != "") {
                 stmt.execute("ALTER TABLE " + tableName.toString() + " ALTER COLUMN " + pkField + " INT NOT NULL;")
                 stmt.execute("ALTER TABLE " + tableName.toString() + " ADD PRIMARY KEY (" + pkField + ");  ")
             }
-            resultString = "SRID changed from " + srid.toString() + " to " + newSrid.toString() + "."
+            resultString = "SRID changed from " + srid.toString() + " to " + newSrid.toString() + ", coordinates have been reprojected."
         }
     } else {     // if the table doesn't have any associated SRID
         stmt.execute("CREATE table temp as select ST_SetSRID(the_geom," + newSrid.toInteger() + ") THE_GEOM" + sbFields + " FROM " + TableLocation.parse(tableName).toString())
         stmt.execute("DROP TABLE" + TableLocation.parse(tableName).toString())
-        stmt.execute("CREATE TABLE" + TableLocation.parse(tableName).toString() + " AS SELECT * FROM TEMP")
-        stmt.execute("DROP TABLE TEMP")
+        stmt.execute("ALTER TABLE temp RENAME TO " + TableLocation.parse(tableName).toString())
         if (pkField != "") {
             stmt.execute("ALTER TABLE " + tableName.toString() + " ALTER COLUMN " + pkField + " INT NOT NULL;")
             stmt.execute("ALTER TABLE " + tableName.toString() + " ADD PRIMARY KEY (" + pkField + ");  ")
         }
-        resultString = "No SRID found ! Table " + tableName.toString() + " has now the SRID : " + newSrid.toString() + "."
+        resultString = "No SRID found ! Table " + tableName.toString() + " has been set to SRID : " + newSrid.toString() + "."
     }
 
 
