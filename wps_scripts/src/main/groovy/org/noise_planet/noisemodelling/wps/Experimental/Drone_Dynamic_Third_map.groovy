@@ -286,7 +286,6 @@ def exec(Connection connection, input) {
 
     System.out.println("Run ...")
 
-    Map<Long, ArrayList<ComputeRaysOut.VerticeSL>> levelsBySource = new HashMap<>()
 
     // All rays storage
 
@@ -342,42 +341,17 @@ def exec(Connection connection, input) {
     long start = System.currentTimeMillis()
     System.out.println("Start ...")
 
-    for (int i = 0; i < pointNoiseMap.getGridDim(); i++) {
-        for (int j = 0; j < pointNoiseMap.getGridDim(); j++) {
-            IComputeRaysOut out = pointNoiseMap.evaluateCell(connection, i, j, progressVisitor, receivers)
-            if (out instanceof ComputeRaysOut) {
-                // Index and store (in memory) levels by source identifier (position)
-                for(ComputeRaysOut.VerticeSL att : ((ComputeRaysOut) out).getVerticesSoundLevel()) {
-                    ArrayList<ComputeRaysOut.VerticeSL> srcReceivers
-                    if(!levelsBySource.containsKey(att.sourceId as Long)) {
-                        srcReceivers = new ArrayList<ComputeRaysOut.VerticeSL>()
-                        levelsBySource.put(att.sourceId as Long, srcReceivers)
-                    } else {
-                        srcReceivers = levelsBySource.get(att.sourceId as Long)
-                    }
-                    srcReceivers.add(att)
-                }
-            }
-        }
-    }
-
-
-
-    DroneThirdProcessData droneThirdProcessData = new DroneThirdProcessData()
-
-
-    System.out.println("Export data to table")
 
     sql.execute("drop table if exists LDAY;")
     sql.execute("create table LDAY (TIME integer, IDRECEIVER integer, "+
-     "Hz50 double precision, Hz63 double precision,  Hz80 double precision, "+
-     "Hz100 double precision, Hz125 double precision, Hz160 double precision, "+
-    " Hz200 double precision,  Hz250 double precision,  Hz315 double precision, "+
-     " Hz400 double precision, Hz500 double precision,  Hz630 double precision, "+
-     " Hz800 double precision, Hz1000 double precision,  Hz1250 double precision, "+
-     " Hz1600 double precision, Hz2000 double precision,  Hz2500 double precision, "+
-     " Hz3150 double precision, Hz4000 double precision,  Hz5000 double precision, "+
-     " Hz6300 double precision, Hz8000 double precision, Hz10000 double precision   );")
+            "Hz50 double precision, Hz63 double precision,  Hz80 double precision, "+
+            "Hz100 double precision, Hz125 double precision, Hz160 double precision, "+
+            " Hz200 double precision,  Hz250 double precision,  Hz315 double precision, "+
+            " Hz400 double precision, Hz500 double precision,  Hz630 double precision, "+
+            " Hz800 double precision, Hz1000 double precision,  Hz1250 double precision, "+
+            " Hz1600 double precision, Hz2000 double precision,  Hz2500 double precision, "+
+            " Hz3150 double precision, Hz4000 double precision,  Hz5000 double precision, "+
+            " Hz6300 double precision, Hz8000 double precision, Hz10000 double precision   );")
 
     def qry = "INSERT INTO LDAY(TIME , IDRECEIVER,Hz50,Hz63,Hz80, " +
             "Hz100,Hz125,Hz160," +
@@ -404,97 +378,117 @@ def exec(Connection connection, input) {
     sql.eachRow('SELECT '+sourcePkName+', ST_X(the_geom),ST_Y(the_geom),ST_Z(the_geom) FROM '+sources_time_table_name) { row ->
         geomFixedSources.put(row[0] as Integer, new Coordinate(row[1] as Double, row[2] as Double, row[3] as Double))
     }
-//
-//    sql.execute("CREATE SPATIAL INDEX ON "+sources_position_table_name+"(THE_GEOM);")
-//    sql.execute("drop table if exists closest_point;")
-//    sql.execute("create table closest_point as SELECT b.pk PK_TIME,b.the_geom, (SELECT a.PK FROM "+sources_position_table_name+" a WHERE ST_EXPAND(b.the_geom,50,50) && a.the_geom ORDER BY ST_Distance(a.the_geom, b.the_geom) ASC LIMIT 1) PK_POSITION FROM "+sources_time_table_name+" b ;")
-//
-//    sql.execute("drop table if exists "+sources_time_table_name+"_with_pkPosition;")
-//    sql.execute("create table "+sources_time_table_name+"_with_pkPosition AS SELECT  a.PK PK, b.PK_POSITION PK_POSITION, a.PHI PHI, a.T T,a.IDNOISESPHERE IDNOISESPHERE, a.idSource idSource FROM "+sources_time_table_name+" a, closest_point b WHERE a.PK = b.PK_TIME ;")
-//
 
 
+    DroneThirdProcessData droneThirdProcessData = new DroneThirdProcessData()
 
-    Map<Integer, double[]> soundLevels = new HashMap<>()
 
-    int soundLevelsTime = -1
+    for (int i = 0; i < pointNoiseMap.getGridDim(); i++) {
+        for (int j = 0; j < pointNoiseMap.getGridDim(); j++) {
+            IComputeRaysOut out = pointNoiseMap.evaluateCell(connection, i, j, progressVisitor, receivers)
+            if (out instanceof ComputeRaysOut) {
+                Map<Long, ArrayList<ComputeRaysOut.VerticeSL>> levelsBySource = new HashMap<>()
 
-    sql.eachRow('SELECT PK, PHI, T, idSource, IDNOISESPHERE FROM ' + sources_time_table_name + ' ORDER BY T,idSource ASC') { row ->
-        int idPositionDynamic = row.PK as Integer
-        int idSphere = row.IDNOISESPHERE as Integer
-        int idSource = row.IDSOURCE
-        int t = row.T as Integer
-        double phiHelico = row.PHI as double
+                // Index and store (in memory) levels by source identifier (position)
+                for(ComputeRaysOut.VerticeSL att : ((ComputeRaysOut) out).getVerticesSoundLevel()) {
+                    ArrayList<ComputeRaysOut.VerticeSL> srcReceivers
+                    if(!levelsBySource.containsKey(att.sourceId as Long)) {
+                        srcReceivers = new ArrayList<ComputeRaysOut.VerticeSL>()
+                        levelsBySource.put(att.sourceId as Long, srcReceivers)
+                    } else {
+                        srcReceivers = levelsBySource.get(att.sourceId as Long)
+                    }
+                    srcReceivers.add(att)
+                }
 
-        if(soundLevelsTime != -1 && soundLevelsTime != t) {
-            // New time step process all receivers for the previous time steps
-            sql.withBatch(100, qry) { ps ->
-                for (Map.Entry<Integer, double[]> entry : soundLevels.entrySet()) {
-                    Integer key = entry.getKey()
-                    double[] value = entry.getValue()
-                    ps.addBatch(soundLevelsTime as Integer, key as Integer,
-                            value[0] as Double, value[1] as Double, value[2] as Double,
-                            value[3] as Double, value[4] as Double, value[5] as Double,
-                            value[6] as Double, value[7] as Double, value[8] as Double,
-                            value[9] as Double, value[10] as Double, value[11] as Double,
-                            value[12] as Double, value[13] as Double, value[14] as Double,
-                            value[15] as Double, value[16] as Double, value[17] as Double,
-                            value[18] as Double, value[19] as Double,value[20] as Double,
-                            value[21] as Double, value[22] as Double, value[23] as Double)
+                Map<Integer, double[]> soundLevels = new HashMap<>()
+
+                int soundLevelsTime = -1
+
+                sql.eachRow('SELECT PK, PHI, T, idSource, IDNOISESPHERE FROM ' + sources_time_table_name + ' ORDER BY T,idSource ASC') { row ->
+                    int idPositionDynamic = row.PK as Integer
+                    int idSphere = row.IDNOISESPHERE as Integer
+                    int idSource = row.IDSOURCE
+                    int t = row.T as Integer
+                    double phiHelico = row.PHI as double
+
+                    if(soundLevelsTime != -1 && soundLevelsTime != t && !soundLevels.isEmpty()) {
+                        // New time step process all receivers for the previous time steps
+                        sql.withBatch(100, qry) { ps ->
+                            for (Map.Entry<Integer, double[]> entry : soundLevels.entrySet()) {
+                                Integer key = entry.getKey()
+                                double[] value = entry.getValue()
+                                ps.addBatch(soundLevelsTime as Integer, key as Integer,
+                                        value[0] as Double, value[1] as Double, value[2] as Double,
+                                        value[3] as Double, value[4] as Double, value[5] as Double,
+                                        value[6] as Double, value[7] as Double, value[8] as Double,
+                                        value[9] as Double, value[10] as Double, value[11] as Double,
+                                        value[12] as Double, value[13] as Double, value[14] as Double,
+                                        value[15] as Double, value[16] as Double, value[17] as Double,
+                                        value[18] as Double, value[19] as Double,value[20] as Double,
+                                        value[21] as Double, value[22] as Double, value[23] as Double)
+                            }
+                        }
+                        soundLevels.clear()
+                    }
+                    soundLevelsTime = t
+
+                    for(ComputeRaysOut.VerticeSL att : levelsBySource.get(idPositionDynamic as Long)) {
+                        int idReceiver = (Integer) att.receiverId
+                        Coordinate A = geomFixedSources.get(idPositionDynamic)
+                        Coordinate B = geomReceivers.get(idReceiver)
+                        Vector3D vector = new Vector3D(A, B)
+
+                        double r = A.distance3D(B)
+                        double angle = Math.atan2(vector.getY(), vector.getX())
+                        if (angle < 0)
+                            angle = angle + 2 * 3.14
+                        angle = angle * 360 / (2 * 3.14)
+                        double phi = angle - phiHelico
+                        if (phi < 0)
+                            phi = phi + 360
+                        double theta = 180 - (Math.acos(vector.getZ() / r) * 180 / 3.14)
+
+                        double[] soundLevel = att.value
+                        double[] sourceLev = droneThirdProcessData.getDroneLevel(idSphere, theta, phi)
+                        if (soundLevels.containsKey(idReceiver)) {
+                            soundLevel = ComputeRays.sumDbArray(sumLinearArray(soundLevel, sourceLev), soundLevels.get(idReceiver))
+                            soundLevels.replace(idReceiver, soundLevel)
+                        } else {
+                            soundLevels.put(idReceiver, sumLinearArray(soundLevel, sourceLev))
+                        }
+                    }
+                }
+
+                if(!soundLevels.isEmpty()) {
+                    // insert final batch of time receivers
+                    sql.withBatch(100, qry) { ps ->
+                        for (Map.Entry<Integer, double[]> entry : soundLevels.entrySet()) {
+                            Integer key = entry.getKey()
+                            double[] value = entry.getValue()
+                            ps.addBatch(soundLevelsTime as Integer, key as Integer,
+                                    value[0] as Double, value[1] as Double, value[2] as Double,
+                                    value[3] as Double, value[4] as Double, value[5] as Double,
+                                    value[6] as Double, value[7] as Double, value[8] as Double,
+                                    value[9] as Double, value[10] as Double, value[11] as Double,
+                                    value[12] as Double, value[13] as Double, value[14] as Double,
+                                    value[15] as Double, value[16] as Double, value[17] as Double,
+                                    value[18] as Double, value[19] as Double, value[20] as Double,
+                                    value[21] as Double, value[22] as Double, value[23] as Double)
+                        }
+                    }
                 }
             }
-            soundLevels.clear()
-        }
-        soundLevelsTime = t
-
-        for(ComputeRaysOut.VerticeSL att : levelsBySource.get(idPositionDynamic as Long)) {
-            int idReceiver = (Integer) att.receiverId
-            Coordinate A = geomFixedSources.get(idPositionDynamic)
-            Coordinate B = geomReceivers.get(idReceiver)
-            Vector3D vector = new Vector3D(A, B)
-
-            double r = A.distance3D(B)
-            double angle = Math.atan2(vector.getY(), vector.getX())
-            if (angle < 0)
-                angle = angle + 2 * 3.14
-            angle = angle * 360 / (2 * 3.14)
-            double phi = angle - phiHelico
-            if (phi < 0)
-                phi = phi + 360
-            double theta = 180 - (Math.acos(vector.getZ() / r) * 180 / 3.14)
-
-            double[] soundLevel = att.value
-            double[] sourceLev = droneThirdProcessData.getDroneLevel(idSphere, theta, phi)
-            if (soundLevels.containsKey(idReceiver)) {
-                soundLevel = ComputeRays.sumDbArray(sumLinearArray(soundLevel, sourceLev), soundLevels.get(idReceiver))
-                soundLevels.replace(idReceiver, soundLevel)
-            } else {
-                soundLevels.put(idReceiver, sumLinearArray(soundLevel, sourceLev))
-            }
         }
     }
 
-    // insert final batch of time receivers
-    sql.withBatch(100, qry) { ps ->
-        for (Map.Entry<Integer, double[]> entry : soundLevels.entrySet()) {
-            Integer key = entry.getKey()
-            double[] value = entry.getValue()
-            ps.addBatch(soundLevelsTime as Integer, key as Integer,
-                    value[0] as Double, value[1] as Double, value[2] as Double,
-                    value[3] as Double, value[4] as Double, value[5] as Double,
-                    value[6] as Double, value[7] as Double, value[8] as Double,
-                    value[9] as Double, value[10] as Double, value[11] as Double,
-                    value[12] as Double, value[13] as Double, value[14] as Double,
-                    value[15] as Double, value[16] as Double, value[17] as Double,
-                    value[18] as Double, value[19] as Double,value[20] as Double,
-                    value[21] as Double, value[22] as Double, value[23] as Double)
-        }
-    }
 
+
+
+    System.out.println("Export data to table")
 
     System.out.println("Join Results with Geometry")
     sql.execute("CREATE INDEX ON LDAY(IDRECEIVER);")
-    sql.execute("CREATE INDEX ON RECEIVERS(PK);")
 
     sql.execute("drop table if exists LDRONE_GEOM;")
     sql.execute("create table LDRONE_GEOM  as select a.TIME ,a.IDRECEIVER, b.THE_GEOM, " +
@@ -508,7 +502,7 @@ def exec(Connection connection, input) {
             "a.Hz4000, a.Hz5000, " +
             "a.Hz6300,a.Hz8000, " +
             "a.Hz10000"+
-            " FROM LDAY a LEFT JOIN  RECEIVERS b  ON a.IDRECEIVER = b." + receiversPkName)
+            " FROM LDAY a ,RECEIVERS b where a.IDRECEIVER = b." + receiversPkName)
 
 
     System.out.println("Done !")

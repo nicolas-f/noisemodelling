@@ -22,6 +22,7 @@ import org.noise_planet.noisemodelling.wps.Experimental.Drone_Dynamic_Third_map
 import org.noise_planet.noisemodelling.wps.Experimental.Get_Rayz
 import org.noise_planet.noisemodelling.wps.Experimental.Multi_Runs
 import org.noise_planet.noisemodelling.wps.Geometric_Tools.Change_SRID
+import org.noise_planet.noisemodelling.wps.Import_and_Export.Export_Table
 import org.noise_planet.noisemodelling.wps.Import_and_Export.Import_File
 import org.noise_planet.noisemodelling.wps.Receivers.Regular_Grid
 
@@ -98,6 +99,9 @@ class TestExperimental extends JdbcTestCase  {
         "receiversTableName": "RECEIVERS",
         "threadNumber": 4,
         "maxSrcDistance" : 3000])
+
+        new Export_Table().exec(connection, ["exportPath": "target/LDRONE_GEOM.shp",
+        "tableToExport" : "LDRONE_GEOM"])
     }
 
 }
