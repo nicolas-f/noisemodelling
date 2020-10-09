@@ -508,7 +508,7 @@ def exec(Connection connection, input) {
             "a.Hz4000, a.Hz5000, " +
             "a.Hz6300,a.Hz8000, " +
             "a.Hz10000"+
-            " FROM LDAY a LEFT JOIN  RECEIVERS b  ON a.IDRECEIVER = b.PK;")
+            " FROM LDAY a LEFT JOIN  RECEIVERS b  ON a.IDRECEIVER = b." + receiversPkName)
 
 
     System.out.println("Done !")
