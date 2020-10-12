@@ -22,6 +22,7 @@ import geoserver.catalog.Store
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import org.geotools.jdbc.JDBCDataStore
+import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.TableLocation
 import org.h2gis.utilities.URIUtilities
 import org.h2gis.utilities.wrapper.ConnectionWrapper
@@ -96,10 +97,11 @@ def run(input) {
 
 @CompileStatic
 public void parseFile(Connection connection, InputStream is, String tableName) {
+    Sql sql = new Sql(connection)
     Logger logger = LoggerFactory.getLogger("org.noise_planet.noisemodelling")
     final int BUFFER_SIZE = 16384
     BufferedInputStream bof = new BufferedInputStream(is, BUFFER_SIZE)
-    String lastWord = "";
+    String lastWord = ""
     try {
         // Read HEADER
         Scanner scanner = new Scanner(bof);
@@ -124,25 +126,61 @@ public void parseFile(Connection connection, InputStream is, String tableName) {
             lastWord = scanner.next()
             frequencies[idFreq] = String.valueOf((int) Double.parseDouble(lastWord)) //read frequency
         }
+        // Create table if necessary
+        int sphereIndex = 0
+        if(!JDBCUtilities.tableExists(connection, tableName)) {
+            StringBuilder sb = new StringBuilder("CREATE TABLE ")
+            sb.append(tableName)
+            sb.append(" (PK SERIAL PRIMARY KEY,D_INDEX INTEGER, S_THETA REAL, E_THETA REAL, S_PHI REAL, E_PHI REAL")
+            for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
+                sb.append(", HZ")
+                sb.append(frequencies[idFreq])
+            }
+            sb.append(" REAL)")
+            sql.execute(sb.toString())
+            // composite index
+            sql.execute("CREATE INDEX ON " + tableName + "(D_INDEX)")
+            sql.execute("CREATE INDEX ON " + tableName + "(S_THETA, E_THETA)")
+            sql.execute("CREATE INDEX ON " + tableName + "(S_PHI, E_PHI)")
+        } else {
+            // fetch last directivity index
+            sphereIndex = sql.firstRow("SELECT MAX(D_INDEX) + 1 DINDEX FROM " + tableName)[0] as Integer
+        }
         while (!lastWord.startsWith("thetaObsEC=")) {
             lastWord = scanner.next()
         }
         // loop over theta tables
-        for(int ti=0; ti < nTheta; ti++) {
-            double theta = Double.parseDouble(lastWord.substring(lastWord.lastIndexOf("=") + 1, lastWord.length()))
-            scanner.nextLine() // skip line
-            // loop over phi
-            for(int iphi=0; iphi < nPhi; iphi++) {
-                scanner.nextLine() //skip TAS(kts) Gamma(°) Temperature(K) RH(%) Air_p(Pa) isTonal(bool) isDoppler(bool)
-                lastWord = scanner.next()
-                double phi = Double.parseDouble(lastWord)
-                double[] lvls = new double[numberOfFreq];
-                for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
+        StringBuilder insertQuery = new StringBuilder("INSERT INTO ")
+        insertQuery.append(tableName)
+        insertQuery.append(" (D_INDEX, S_THETA, E_THETA, S_PHI, E_PHI")
+        for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
+            insertQuery.append(", HZ")
+            insertQuery.append(frequencies[idFreq])
+        }
+        insertQuery.append(") VALUES ( :dindex, :stheta, :etheta, :sphi, :ephi")
+        for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
+            insertQuery.append(", :hz")
+            insertQuery.append(frequencies[idFreq])
+        }
+        insertQuery.append(")")
+        sql.withBatch(insertQuery.toString()) { batch ->
+            for (int ti = 0; ti < nTheta; ti++) {
+                double theta = Double.parseDouble(lastWord.substring(lastWord.lastIndexOf("=") + 1, lastWord.length()))
+                scanner.nextLine() // skip line
+                // loop over phi
+                for (int iphi = 0; iphi < nPhi; iphi++) {
+                    scanner.nextLine()
+                    //skip TAS(kts) Gamma(°) Temperature(K) RH(%) Air_p(Pa) isTonal(bool) isDoppler(bool)
                     lastWord = scanner.next()
-                    lvls[idFreq] = Double.parseDouble(lastWord)
+                    double phi = Double.parseDouble(lastWord)
+                    double[] lvls = new double[numberOfFreq];
+                    for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
+                        lastWord = scanner.next()
+                        lvls[idFreq] = Double.parseDouble(lastWord)
+                    }
+                    // insert row
+                    logger.info(Arrays.toString(lvls))
                 }
-                // insert row
-                logger.info(Arrays.toString(lvls))
             }
         }
     } catch (NoSuchElementException | NumberFormatException ex) {
