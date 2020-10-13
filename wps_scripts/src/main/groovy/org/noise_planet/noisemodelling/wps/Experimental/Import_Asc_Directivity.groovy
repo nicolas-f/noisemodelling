@@ -93,21 +93,16 @@ def run(input) {
             return [result: exec(connection, input)]
     }
 }
-
+/**
+ * @param theta1 Theta of P1 in radian [-Pi Pi]
+ * @param phi1 Phi of P1 in radian [0 2Pi]
+ * @param theta2 Theta of P2 in radian [-Pi Pi]
+ * @param phi2 Phi of P2 in radian [0 2Pi]
+ * @return Central angle Δσ (delta sigma)
+ */
 @CompileStatic
-static double boundPhi(double value, double min, double max) {
-    if(value < min) {
-        return max + (min - value)
-    } else if(value > max) {
-        return min + (value - max)
-    } else {
-        return value
-    }
-}
-
-@CompileStatic
-static double boundTheta(double value, double min, double max) {
-    return Math.max(-90, Math.min(90, value))
+static double distanceSphere(double theta1, double phi1, double theta2, double phi2) {
+    return Math.acos(Math.sin(theta1) * Math.sin(theta2) + Math.cos(theta1) * Math.cos(theta2) * Math.cos(phi1 - phi2))
 }
 
 /**
@@ -164,7 +159,7 @@ static int parseFile(Connection connection, InputStream is, String tableName) {
         if(!JDBCUtilities.tableExists(connection, tableName)) {
             StringBuilder sb = new StringBuilder("CREATE TABLE ")
             sb.append(tableName)
-            sb.append(" (PK SERIAL PRIMARY KEY,D_INDEX INTEGER, S_THETA REAL, E_THETA REAL, S_PHI REAL, E_PHI REAL")
+            sb.append(" (PK SERIAL PRIMARY KEY,D_INDEX INTEGER, THETA REAL, PHI REAL, ZERO_DIST REAL")
             for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
                 sb.append(", HZ")
                 sb.append(frequencies[idFreq])
@@ -174,8 +169,7 @@ static int parseFile(Connection connection, InputStream is, String tableName) {
             sql.execute(sb.toString())
             // composite index
             sql.execute("CREATE INDEX ON " + tableName + "(D_INDEX)")
-            sql.execute("CREATE INDEX ON " + tableName + "(S_THETA, E_THETA)")
-            sql.execute("CREATE INDEX ON " + tableName + "(S_PHI, E_PHI)")
+            sql.execute("CREATE INDEX ON " + tableName + "(ZERO_DIST)")
         } else {
             // fetch last directivity index
             sphereIndex = sql.firstRow("SELECT MAX(D_INDEX) + 1 DINDEX FROM " + tableName)[0] as Integer
@@ -186,12 +180,12 @@ static int parseFile(Connection connection, InputStream is, String tableName) {
         // loop over theta tables
         StringBuilder insertQuery = new StringBuilder("INSERT INTO ")
         insertQuery.append(tableName)
-        insertQuery.append(" (D_INDEX, S_THETA, E_THETA, S_PHI, E_PHI")
+        insertQuery.append(" (D_INDEX, THETA, PHI, ZERO_DIST")
         for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
             insertQuery.append(", HZ")
             insertQuery.append(frequencies[idFreq])
         }
-        insertQuery.append(") VALUES ( :dindex, :stheta, :etheta, :sphi, :ephi")
+        insertQuery.append(") VALUES ( :dindex, :theta, :phi, :zerodist")
         for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
             insertQuery.append(", :hz")
             insertQuery.append(frequencies[idFreq])
@@ -214,12 +208,11 @@ static int parseFile(Connection connection, InputStream is, String tableName) {
                     // insert row
                     def data = [:]
                     data.put("dindex", sphereIndex)
-                    data.put("stheta", -boundTheta(theta - deltaTheta, thetaList[0], thetaList[thetaList.length - 1]))
-                    data.put("etheta", -boundTheta(theta + deltaTheta, thetaList[0], thetaList[thetaList.length - 1]))
-                    // 90° in this file is the bottom of the source hemisphere
-                    // as provided files is bounded 0->90°, so we put negative sign
-                    data.put("sphi",  boundPhi(phi - deltaPhi, phiList[0], phiList[phiList.length - 1]))
-                    data.put("ephi", boundPhi(phi + deltaPhi, phiList[0], phiList[phiList.length - 1]))
+                    data.put("theta", theta)
+                    data.put("phi", phi)
+                    // Compute distance with forward vector
+                    double zerodist = distanceSphere(Math.toRadians(theta), Math.toRadians(phi), 0, 0);
+                    data.put("zerodist", zerodist)
                     for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
                         lastWord = scanner.next()
                         data.put("hz" + frequencies[idFreq], Double.parseDouble(lastWord))
