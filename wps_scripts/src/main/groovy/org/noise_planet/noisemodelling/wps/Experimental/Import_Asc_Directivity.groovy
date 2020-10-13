@@ -19,6 +19,7 @@ package org.noise_planet.noisemodelling.wps.Experimental
 
 import geoserver.GeoServer
 import geoserver.catalog.Store
+import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import org.geotools.jdbc.JDBCDataStore
@@ -93,10 +94,30 @@ def run(input) {
     }
 }
 
-
+@CompileStatic
+static double boundPhi(double value, double min, double max) {
+    if(value < min) {
+        return max + (min - value)
+    } else if(value > max) {
+        return min + (value - max)
+    } else {
+        return value
+    }
+}
 
 @CompileStatic
-public void parseFile(Connection connection, InputStream is, String tableName) {
+static double boundTheta(double value, double min, double max) {
+    return Math.max(-90, Math.min(90, value))
+}
+
+/**
+ * @param connection Database connection
+ * @param is ASCII file stream
+ * @param tableName Name of output table
+ * @return Identifier of the inserted sphere
+ */
+@CompileStatic
+static int parseFile(Connection connection, InputStream is, String tableName) {
     Sql sql = new Sql(connection)
     Logger logger = LoggerFactory.getLogger("org.noise_planet.noisemodelling")
     final int BUFFER_SIZE = 16384
@@ -110,11 +131,23 @@ public void parseFile(Connection connection, InputStream is, String tableName) {
         }
         int nPhi = scanner.nextInt()
         scanner.nextLine() // skip line
+        double[] phiList = new double[nPhi]
+        for(int idPhi=0; idPhi<nPhi; idPhi++) {
+            lastWord = scanner.next()
+            phiList[idPhi] = Double.valueOf(lastWord)
+        }
+        double deltaPhi = (Double.valueOf(phiList[1]) - Double.valueOf(phiList[0])) / 2.0
         while(!lastWord.startsWith("THETAOBSEC")) {
             lastWord = scanner.next()
         }
         int nTheta = scanner.nextInt()
         scanner.nextLine() // skip line
+        double[] thetaList = new double[nTheta]
+        for(int idTheta=0; idTheta<nTheta; idTheta++) {
+            lastWord = scanner.next()
+            thetaList[idTheta] = Double.valueOf(lastWord)
+        }
+        double deltaTheta = (Double.valueOf(thetaList[1]) - Double.valueOf(thetaList[0])) / 2.0
         // Read frequencies
         while(!lastWord.startsWith("NFREQ")) {
             lastWord = scanner.next()
@@ -127,7 +160,7 @@ public void parseFile(Connection connection, InputStream is, String tableName) {
             frequencies[idFreq] = String.valueOf((int) Double.parseDouble(lastWord)) //read frequency
         }
         // Create table if necessary
-        int sphereIndex = 0
+        int sphereIndex = 1
         if(!JDBCUtilities.tableExists(connection, tableName)) {
             StringBuilder sb = new StringBuilder("CREATE TABLE ")
             sb.append(tableName)
@@ -135,8 +168,9 @@ public void parseFile(Connection connection, InputStream is, String tableName) {
             for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
                 sb.append(", HZ")
                 sb.append(frequencies[idFreq])
+                sb.append(" REAL")
             }
-            sb.append(" REAL)")
+            sb.append(")")
             sql.execute(sb.toString())
             // composite index
             sql.execute("CREATE INDEX ON " + tableName + "(D_INDEX)")
@@ -163,9 +197,13 @@ public void parseFile(Connection connection, InputStream is, String tableName) {
             insertQuery.append(frequencies[idFreq])
         }
         insertQuery.append(")")
-        sql.withBatch(insertQuery.toString()) { batch ->
+        sql.withBatch(insertQuery.toString()) { BatchingPreparedStatementWrapper batch ->
             for (int ti = 0; ti < nTheta; ti++) {
+                while (!lastWord.startsWith("thetaObsEC=")) {
+                    lastWord = scanner.next()
+                }
                 double theta = Double.parseDouble(lastWord.substring(lastWord.lastIndexOf("=") + 1, lastWord.length()))
+                logger.info(String.valueOf(theta))
                 scanner.nextLine() // skip line
                 // loop over phi
                 for (int iphi = 0; iphi < nPhi; iphi++) {
@@ -173,16 +211,24 @@ public void parseFile(Connection connection, InputStream is, String tableName) {
                     //skip TAS(kts) Gamma(°) Temperature(K) RH(%) Air_p(Pa) isTonal(bool) isDoppler(bool)
                     lastWord = scanner.next()
                     double phi = Double.parseDouble(lastWord)
-                    double[] lvls = new double[numberOfFreq];
+                    // insert row
+                    def data = [:]
+                    data.put("dindex", sphereIndex)
+                    data.put("stheta", -boundTheta(theta - deltaTheta, thetaList[0], thetaList[thetaList.length - 1]))
+                    data.put("etheta", -boundTheta(theta + deltaTheta, thetaList[0], thetaList[thetaList.length - 1]))
+                    // 90° in this file is the bottom of the source hemisphere
+                    // as provided files is bounded 0->90°, so we put negative sign
+                    data.put("sphi",  boundPhi(phi - deltaPhi, phiList[0], phiList[phiList.length - 1]))
+                    data.put("ephi", boundPhi(phi + deltaPhi, phiList[0], phiList[phiList.length - 1]))
                     for (int idFreq = 0; idFreq < numberOfFreq; idFreq++) {
                         lastWord = scanner.next()
-                        lvls[idFreq] = Double.parseDouble(lastWord)
+                        data.put("hz" + frequencies[idFreq], Double.parseDouble(lastWord))
                     }
-                    // insert row
-                    logger.info(Arrays.toString(lvls))
+                    batch.addBatch(data)
                 }
             }
         }
+        return sphereIndex
     } catch (NoSuchElementException | NumberFormatException ex) {
         throw new SQLException("Unexpected word " + lastWord, ex);
     } catch(SQLException ex) {
