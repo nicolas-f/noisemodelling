@@ -81,34 +81,35 @@ class TestExperimental extends JdbcTestCase  {
         new Import_Asc_Directivity().exec(connection, ["pathFile": "/home/nicolas/data/airbus/RE Taxis Volants/NOISE_SOURCE/idNoiseSphere_1.txt"])
     }
 
-//    void testDrone() {
-//        new Import_File().exec(connection, ["pathFile": "/home/nicolas/data/airbus/buildings.geojson"])
-//        new Import_File().exec(connection, ["pathFile": "/home/nicolas/data/airbus/receivers.geojson"])
-//        new Import_File().exec(connection, ["pathFile" : "/home/nicolas/data/airbus/Drone_position.geojson",
-//                                            "inputSRID": 4326])
-//        new Import_File().exec(connection, ["pathFile" : "/home/nicolas/data/airbus/Drone_time.geojson",
-//                                            "inputSRID": 4326])
-//
-//        Sql sql = new Sql(connection)
-//
-//        sql.execute("DELETE FROM RECEIVERS WHERE (RAND() * 1000)::int != 1")
-//
-//        // change coordinate system to metric
-//        new Change_SRID().exec(connection, ["newSRID": 2154, "tableName":"DRONE_POSITION"])
-//        new Change_SRID().exec(connection, ["newSRID": 2154, "tableName":"DRONE_TIME"])
-//
-//
-//        new Drone_Dynamic_Third_map().exec(connection, ["buildingTableName":"BUILDINGS",
-//        "sourcesTimeTableName":"DRONE_TIME",
-//        "sourcesPositionTableName": "DRONE_POSITION",
-//        "receiversTableName": "RECEIVERS",
-//        "computeVertical": true,
-//        "computeHorizontal":true,
-//        "threadNumber": 4,
-//        "maxSrcDistance" : 3000])
-//
-//        new Export_Table().exec(connection, ["exportPath": "target/LDRONE_GEOM.shp",
-//        "tableToExport" : "LDRONE_GEOM"])
-//    }
+    void testDrone() {
+        new Import_File().exec(connection, ["pathFile": "/home/nicolas/data/airbus/buildings.geojson"])
+        new Import_File().exec(connection, ["pathFile": "/home/nicolas/data/airbus/envoi_Nicolas/receivers.geojson"])
+        new Import_File().exec(connection, ["pathFile" : "/home/nicolas/data/airbus/Drone_position.geojson",
+                                            "inputSRID": 4326])
+        new Import_File().exec(connection, ["pathFile" : "/home/nicolas/data/airbus/envoi_Nicolas/Drone_time.geojson",
+                                            "inputSRID": 4326])
+
+        Sql sql = new Sql(connection)
+
+        //sql.execute("DELETE FROM RECEIVERS WHERE (RAND() * 1000)::int != 1")
+        sql.execute("DELETE FROM RECEIVERS WHERE PK > 100")
+
+        // change coordinate system to metric
+        new Change_SRID().exec(connection, ["newSRID": 2154, "tableName":"DRONE_POSITION"])
+        new Change_SRID().exec(connection, ["newSRID": 2154, "tableName":"DRONE_TIME"])
+
+
+        new Drone_Dynamic_Third_map().exec(connection, ["buildingTableName":"BUILDINGS",
+        "sourcesTimeTableName":"DRONE_TIME",
+        "sourcesPositionTableName": "DRONE_POSITION",
+        "receiversTableName": "RECEIVERS",
+        "computeVertical": true,
+        "computeHorizontal":true,
+        "threadNumber": 4,
+        "maxSrcDistance" : 50])
+
+        new Export_Table().exec(connection, ["exportPath": "target/LDRONE_GEOM.shp",
+        "tableToExport" : "LDRONE_GEOM"])
+    }
 
 }

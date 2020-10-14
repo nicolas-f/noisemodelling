@@ -17,6 +17,8 @@ import org.noise_planet.noisemodelling.propagation.PropagationPath
 import org.noise_planet.noisemodelling.propagation.PropagationProcessData
 import org.noise_planet.noisemodelling.propagation.PropagationProcessPathData
 import org.noise_planet.noisemodelling.propagation.RootProgressVisitor
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.sql.Connection
 import java.sql.SQLException
@@ -197,6 +199,7 @@ def run(input) {
 
 // Main function of the script
 def exec(Connection connection, input) {
+    Logger logger = LoggerFactory.getLogger("org.noise_planet.noisemodelling")
 
     //Need to change the ConnectionWrapper to WpsConnectionWrapper to work under postGIS database
     connection = new ConnectionWrapper(connection)
@@ -284,7 +287,7 @@ def exec(Connection connection, input) {
     // Start...
     // ----------------------------------
 
-    System.out.println("Run ...")
+    logger.info("Run ...")
 
 
     // All rays storage
@@ -331,7 +334,7 @@ def exec(Connection connection, input) {
 
     RootProgressVisitor progressLogger = new RootProgressVisitor(1, true, 1);
 
-    System.out.println("Init Map ...")
+    logger.info("Init Map ...")
     pointNoiseMap.initialize(connection, new EmptyProgressVisitor());
 
     // Set of already processed receivers
@@ -339,7 +342,7 @@ def exec(Connection connection, input) {
     ProgressVisitor progressVisitor = progressLogger.subProcess(pointNoiseMap.getGridDim() * pointNoiseMap.getGridDim());
 
     long start = System.currentTimeMillis()
-    System.out.println("Start ...")
+    logger.info("Start ...")
 
 
     sql.execute("drop table if exists LDAY;")
@@ -485,9 +488,9 @@ def exec(Connection connection, input) {
 
 
 
-    System.out.println("Export data to table")
+    logger.info("Export data to table")
 
-    System.out.println("Join Results with Geometry")
+    logger.info("Join Results with Geometry")
     sql.execute("CREATE INDEX ON LDAY(IDRECEIVER);")
 
     sql.execute("drop table if exists LDRONE_GEOM;")
@@ -503,12 +506,17 @@ def exec(Connection connection, input) {
             "a.Hz6300,a.Hz8000, " +
             "a.Hz10000"+
             " FROM LDAY a ,RECEIVERS b where a.IDRECEIVER = b." + receiversPkName)
+    // Add primary key constraint to check for duplicates
+    logger.info("Add primary key on output table")
+    sql.execute("ALTER TABLE LDRONE_GEOM ALTER COLUMN TIME SET NOT NULL")
+    sql.execute("ALTER TABLE LDRONE_GEOM ALTER COLUMN IDRECEIVER SET NOT NULL")
+    sql.execute("ALTER TABLE LDRONE_GEOM ADD PRIMARY KEY (TIME, IDRECEIVER)")
 
-
-    System.out.println("Done !")
+    logger.info("Done !")
 
 
     long computationTime = System.currentTimeMillis() - start
+    logger.info(String.format("Calculation done in %ld milliseconds", computationTime))
 
     return "Calculation Done ! LDRONE_GEOM has been created !"
 
