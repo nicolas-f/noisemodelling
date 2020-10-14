@@ -92,7 +92,7 @@ class TestExperimental extends JdbcTestCase  {
         Sql sql = new Sql(connection)
 
         //sql.execute("DELETE FROM RECEIVERS WHERE (RAND() * 1000)::int != 1")
-        sql.execute("DELETE FROM RECEIVERS WHERE PK > 100")
+        sql.execute("DELETE FROM RECEIVERS WHERE PK > 1000")
 
         // change coordinate system to metric
         new Change_SRID().exec(connection, ["newSRID": 2154, "tableName":"DRONE_POSITION"])
@@ -106,9 +106,9 @@ class TestExperimental extends JdbcTestCase  {
         "computeVertical": true,
         "computeHorizontal":true,
         "threadNumber": 4,
-        "maxSrcDistance" : 50])
+        "maxSrcDistance" : 5000])
 
-        new Export_Table().exec(connection, ["exportPath": "target/LDRONE_GEOM.shp",
+        new Export_Table().exec(connection, ["exportPath": "target/LDRONE_GEOM.geojson",
         "tableToExport" : "LDRONE_GEOM"])
     }
 

@@ -8,6 +8,8 @@ import geoserver.catalog.Store
 
 import groovy.sql.Sql
 import org.h2gis.utilities.JDBCUtilities
+import org.locationtech.jts.geom.Envelope
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.math.Vector3D
 import org.noise_planet.noisemodelling.propagation.ComputeRays
 import org.noise_planet.noisemodelling.propagation.ComputeRaysOut
@@ -339,7 +341,9 @@ def exec(Connection connection, input) {
 
     // Set of already processed receivers
     Set<Long> receivers = new HashSet<>()
-    ProgressVisitor progressVisitor = progressLogger.subProcess(pointNoiseMap.getGridDim() * pointNoiseMap.getGridDim());
+
+    Map cells = pointNoiseMap.searchPopulatedCells(connection);
+    ProgressVisitor progressVisitor = progressLogger.subProcess(cells.size());
 
     long start = System.currentTimeMillis()
     logger.info("Start ...")
@@ -386,14 +390,20 @@ def exec(Connection connection, input) {
     DroneThirdProcessData droneThirdProcessData = new DroneThirdProcessData()
 
 
-    for (int i = 0; i < pointNoiseMap.getGridDim(); i++) {
-        for (int j = 0; j < pointNoiseMap.getGridDim(); j++) {
-            IComputeRaysOut out = pointNoiseMap.evaluateCell(connection, i, j, progressVisitor, receivers)
+    new TreeSet<>(cells.keySet()).each { cellIndex ->
+        Envelope cellEnvelope = pointNoiseMap.getCellEnv(pointNoiseMap.getMainEnvelope(),
+                cellIndex.getLatitudeIndex(), cellIndex.getLongitudeIndex(), pointNoiseMap.getCellWidth(),
+                pointNoiseMap.getCellHeight());
+            logger.info("Compute domain is " + new GeometryFactory().toGeometry(cellEnvelope))
+            ProgressVisitor cellProg = progressVisitor.subProcess(2)
+            IComputeRaysOut out = pointNoiseMap.evaluateCell(connection, cellIndex.getLatitudeIndex(), cellIndex.getLongitudeIndex(), cellProg, receivers)
             if (out instanceof ComputeRaysOut) {
                 Map<Long, ArrayList<ComputeRaysOut.VerticeSL>> levelsBySource = new HashMap<>()
 
                 // Index and store (in memory) levels by source identifier (position)
-                for(ComputeRaysOut.VerticeSL att : ((ComputeRaysOut) out).getVerticesSoundLevel()) {
+                List<ComputeRaysOut.VerticeSL> verticeSLList = ((ComputeRaysOut) out).getVerticesSoundLevel()
+                logger.info(String.format("Computation of attenuation done, looking for drone emission (%d rays to process)", verticeSLList.size() as Integer))
+                for(ComputeRaysOut.VerticeSL att : verticeSLList) {
                     ArrayList<ComputeRaysOut.VerticeSL> srcReceivers
                     if(!levelsBySource.containsKey(att.sourceId as Long)) {
                         srcReceivers = new ArrayList<ComputeRaysOut.VerticeSL>()
@@ -408,6 +418,8 @@ def exec(Connection connection, input) {
 
                 int soundLevelsTime = -1
 
+                int nbsourcest = sql.firstRow("SELECT COUNT(*) CPT FROM "+sources_time_table_name)[0] as Integer
+                ProgressVisitor srcProg = cellProg.subProcess(nbsourcest)
                 sql.eachRow('SELECT PK, PHI, T, idSource, IDNOISESPHERE FROM ' + sources_time_table_name + ' ORDER BY T,idSource ASC') { row ->
                     int idPositionDynamic = row.PK as Integer
                     int idSphere = row.IDNOISESPHERE as Integer
@@ -461,6 +473,7 @@ def exec(Connection connection, input) {
                             soundLevels.put(idReceiver, sumLinearArray(soundLevel, sourceLev))
                         }
                     }
+                    srcProg.endStep()
                 }
 
                 if(!soundLevels.isEmpty()) {
@@ -482,7 +495,7 @@ def exec(Connection connection, input) {
                     }
                 }
             }
-        }
+            cellProg.endStep()
     }
 
 
@@ -505,7 +518,7 @@ def exec(Connection connection, input) {
             "a.Hz4000, a.Hz5000, " +
             "a.Hz6300,a.Hz8000, " +
             "a.Hz10000"+
-            " FROM LDAY a ,RECEIVERS b where a.IDRECEIVER = b." + receiversPkName)
+            " FROM LDAY a ,RECEIVERS b where a.IDRECEIVER = b." + receiversPkName+" ORDER BY TIME, IDRECEIVER")
     // Add primary key constraint to check for duplicates
     logger.info("Add primary key on output table")
     sql.execute("ALTER TABLE LDRONE_GEOM ALTER COLUMN TIME SET NOT NULL")
@@ -516,7 +529,7 @@ def exec(Connection connection, input) {
 
 
     long computationTime = System.currentTimeMillis() - start
-    logger.info(String.format("Calculation done in %ld milliseconds", computationTime))
+    logger.info(String.format("Calculation done in %d seconds, %d milliseconds by receiver (%d receivers)", (computationTime / 1000) as Long, (computationTime / receivers.size()) as Long, receivers.size() as Integer))
 
     return "Calculation Done ! LDRONE_GEOM has been created !"
 
