@@ -124,9 +124,16 @@ def exec(Connection connection, input) {
     def databaseUrl = input["databaseUrl"] as String
     def user = input["databaseUser"] as String
     def pwd = input["databasePassword"] as String
+
     def tableQuery = "(SELECT ST_BUFFER(the_geom, 1000) as the_geom, id, nom_dep_m, nom_dep, insee_dep, insee_reg FROM noisemodelling.ign_admin_express_dept_l93 WHERE insee_dep=''"+codeDep+"'')"
 
     sql.execute("CREATE LINKED TABLE ign_admin_express_dept_l93 ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
+
+    tableQuery = "stations_param"
+    createdTables+=", " + tableQuery
+    sql.execute("DROP TABLE IF EXISTS zone")
+    sql.execute("CREATE LINKED TABLE zone ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
+
 
     // TODO Copy data into H2GIS and create spatial index
 
