@@ -163,7 +163,7 @@ def exec(Connection connection, input) {
 
     tableQuery = "(SELECT codedept, temp_d, temp_e, temp_n, hygro_d, hygro_e, hygro_n, wall_alpha, ts_stud, pm_stud" +
             " FROM echeance4.\"C_METEO_S_FRANCE\" " +
-            "WHERE codedept=''"+codeDep+"'')"
+            "WHERE codedept=''0"+codeDep+"'')"
 
     sql.execute('drop table if exists dept_meteo')
     sql.execute("CREATE LINKED TABLE dept_meteo ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','echeance4', '"+tableQuery+"')")
