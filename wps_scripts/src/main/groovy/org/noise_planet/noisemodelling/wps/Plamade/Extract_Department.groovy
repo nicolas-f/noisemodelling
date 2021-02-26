@@ -130,7 +130,7 @@ def exec(Connection connection, input) {
     def user = input["databaseUser"] as String
     def pwd = input["databasePassword"] as String
 
-    def tableQuery = "(SELECT ST_BUFFER(the_geom, 1000) as the_geom, id, nom_dep_m, nom_dep, insee_dep, insee_reg FROM noisemodelling.ign_admin_express_dept_l93 WHERE insee_dep=''"+codeDep+"'')"
+    def tableQuery = "(SELECT ST_BUFFER(the_geom, "+buffer+") as the_geom, id, nom_dep_m, nom_dep, insee_dep, insee_reg FROM noisemodelling.ign_admin_express_dept_l93 WHERE insee_dep=''"+codeDep+"'')"
 
     sql.execute("CREATE LINKED TABLE ign_admin_express_dept_l93 ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
 
@@ -217,14 +217,14 @@ def exec(Connection connection, input) {
             "\techeance4.\"N_ROUTIER_TRAFIC\" b,\n" +
             "\techeance4.\"N_ROUTIER_VITESSE\" c,\n" +
             "\techeance4.\"N_ROUTIER_REVETEMENT\" d, \n" +
-            "\tnoisemodelling.ign_admin_express_dept_l93 e \n" +
+            "\t(select ST_BUFFER(the_geom, "+buffer+") the_geom from noisemodelling.ign_admin_express_dept_l93 e e.insee_dep=''"+codeDep+"'' LIMIT 1) \n" +
             "WHERE \n" +
             "\ta.\"CBS_GITT\"=''O'' and\n" +
             "\ta.\"IDTRONCON\"=b.\"IDTRONCON\" and\n" +
             "\ta.\"IDTRONCON\"=c.\"IDTRONCON\" and\n" +
             "\ta.\"IDTRONCON\"=d.\"IDTRONCON\" and \n" +
             "\ta.the_geom && e.the_geom and \n" +
-            "\tST_INTERSECTS(a.the_geom, e.the_geom) and e.insee_dep=''"+codeDep+"'')"
+            "\tST_INTERSECTS(a.the_geom, e.the_geom))"
 
     sql.execute("DROP TABLE IF EXISTS roads_link")
     sql.execute("CREATE LINKED TABLE roads_link ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','echeance4', '"+tableQuery+"')")
