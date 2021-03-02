@@ -275,13 +275,13 @@ def exec(Connection connection, input) {
     sql.execute("drop table if exists allbuildings_link")
     sql.execute("CREATE LINKED TABLE allbuildings_link ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
     sql.execute("DROP TABLE IF EXISTS allbuildings")
-    sql.execute("CREATE TABLE allbuildings as select * from allbuildings_link")
+    sql.execute("CREATE TABLE buildings as select * from allbuildings_link")
     sql.execute("DROP TABLE allbuildings_link")
-    sql.execute("CREATE SPATIAL INDEX ON allbuildings(the_geom)")
+    sql.execute("CREATE SPATIAL INDEX ON buildings(the_geom)")
     // Keep only buildings close to roads
-    sql.execute("DROP TABLE IF EXISTS roads_buff")
     logger.info("Remove buildings further than "+buffer+" meters")
-    sql.execute("DELETE FROM allbuildings B WHERE NOT EXISTS (SELECT 1 FROM ROADS R WHERE ST_EXPAND(B.THE_GEOM, :maxdist) && R.THE_GEOM AND ST_DISTANCE(b.the_geom, r.the_geom) < 1000 LIMIT 1)", [maxdist : buffer])
+    sql.execute("DELETE FROM buildings B WHERE NOT EXISTS (SELECT 1 FROM ROADS R WHERE ST_EXPAND(B.THE_GEOM, :maxdist) && R.THE_GEOM AND ST_DISTANCE(b.the_geom, r.the_geom) < 1000 LIMIT 1)", [maxdist : buffer])
+    sql.execute("ALTER TABLE buildings ADD COLUMN pk serial PRIMARY KEY")
     // print to WPS Builder
     return "Table "+createdTables+" fetched"
 
