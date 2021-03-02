@@ -19,6 +19,7 @@ package org.noise_planet.noisemodelling.wps.Plamade
 
 import geoserver.GeoServer
 import geoserver.catalog.Store
+import groovy.text.SimpleTemplateEngine
 import org.geotools.jdbc.JDBCDataStore
 import org.locationtech.jts.geom.Point
 import org.slf4j.Logger
@@ -115,175 +116,101 @@ def exec(Connection connection, input) {
         buffer = input["fetchDistance"] as Integer
     }
 
-    def sql = new Sql(connection)
-
-    // Create linked tables
-
-
-    //---------------------------------------------------------------------------------
-    //  Select the studied departement and generate a 1km buffer around
-    //---------------------------------------------------------------------------------
-
-    sql.execute('drop table if exists ign_admin_express_dept_l93')
-
     def databaseUrl = input["databaseUrl"] as String
     def user = input["databaseUser"] as String
     def pwd = input["databasePassword"] as String
 
-    def tableQuery = "(SELECT ST_BUFFER(the_geom, "+buffer+") as the_geom, id, nom_dep_m, nom_dep, insee_dep, insee_reg FROM noisemodelling.ign_admin_express_dept_l93 WHERE insee_dep=''"+codeDep+"'')"
+    def sql = new Sql(connection)
 
-    sql.execute("CREATE LINKED TABLE ign_admin_express_dept_l93 ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
-
-   def createdTables = "dept"
-
-    //---------------------------------------------------------------------------------
-    //        -- 2- Select the studied departement and generate a 1km buffer around
-    //---------------------------------------------------------------------------------
-
-    tableQuery = "(SELECT b.insee_dep, a.*   " +
-            "FROM noisemodelling.station_pfav a, noisemodelling.ign_admin_express_dept_l93 b WHERE insee_dep=''"+codeDep+"'' " +
-            "ORDER BY st_distance(a.the_geom, st_centroid(b.the_geom)) LIMIT 1)"
-
-    sql.execute('drop table if exists dept_pfav')
-    sql.execute("CREATE LINKED TABLE dept_pfav ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
-
-    sql.execute('drop table if exists dept')
-    sql.execute("CREATE TABLE dept as select * from ign_admin_express_dept_l93")
-    sql.execute("ALTER TABLE DEPT ALTER COLUMN ID varchar NOT NULL")
-    sql.execute("ALTER TABLE DEPT ADD PRIMARY KEY ( ID)")
-    sql.execute("CREATE SPATIAL INDEX ON DEPT (THE_GEOM)")
-
-    // remove linked table with postgis
-    sql.execute('drop table if exists ign_admin_express_dept_l93')
-
-    //---------------------------------------------------------------------------------
-    // Select the closest station from the (centroid of the) studied department
-    //---------------------------------------------------------------------------------
-
-
-    tableQuery = "(SELECT codedept, temp_d, temp_e, temp_n, hygro_d, hygro_e, hygro_n, wall_alpha, ts_stud, pm_stud" +
-            " FROM echeance4.\"C_METEO_S_FRANCE\" " +
-            "WHERE codedept=''0"+codeDep+"'')"
-
-    sql.execute('drop table if exists dept_meteo')
-    sql.execute("CREATE LINKED TABLE dept_meteo ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','echeance4', '"+tableQuery+"')")
-
-
-    sql.execute("DROP TABLE IF EXISTS zone;")
-    createdTables += "zone"
-    sql.execute("CREATE TABLE zone AS SELECT a.pfav_06_18, a.pfav_18_22, a.pfav_22_06, a.pfav_06_22, b.temp_d," +
-            " b.temp_e, b.temp_n, b.hygro_d, b.hygro_e, b.hygro_n, b.wall_alpha, b.ts_stud, b.pm_stud " +
-            "FROM dept_pfav a, dept_meteo b;")
-
-    // remove linked table with postgis
-    sql.execute('drop table if exists dept_pfav')
-    sql.execute('drop table if exists dept_meteo')
-
-
-
-    //    ---------------------------------------------------------------------------------
-    //            -- 4- Select and format the roads
-    //    ---------------------------------------------------------------------------------
-    //
-    //            -- A z-value is added and set at 5 centimetres above the ground.
-
-    sql.execute("DROP TABLE IF EXISTS roads")
-    createdTables += ", roads"
-    tableQuery = "(SELECT  st_translate(st_force3dz(a.the_geom), 0, 0, 0.05) as the_geom, a.\"IDTRONCON\" as id_road," +
-            "b.\"TMHVLD\" as lv_d, b.\"TMHVLS\" as lv_e, b.\"TMHVLN\" as lv_n, b.\"TMHPLD\" * b.\"PCENTMPL\" as mv_d," +
-            "b.\"TMHPLS\" * b.\"PCENTMPL\" as mv_e, b.\"TMHPLN\" * b.\"PCENTMPL\" as mv_n, " +
-            "b.\"TMHPLD\" * b.\"PCENTHPL\" as hgv_d, b.\"TMHPLS\" * b.\"PCENTHPL\" as hgv_e, " +
-            "b.\"TMHPLN\" * b.\"PCENTHPL\" as hgv_n, b.\"TMH2RD\" * b.\"PCENT2R4A\" as wav_d," +
-            "b.\"TMH2RS\" * b.\"PCENT2R4A\" as wav_e, b.\"TMH2RN\" * b.\"PCENT2R4A\" as wav_n, " +
-            "b.\"TMH2RD\" * b.\"PCENT2R4B\" as wbv_d, b.\"TMH2RS\" * b.\"PCENT2R4B\" as wbv_e," +
-            "b.\"TMH2RN\" * b.\"PCENT2R4B\" as wbv_n, c.\"VITESSEVL\" as lv_spd_d, " +
-            "c.\"VITESSEVL\" as lv_spd_e, c.\"VITESSEVL\" as lv_spd_n, c.\"VITESSEPL\" as mv_spd_d," +
-            "c.\"VITESSEPL\" as mv_spd_e, c.\"VITESSEPL\" as mv_spd_n, c.\"VITESSEPL\" as hgv_spd_d," +
-            "c.\"VITESSEPL\" as hgv_spd_e, c.\"VITESSEPL\" as hgv_spd_n, c.\"VITESSEVL\" as wav_spd_d, " +
-            "c.\"VITESSEVL\" as wav_spd_e, c.\"VITESSEVL\" as wav_spd_n, c.\"VITESSEVL\" as wbv_spd_d, " +
-            "c.\"VITESSEVL\" as wbv_spd_e, c.\"VITESSEVL\" as wbv_spd_n,\n" +
-            "\td.\"REVETEMENT\" as revetement,\n" +
-            "\td.\"GRANULO\" as granulo,\n" +
-            "\td.\"CLASSACOU\" as classacou,\n" +
-            "\tROUND((a.\"ZFIN\"-a.\"ZDEB\")/ ST_LENGTH(a.the_geom)*100) as slope, \n" +
-            "\ta.\"ZDEB\" as z_start, \n" +
-            "\ta.\"ZFIN\" as z_end,\n" +
-            "\ta.\"SENS\" as sens,\n" +
-            "\t(CASE \tWHEN a.\"SENS\" = ''01'' THEN ''01'' \n" +
-            "\t\t\tWHEN a.\"SENS\" = ''02'' THEN ''02'' \n" +
-            "\t\t\tELSE ''03''\n" +
-            "\t END) as way\n" +
-            "FROM \n" +
-            "\tnoisemodelling.\"N_ROUTIER_TRONCON_L_l93\" a,\n" +
-            "\techeance4.\"N_ROUTIER_TRAFIC\" b,\n" +
-            "\techeance4.\"N_ROUTIER_VITESSE\" c,\n" +
-            "\techeance4.\"N_ROUTIER_REVETEMENT\" d, \n" +
-            "\t(select ST_BUFFER(the_geom, "+buffer+") the_geom from noisemodelling.ign_admin_express_dept_l93 e WHERE e.insee_dep=''"+codeDep+"'' LIMIT 1) e\n" +
-            "WHERE \n" +
-            "\ta.\"CBS_GITT\"=''O'' and\n" +
-            "\ta.\"IDTRONCON\"=b.\"IDTRONCON\" and\n" +
-            "\ta.\"IDTRONCON\"=c.\"IDTRONCON\" and\n" +
-            "\ta.\"IDTRONCON\"=d.\"IDTRONCON\" and \n" +
-            "\ta.the_geom && e.the_geom and \n" +
-            "\tST_INTERSECTS(a.the_geom, e.the_geom))"
-
-    sql.execute("DROP TABLE IF EXISTS roads_link")
-    sql.execute("CREATE LINKED TABLE roads_link ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','echeance4', '"+tableQuery+"')")
-    sql.execute("CREATE TABLE ROADS AS SELECT * FROM roads_link")
-    sql.execute("DROP TABLE roads_link")
-
-    sql.execute("ALTER TABLE roads ADD COLUMN pvmt varchar(4)")
-
-    // fetch pavements table
-    tableQuery = "pvmt"
-
-    sql.execute("CREATE LINKED TABLE pvmt_link ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
-    sql.execute("DROP TABLE IF EXISTS PVMT")
-    sql.execute("CREATE TABLE PVMT as select * from pvmt_link")
-    // break link with postgis
-    sql.execute("DROP TABLE pvmt_link")
-    sql.execute("CREATE INDEX ON PVMT (revetement)")
-    sql.execute("CREATE INDEX ON PVMT (granulo)")
-    sql.execute("CREATE INDEX ON PVMT (classacou)")
-
-    // add data to roads
-    sql.execute("UPDATE roads b SET pvmt = (select a.pvmt FROM pvmt a WHERE a.revetement=b.revetement AND a.granulo=b.granulo AND a.classacou=b.classacou)")
-    // Add a primary
-    sql.execute("ALTER TABLE roads ADD COLUMN pk serial PRIMARY KEY")
-    // Create a spatial index
-    sql.execute("CREATE spatial index ON roads (the_geom)")
+    def queries = """
+    drop table if exists ign_admin_express_dept_l93;
+    CREATE LINKED TABLE ign_admin_express_dept_l93 ('org.h2gis.postgis_jts.Driver','$databaseUrl','$user','$pwd','noisemodelling', '(SELECT ST_BUFFER(the_geom, $buffer) as the_geom, id, nom_dep_m, nom_dep, insee_dep, insee_reg FROM noisemodelling.ign_admin_express_dept_l93 WHERE insee_dep=''$codeDep'')');
+    drop table if exists dept_pfav;
+    CREATE LINKED TABLE dept_pfav ('org.h2gis.postgis_jts.Driver','$databaseUrl','$user','$pwd','noisemodelling', '(SELECT b.insee_dep, a.*   FROM noisemodelling.station_pfav a, noisemodelling.ign_admin_express_dept_l93 b WHERE insee_dep=''$codeDep'' ORDER BY st_distance(a.the_geom, st_centroid(b.the_geom)) LIMIT 1)');
+    drop table if exists dept;
+    CREATE TABLE dept as select * from ign_admin_express_dept_l93;
+    ALTER TABLE DEPT ALTER COLUMN ID varchar NOT NULL;
+    ALTER TABLE DEPT ADD PRIMARY KEY ( ID);
+    CREATE SPATIAL INDEX ON DEPT (THE_GEOM);
+    drop table if exists ign_admin_express_dept_l93;
+    drop table if exists dept_meteo;
+    CREATE LINKED TABLE dept_meteo ('org.h2gis.postgis_jts.Driver','$databaseUrl','$user','$pwd','echeance4', '(SELECT codedept, temp_d, temp_e, temp_n, hygro_d, hygro_e, hygro_n, wall_alpha, ts_stud, pm_stud FROM echeance4."C_METEO_S_FRANCE" WHERE codedept=''0$codeDep'')');
+    DROP TABLE IF EXISTS zone;
+    CREATE TABLE zone AS SELECT a.pfav_06_18, a.pfav_18_22, a.pfav_22_06, a.pfav_06_22, b.temp_d, b.temp_e, b.temp_n, b.hygro_d, b.hygro_e, b.hygro_n, b.wall_alpha, b.ts_stud, b.pm_stud FROM dept_pfav a, dept_meteo b;
+    drop table if exists dept_pfav;
+    drop table if exists dept_meteo;
+    DROP TABLE IF EXISTS roads;
+    DROP TABLE IF EXISTS roads_link;
+    CREATE LINKED TABLE roads_link ('org.h2gis.postgis_jts.Driver','$databaseUrl','$user','$pwd','echeance4', '(SELECT  st_translate(st_force3dz(a.the_geom), 0, 0, 0.05) as the_geom, a."IDTRONCON" as id_road,b."TMHVLD" as lv_d, b."TMHVLS" as lv_e, b."TMHVLN" as lv_n, b."TMHPLD" * b."PCENTMPL" as mv_d,b."TMHPLS" * b."PCENTMPL" as mv_e, b."TMHPLN" * b."PCENTMPL" as mv_n, b."TMHPLD" * b."PCENTHPL" as hgv_d, b."TMHPLS" * b."PCENTHPL" as hgv_e, b."TMHPLN" * b."PCENTHPL" as hgv_n, b."TMH2RD" * b."PCENT2R4A" as wav_d,b."TMH2RS" * b."PCENT2R4A" as wav_e, b."TMH2RN" * b."PCENT2R4A" as wav_n, b."TMH2RD" * b."PCENT2R4B" as wbv_d, b."TMH2RS" * b."PCENT2R4B" as wbv_e,b."TMH2RN" * b."PCENT2R4B" as wbv_n, c."VITESSEVL" as lv_spd_d, c."VITESSEVL" as lv_spd_e, c."VITESSEVL" as lv_spd_n, c."VITESSEPL" as mv_spd_d,c."VITESSEPL" as mv_spd_e, c."VITESSEPL" as mv_spd_n, c."VITESSEPL" as hgv_spd_d,c."VITESSEPL" as hgv_spd_e, c."VITESSEPL" as hgv_spd_n, c."VITESSEVL" as wav_spd_d, c."VITESSEVL" as wav_spd_e, c."VITESSEVL" as wav_spd_n, c."VITESSEVL" as wbv_spd_d, c."VITESSEVL" as wbv_spd_e, c."VITESSEVL" as wbv_spd_n,
+     d."REVETEMENT" as revetement,
+     d."GRANULO" as granulo,
+     d."CLASSACOU" as classacou,
+     ROUND((a."ZFIN"-a."ZDEB")/ ST_LENGTH(a.the_geom)*100) as slope, 
+     a."ZDEB" as z_start, 
+     a."ZFIN" as z_end,
+     a."SENS" as sens,
+     (CASE  WHEN a."SENS" = ''01'' THEN ''01'' 
+       WHEN a."SENS" = ''02'' THEN ''02'' 
+       ELSE ''03''
+      END) as way
+    FROM 
+     noisemodelling."N_ROUTIER_TRONCON_L_l93" a,
+     echeance4."N_ROUTIER_TRAFIC" b,
+     echeance4."N_ROUTIER_VITESSE" c,
+     echeance4."N_ROUTIER_REVETEMENT" d, 
+     (select ST_BUFFER(the_geom, $buffer) the_geom from noisemodelling.ign_admin_express_dept_l93 e WHERE e.insee_dep=''$codeDep'' LIMIT 1) e
+    WHERE 
+     a."CBS_GITT"=''O'' and
+     a."IDTRONCON"=b."IDTRONCON" and
+     a."IDTRONCON"=c."IDTRONCON" and
+     a."IDTRONCON"=d."IDTRONCON" and 
+     a.the_geom && e.the_geom and 
+     ST_INTERSECTS(a.the_geom, e.the_geom))');
+    CREATE TABLE ROADS AS SELECT * FROM roads_link;
+    DROP TABLE roads_link;
+    ALTER TABLE roads ADD COLUMN pvmt varchar(4);
+    CREATE LINKED TABLE pvmt_link ('org.h2gis.postgis_jts.Driver','$databaseUrl','$user','$pwd','noisemodelling', 'pvmt');
+    DROP TABLE IF EXISTS PVMT;
+    CREATE TABLE PVMT as select * from pvmt_link;
+    DROP TABLE pvmt_link;
+    CREATE INDEX ON PVMT (revetement);
+    CREATE INDEX ON PVMT (granulo);
+    CREATE INDEX ON PVMT (classacou);
+    UPDATE roads b SET pvmt = (select a.pvmt FROM pvmt a WHERE a.revetement=b.revetement AND a.granulo=b.granulo AND a.classacou=b.classacou);
+    ALTER TABLE roads ADD COLUMN pk serial PRIMARY KEY;
+    CREATE spatial index ON roads (the_geom);
+    drop table if exists allbuildings_link;
+    CREATE LINKED TABLE allbuildings_link ('org.h2gis.postgis_jts.Driver','$databaseUrl','$user','$pwd','noisemodelling', '(SELECT 
+     a.the_geom, 
+     a."IDBAT" as id_bat, 
+     a."BAT_HAUT" as height,
+     b."POP_BAT" as pop
+    FROM 
+     noisemodelling."C_BATIMENT_S_l93" a,
+     echeance4."C_POPULATION" b,
+     (select ST_BUFFER(the_geom, $buffer) the_geom from noisemodelling.ign_admin_express_dept_l93 e WHERE e.insee_dep=''$codeDep'' LIMIT 1) c 
+    where
+     a.the_geom && c.the_geom and 
+     ST_INTERSECTS(a.the_geom, c.the_geom) and 
+     a."IDBAT"=b."IDBAT")');
+    DROP TABLE IF EXISTS allbuildings;
+    DROP TABLE IF EXISTS buildings;
+    CREATE TABLE buildings as select * from allbuildings_link;
+    DROP TABLE allbuildings_link;
+    CREATE SPATIAL INDEX ON buildings(the_geom);
+    DELETE FROM buildings B WHERE NOT EXISTS (SELECT 1 FROM ROADS R WHERE ST_EXPAND(B.THE_GEOM, $buffer) && R.THE_GEOM AND ST_DISTANCE(b.the_geom, r.the_geom) < $buffer LIMIT 1);
+    ALTER TABLE buildings ADD COLUMN pk serial PRIMARY KEY;
+    """
 
 
-    //    ---------------------------------------------------------------------------------
-    //            -- 5- Select and format the buildings
-    //    ---------------------------------------------------------------------------------
+    def binding = ["buffer": buffer, "databaseUrl": databaseUrl, "user": user, "pwd": pwd, "codeDep": codeDep]
 
-    tableQuery = "(SELECT \n" +
-            "\ta.the_geom, \n" +
-            "\ta.\"IDBAT\" as id_bat, \n" +
-            "\ta.\"BAT_HAUT\" as height,\n" +
-            "\tb.\"POP_BAT\" as pop\n" +
-            "FROM \n" +
-            "\tnoisemodelling.\"C_BATIMENT_S_l93\" a,\n" +
-            "\techeance4.\"C_POPULATION\" b,\n" +
-            "\t(select ST_BUFFER(the_geom, "+buffer+") the_geom from noisemodelling.ign_admin_express_dept_l93 e WHERE e.insee_dep=''"+codeDep+"'' LIMIT 1) c \n" +
-            "where\n" +
-            "\ta.the_geom && c.the_geom and \n" +
-            "\tST_INTERSECTS(a.the_geom, c.the_geom) and \n" +
-            "\ta.\"IDBAT\"=b.\"IDBAT\")"
+    def engine = new SimpleTemplateEngine()
+    def template = engine.createTemplate(queries).make(binding)
 
-    sql.execute("drop table if exists allbuildings_link")
-    sql.execute("CREATE LINKED TABLE allbuildings_link ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
-    sql.execute("DROP TABLE IF EXISTS allbuildings")
-    sql.execute("CREATE TABLE buildings as select * from allbuildings_link")
-    sql.execute("DROP TABLE allbuildings_link")
-    sql.execute("CREATE SPATIAL INDEX ON buildings(the_geom)")
-    // Keep only buildings close to roads
-    logger.info("Remove buildings further than "+buffer+" meters")
-    sql.execute("DELETE FROM buildings B WHERE NOT EXISTS (SELECT 1 FROM ROADS R WHERE ST_EXPAND(B.THE_GEOM, :maxdist) && R.THE_GEOM AND ST_DISTANCE(b.the_geom, r.the_geom) < 1000 LIMIT 1)", [maxdist : buffer])
-    sql.execute("ALTER TABLE buildings ADD COLUMN pk serial PRIMARY KEY")
+    sql.execute(template.toString())
     // print to WPS Builder
-    return "Table "+createdTables+" fetched"
+    return "Table BUILDINGS, DEPT, PVMT, ROADS, ZONE fetched"
 
 }
 
