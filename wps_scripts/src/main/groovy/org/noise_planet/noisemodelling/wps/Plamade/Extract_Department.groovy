@@ -188,6 +188,7 @@ def exec(Connection connection, input) {
     //            -- A z-value is added and set at 5 centimetres above the ground.
 
     sql.execute("DROP TABLE IF EXISTS roads")
+    createdTables += ", roads"
     tableQuery = "(SELECT  st_translate(st_force3dz(a.the_geom), 0, 0, 0.05) as the_geom, a.\"IDTRONCON\" as id_road," +
             "b.\"TMHVLD\" as lv_d, b.\"TMHVLS\" as lv_e, b.\"TMHVLN\" as lv_n, b.\"TMHPLD\" * b.\"PCENTMPL\" as mv_d," +
             "b.\"TMHPLS\" * b.\"PCENTMPL\" as mv_e, b.\"TMHPLN\" * b.\"PCENTMPL\" as mv_n, " +
@@ -217,7 +218,7 @@ def exec(Connection connection, input) {
             "\techeance4.\"N_ROUTIER_TRAFIC\" b,\n" +
             "\techeance4.\"N_ROUTIER_VITESSE\" c,\n" +
             "\techeance4.\"N_ROUTIER_REVETEMENT\" d, \n" +
-            "\t(select ST_BUFFER(the_geom, "+buffer+") the_geom from noisemodelling.ign_admin_express_dept_l93 e e.insee_dep=''"+codeDep+"'' LIMIT 1) \n" +
+            "\t(select ST_BUFFER(the_geom, "+buffer+") the_geom from noisemodelling.ign_admin_express_dept_l93 e WHERE e.insee_dep=''"+codeDep+"'' LIMIT 1) e\n" +
             "WHERE \n" +
             "\ta.\"CBS_GITT\"=''O'' and\n" +
             "\ta.\"IDTRONCON\"=b.\"IDTRONCON\" and\n" +
@@ -253,6 +254,34 @@ def exec(Connection connection, input) {
     sql.execute("CREATE spatial index ON roads (the_geom)")
 
 
+    //    ---------------------------------------------------------------------------------
+    //            -- 5- Select and format the buildings
+    //    ---------------------------------------------------------------------------------
+
+    tableQuery = "(SELECT \n" +
+            "\ta.the_geom, \n" +
+            "\ta.\"IDBAT\" as id_bat, \n" +
+            "\ta.\"BAT_HAUT\" as height,\n" +
+            "\tb.\"POP_BAT\" as pop\n" +
+            "FROM \n" +
+            "\tnoisemodelling.\"C_BATIMENT_S_l93\" a,\n" +
+            "\techeance4.\"C_POPULATION\" b,\n" +
+            "\t(select ST_BUFFER(the_geom, "+buffer+") the_geom from noisemodelling.ign_admin_express_dept_l93 e WHERE e.insee_dep=''"+codeDep+"'' LIMIT 1) c \n" +
+            "where\n" +
+            "\ta.the_geom && c.the_geom and \n" +
+            "\tST_INTERSECTS(a.the_geom, c.the_geom) and \n" +
+            "\ta.\"IDBAT\"=b.\"IDBAT\")"
+
+    sql.execute("drop table if exists allbuildings_link")
+    sql.execute("CREATE LINKED TABLE allbuildings_link ('org.h2gis.postgis_jts.Driver','"+databaseUrl+"','"+user+"','"+pwd+"','noisemodelling', '"+tableQuery+"')")
+    sql.execute("DROP TABLE IF EXISTS allbuildings")
+    sql.execute("CREATE TABLE allbuildings as select * from allbuildings_link")
+    sql.execute("DROP TABLE allbuildings_link")
+    sql.execute("CREATE SPATIAL INDEX ON allbuildings(the_geom)")
+    // Keep only buildings close to roads
+    sql.execute("DROP TABLE IF EXISTS roads_buff")
+    logger.info("Remove buildings further than "+buffer+" meters")
+    sql.execute("DELETE FROM allbuildings B WHERE NOT EXISTS (SELECT 1 FROM ROADS R WHERE ST_EXPAND(B.THE_GEOM, :maxdist) && R.THE_GEOM AND ST_DISTANCE(b.the_geom, r.the_geom) < 1000 LIMIT 1)", [maxdist : buffer])
     // print to WPS Builder
     return "Table "+createdTables+" fetched"
 
