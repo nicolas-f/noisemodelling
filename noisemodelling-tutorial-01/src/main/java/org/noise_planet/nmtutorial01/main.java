@@ -91,7 +91,7 @@ class Main {
         // Init NoiseModelling
         PointNoiseMap pointNoiseMap = new PointNoiseMap("BUILDINGS", "LW_ROADS", "RECEIVERS");
 
-        pointNoiseMap.setMaximumPropagationDistance(160.0d);
+        pointNoiseMap.setMaximumPropagationDistance(800.0);
         pointNoiseMap.setSoundReflectionOrder(0);
         pointNoiseMap.setComputeHorizontalDiffraction(true);
         pointNoiseMap.setComputeVerticalDiffraction(true);
@@ -125,7 +125,7 @@ class Main {
         pointNoiseMap.initialize(connection, new EmptyProgressVisitor());
 
         // force the creation of a 2x2 cells
-        pointNoiseMap.setGridDim(2);
+        pointNoiseMap.setGridDim(1);
 
 
         // Set of already processed receivers
@@ -141,7 +141,7 @@ class Main {
         profilerThread.addMetric(new JVMMemoryMetric());
         profilerThread.addMetric(new ReceiverStatsMetric());
         profilerThread.setWriteInterval(2);
-        profilerThread.setFlushInterval(15);
+        profilerThread.setFlushInterval(2);
         pointNoiseMap.setProfilerThread(profilerThread);
         try {
             tableWriter.start();

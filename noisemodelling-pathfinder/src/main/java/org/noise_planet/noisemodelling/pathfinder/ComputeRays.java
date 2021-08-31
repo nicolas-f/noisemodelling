@@ -1313,7 +1313,7 @@ private static final class RangeReceiversComputation implements Runnable {
                 // Save computation time for this receiver
                 if(propagationProcess.profilerThread != null &&
                         propagationProcess.profilerThread.getMetric(ReceiverStatsMetric.class) != null) {
-                    propagationProcess.profilerThread.getMetric(ReceiverStatsMetric.class).onEndComputation(idReceiver,
+                    propagationProcess.profilerThread.getMetric(ReceiverStatsMetric.class).onEndComputation(receiverCoord,
                             (int) (propagationProcess.profilerThread.timeTracker.get() - start));
                 }
 

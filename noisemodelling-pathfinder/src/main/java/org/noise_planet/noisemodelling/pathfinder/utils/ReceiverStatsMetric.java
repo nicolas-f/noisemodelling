@@ -34,7 +34,11 @@
 package org.noise_planet.noisemodelling.pathfinder.utils;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.locationtech.jts.geom.Coordinate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
@@ -45,6 +49,9 @@ public class ReceiverStatsMetric implements ProfilerThread.Metric {
     private ConcurrentLinkedDeque<ReceiverRays> receiverRaysDeque = new ConcurrentLinkedDeque<>();
     private DescriptiveStatistics computationTime = new DescriptiveStatistics();
     private DescriptiveStatistics computationRays = new DescriptiveStatistics();
+    private int maxReceiverTime = 0;
+    private Coordinate maxReceiverCoordinate = new Coordinate();
+    private Logger logger = LoggerFactory.getLogger(ReceiverStatsMetric.class);
 
     public ReceiverStatsMetric() {
     }
@@ -54,6 +61,12 @@ public class ReceiverStatsMetric implements ProfilerThread.Metric {
         while (!receiverComputationTimes.isEmpty()) {
             ReceiverComputationTime receiverProfile = receiverComputationTimes.pop();
             computationTime.addValue(receiverProfile.computationTime);
+            if(receiverProfile.computationTime > maxReceiverTime) {
+                maxReceiverTime = receiverProfile.computationTime;
+                maxReceiverCoordinate = receiverProfile.receiverCoordinate;
+                logger.info(String.format(Locale.ROOT, "Receiver POINT(%.2f %.2f %.2f) : %d ms", maxReceiverCoordinate.x,
+                        maxReceiverCoordinate.y, maxReceiverCoordinate.z, maxReceiverTime));
+            }
         }
         while (!receiverRaysDeque.isEmpty()) {
             ReceiverRays receiverProfile = receiverRaysDeque.pop();
@@ -63,11 +76,11 @@ public class ReceiverStatsMetric implements ProfilerThread.Metric {
 
     @Override
     public String[] getColumnNames() {
-        return new String[] {"receiver_min","receiver_median","receiver_mean","receiver_max", "receiver_median_rays", "receiver_max_rays"};
+        return new String[] {"receiver_min","receiver_median","receiver_mean","receiver_max", "receiver_median_rays", "receiver_max_rays", "receiver_max_coordinate"};
     }
 
-    public void onEndComputation(int receiverId, int computationTime) {
-        receiverComputationTimes.add(new ReceiverComputationTime(receiverId, computationTime));
+    public void onEndComputation(Coordinate receiverCoordinate, int computationTime) {
+        receiverComputationTimes.add(new ReceiverComputationTime(receiverCoordinate, computationTime));
     }
 
     public void onReceiverRays(int receiverId, int receiverRays) {
@@ -82,7 +95,9 @@ public class ReceiverStatsMetric implements ProfilerThread.Metric {
                 Integer.toString((int) computationTime.getMean()),
                 Integer.toString((int) computationTime.getMax()),
                 Integer.toString((int) computationRays.getPercentile(50)),
-                Integer.toString((int) computationRays.getMax())
+                Integer.toString((int) computationRays.getMax()),
+                String.format(Locale.ROOT, "POINT(%.2f %.2f %.2f)", maxReceiverCoordinate.x,
+                        maxReceiverCoordinate.y, maxReceiverCoordinate.z)
         };
         computationTime.clear();
         computationRays.clear();
@@ -90,11 +105,11 @@ public class ReceiverStatsMetric implements ProfilerThread.Metric {
     }
 
     private static class ReceiverComputationTime {
-        public int receiverId;
+        public Coordinate receiverCoordinate;
         public int computationTime;
 
-        public ReceiverComputationTime(int receiverId, int computationTime) {
-            this.receiverId = receiverId;
+        public ReceiverComputationTime(Coordinate receiverCoordinate, int computationTime) {
+            this.receiverCoordinate = receiverCoordinate;
             this.computationTime = computationTime;
         }
     }
