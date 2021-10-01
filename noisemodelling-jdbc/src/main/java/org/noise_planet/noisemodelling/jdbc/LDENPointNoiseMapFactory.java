@@ -375,17 +375,17 @@ public class LDENPointNoiseMapFactory implements PointNoiseMap.PropagationProces
         }
 
         private String forgePkTable(String tableName) {
-            StringBuilder sb = new StringBuilder("alter table ");
-            sb.append(tableName);
-            if (!ldenConfig.mergeSources) {
-                sb.append(" ADD PRIMARY KEY(IDRECEIVER, IDSOURCE);");
+            if(ldenConfig.mergeSources) {
+                return "alter table " + tableName + " ADD PRIMARY KEY(IDRECEIVER);";
             } else {
-                sb.append(" ADD PRIMARY KEY(IDRECEIVER);");
+                return "";
             }
-            return sb.toString();
         }
 
         private void processQuery(String query) throws SQLException, IOException {
+            if(query.isEmpty()) {
+                return;
+            }
             if(sqlFilePath == null) {
                 try(Statement sql = connection.createStatement()) {
                     sql.execute(query);
