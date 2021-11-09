@@ -93,7 +93,7 @@ public class LayerTinfourTest {
         List<Triangle> triangleList = layerTinfour.getTriangles();
         List<Coordinate> vertices = layerTinfour.getVertices();
         // Test dump
-        layerTinfour.dumpData();
+        layerTinfour.dumpDataWKT();
         Point hole1 =  factory.createPoint(new Coordinate(222690.860,6758520.184));
         Point hole2 = factory.createPoint(new Coordinate(222711.177,6758532.233));
         Point inGeom = merged.getInteriorPoint();

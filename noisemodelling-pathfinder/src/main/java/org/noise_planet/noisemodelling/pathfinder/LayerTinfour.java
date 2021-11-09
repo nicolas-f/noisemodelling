@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class LayerTinfour implements LayerDelaunay {
@@ -51,7 +52,7 @@ public class LayerTinfour implements LayerDelaunay {
             }
         }
         if(found == null) {
-            found = new Vertex(coordinate.x, coordinate.y, Double.isNaN(coordinate.z) ? 0 : coordinate.z, index);
+            found = new Vertex(coordinate.x, coordinate.y, Double.isNaN(coordinate.z) ? 0 : coordinate.z);
             ptsIndex.insert(new Envelope(coordinate),  found);
         }
         return found;
@@ -115,19 +116,79 @@ public class LayerTinfour implements LayerDelaunay {
         return new Coordinate( cx, cy, cz);
     }
 
-    public void dumpData() {
-        GeometryFactory factory = new GeometryFactory();
-        WKTWriter wktWriter = new WKTWriter(3);
+    public void dumpDataClass() {
         try {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dumpFolder, "tinfour_dump.csv")))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dumpFolder, "tinfour_data.dump")))) {
+                writer.write("Vertex " + ptsIndex.size() + "\n");
+                int index = 0;
                 for(Object vObj : ptsIndex.queryAll()) {
                     if(vObj instanceof Vertex) {
                         final Vertex v = (Vertex)vObj;
-                        Point p = factory.createPoint(toCoordinate(v));
-                        writer.write(wktWriter.write(p));
-                        writer.write("\n");
+                        v.setIndex(index++);
+                        writer.write(String.format(Locale.ROOT, "%f %f %f\n", v.getX(), v.getY(), v.getZ()));
                     }
                 }
+                writer.write("Constraints " + constraints.size() + " \n");
+                for (IConstraint constraint : constraints) {
+                    if (constraint instanceof LinearConstraint) {
+                        writer.write("LinearConstraint");
+                        List<Vertex> vertices = constraint.getVertices();
+                        for (final Vertex v : vertices) {
+                            writer.write(" " + v.getIndex());
+                        }
+                        writer.write("\n");
+                    } else if (constraint instanceof PolygonConstraint) {
+                        List<Vertex> vertices = constraint.getVertices();
+                        if(vertices != null && vertices.size() >= 3) {
+                            writer.write("PolygonConstraint " + constraint.getConstraintIndex());
+                            for (final Vertex v : vertices) {
+                                writer.write(" " + v.getIndex());
+                            }
+                            writer.write("\n");
+                        } else {
+                            LOGGER.info("Weird null polygon " + constraint);
+                        }
+                    }
+                }
+            }
+        }  catch (IOException ioEx) {
+            // ignore
+        }
+    }
+
+    public void dumpTriangleWKT() {
+        GeometryFactory factory = new GeometryFactory();
+        WKTWriter wktWriter = new WKTWriter(3);
+
+        try {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dumpFolder, "tinfour_wkt_triangles.csv")))) {
+                writer.write("the_geom, constraint_area\n");
+                for(Triangle t : triangles) {
+                    Polygon tri = factory.createPolygon(new Coordinate[]{vertices.get(t.getA()),
+                            vertices.get(t.getB()), vertices.get(t.getC()), vertices.get(t.getA())});
+
+                    writer.write("\""+wktWriter.write(tri)+"\","+t.getAttribute()+"\n");
+                }
+            }
+        }  catch (IOException ex) {
+            // ignore
+        }
+    }
+
+    public void dumpDataWKT() {
+        GeometryFactory factory = new GeometryFactory();
+        WKTWriter wktWriter = new WKTWriter(3);
+        try {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dumpFolder, "tinfour_wkt.csv")))) {
+                writer.write("the_geom\n");
+//                for(Object vObj : ptsIndex.queryAll()) {
+//                    if(vObj instanceof Vertex) {
+//                        final Vertex v = (Vertex)vObj;
+//                        Point p = factory.createPoint(toCoordinate(v));
+//                        writer.write(wktWriter.write(p));
+//                        writer.write("\n");
+//                    }
+//                }
                 for (IConstraint constraint : constraints) {
                     if (constraint instanceof LinearConstraint) {
                         List<Vertex> vertices = constraint.getVertices();
@@ -137,7 +198,7 @@ public class LayerTinfour implements LayerDelaunay {
                             coordinates[i] = new Coordinate(v.getX(), v.getY(), v.getZ());
                         }
                         LineString l = factory.createLineString(coordinates);
-                        writer.write(wktWriter.write(l));
+                        writer.write("\""+wktWriter.write(l)+"\"");
                         writer.write("\n");
                     } else if (constraint instanceof PolygonConstraint) {
                         List<Vertex> vertices = constraint.getVertices();
@@ -149,7 +210,7 @@ public class LayerTinfour implements LayerDelaunay {
                             }
                             coordinates[coordinates.length - 1] = coordinates[0];
                             Polygon l = factory.createPolygon(coordinates);
-                            writer.write(wktWriter.write(l));
+                            writer.write("\""+wktWriter.write(l)+"\"");
                             writer.write("\n");
                         } else {
                             LOGGER.info("Weird null polygon " + constraint);
@@ -180,11 +241,15 @@ public class LayerTinfour implements LayerDelaunay {
             // Add constraints
             try {
                 tin.addConstraints(constraints, maxArea > 0);
+                int idConstraint = 0;
+                for(IConstraint constraint : constraints) {
+                    constraint.setConstraintIndex(tin, idConstraint++);
+                }
             }catch (IllegalStateException ex) {
                 // Got error
                 // Dump input data
                 if(!dumpFolder.isEmpty()) {
-                    dumpData();
+                    dumpDataWKT();
                 }
                 throw new LayerDelaunayError(ex);
             }
@@ -211,6 +276,7 @@ public class LayerTinfour implements LayerDelaunay {
             vertices.add(toCoordinate(v));
         }
         Map<Integer, Integer> edgeIndexToTriangleIndex = new HashMap<>();
+        Map<Integer, Integer> triangleAttrToCount = new HashMap<>();
         for(SimpleTriangle t : simpleTriangles) {
             int triangleAttribute = 0;
             if(t.getContainingRegion() != null) {
@@ -218,11 +284,13 @@ public class LayerTinfour implements LayerDelaunay {
                     triangleAttribute = constraintIndex.get(t.getContainingRegion().getConstraintIndex());
                 }
             }
+            triangleAttrToCount.merge(triangleAttribute, 1, Integer::sum);
             triangles.add(new Triangle(vertIndex.get(t.getVertexA()), vertIndex.get(t.getVertexB()),vertIndex.get(t.getVertexC()), triangleAttribute));
             edgeIndexToTriangleIndex.put(t.getEdgeA().getIndex(), triangles.size() - 1);
             edgeIndexToTriangleIndex.put(t.getEdgeB().getIndex(), triangles.size() - 1);
             edgeIndexToTriangleIndex.put(t.getEdgeC().getIndex(), triangles.size() - 1);
         }
+        LOGGER.info("Max building id " + triangleAttrToCount.entrySet().stream().max((e1, e2) -> e1.getValue().compareTo(e2.getValue())).get().getKey());
         if(computeNeighbors) {
             for(SimpleTriangle t : simpleTriangles) {
                 Integer neighA = edgeIndexToTriangleIndex.get(t.getEdgeA().getDual().getIndex());
@@ -242,6 +310,9 @@ public class LayerTinfour implements LayerDelaunay {
      */
     @Override
     public void addPolygon(Polygon newPoly, int buildingId) throws LayerDelaunayError {
+        if(Arrays.binarySearch(new int[]{100,105,110, 633}, buildingId) < 0) {
+            return;
+        }
         final Coordinate[] coordinates = newPoly.getExteriorRing().getCoordinates();
         // Exterior ring must be CCW
         if(!Orientation.isCCW(coordinates)) {

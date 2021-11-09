@@ -41,6 +41,7 @@ public class TriangleNoiseMap extends JdbcNoiseMap {
     private double receiverHeight = 1.6;
     private double buildingBuffer = 2;
     private String exceptionDumpFolder = "";
+    private AtomicInteger polygonIndex = new AtomicInteger(1);
 
     /**
      * @param buildingsTableName Buildings table
@@ -88,7 +89,7 @@ public class TriangleNoiseMap extends JdbcNoiseMap {
                 explodeAndAddPolygon(subGeom, delaunayTool);
             }
         } else if(intersectedGeometry instanceof Polygon && !intersectedGeometry.isEmpty()){
-            delaunayTool.addPolygon((Polygon)intersectedGeometry, 1);
+            delaunayTool.addPolygon((Polygon)intersectedGeometry, polygonIndex.getAndAdd(1));
         }
     }
 
@@ -269,6 +270,10 @@ public class TriangleNoiseMap extends JdbcNoiseMap {
         } catch (LayerDelaunayError err) {
             throw new SQLException(err.getLocalizedMessage(), err);
         }
+        cellMesh.setDumpFolder("/home/nicolas/data/plamade/debug/debut_testunitaire");
+        cellMesh.dumpDataClass();
+        cellMesh.dumpDataWKT();
+        cellMesh.dumpTriangleWKT();
         sourceDelaunayGeometries.clear();
         // Make a structure to keep the following information
         // Triangle list with 3 vertices(int), and 3 neighbor

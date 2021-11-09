@@ -3,6 +3,7 @@ package org.noise_planet.noisemodelling.jdbc;
 import org.h2gis.api.EmptyProgressVisitor;
 import org.h2gis.functions.factory.H2GISDBFactory;
 import org.h2gis.functions.io.shp.SHPRead;
+import org.h2gis.functions.io.shp.SHPWrite;
 import org.h2gis.utilities.SFSUtilities;
 import org.junit.After;
 import org.junit.Before;
@@ -19,10 +20,7 @@ import org.noise_planet.noisemodelling.pathfinder.*;
 import org.noise_planet.noisemodelling.propagation.ComputeRaysOutAttenuation;
 import org.noise_planet.noisemodelling.propagation.PropagationProcessPathData;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -48,6 +46,20 @@ public class PointNoiseMapTest {
         }
     }
 
+
+
+    @Test
+    public void testTriangulation() throws SQLException, IOException, LayerDelaunayError {
+        TriangleNoiseMap triangleNoiseMap = new TriangleNoiseMap("BUILDINGS", "ROADS");
+        SHPRead.readShape(connection, "/home/nicolas/data/plamade/debug/delaunay_test.shp", "BUILDINGS");
+        SHPRead.readShape(connection, "/home/nicolas/data/plamade/debug/out38/out38/study_ROADS.shp", "ROADS");
+        triangleNoiseMap.initialize(connection, new EmptyProgressVisitor());
+        triangleNoiseMap.setGridDim(1);
+        triangleNoiseMap.setReceiverHeight(4);
+        triangleNoiseMap.setMaximumArea(0);
+        triangleNoiseMap.generateReceivers(connection, 0, 0, "RECEIVERS", "TRIANGLES", new AtomicInteger(0));
+        SHPWrite.exportTable(connection, "/home/nicolas/data/plamade/debug/debut_testunitaire/triangles.shp", "TRIANGLES");
+    }
 
 
     /**
