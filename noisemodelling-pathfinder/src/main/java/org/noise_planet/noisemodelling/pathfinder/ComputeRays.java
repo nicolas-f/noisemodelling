@@ -922,6 +922,7 @@ public class ComputeRays {
                 freefield = false;
                 if (intersection.isIntersectionOnTopography()) {
                     topographyHideReceiver = true;
+                    break;
                 }
             }
         }

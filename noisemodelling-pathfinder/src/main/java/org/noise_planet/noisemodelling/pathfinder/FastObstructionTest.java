@@ -891,10 +891,6 @@ public class FastObstructionTest {
         if(lastInter != null && lastInter.getBuildingId() > 0) {
             interPoints.add(updateZ(lastInter));
         }
-        if(!hasBuildingWithHeight) {
-            // Cannot compute envelope is building height is not available
-            return totData;
-        }
 
         //add point receiver and point source into list head and tail.
         // Change from ground height for receiver and source to real receiver and source height
