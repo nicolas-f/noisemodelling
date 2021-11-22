@@ -2675,13 +2675,13 @@ public class EvaluateAttenuationCnossosTest {
         FastObstructionTest manager = new FastObstructionTest(mesh.getPolygonWithHeight(), mesh.getTriangles(),
                 mesh.getTriNeighbors(), mesh.getVertices());
 
-        Coordinate holePt = new Coordinate(711397.753,6515663.213);
+        Coordinate holePt = new Coordinate(711375.10,6515624.63);
         holePt.setOrdinate(2, manager.getHeightAtPosition(holePt) + 4);
 
         Coordinate srcPt = new Coordinate(711400.331,6515665.262);
         srcPt.setOrdinate(2, manager.getHeightAtPosition(srcPt) + 0.05);
 
-        Coordinate noHolePt = new Coordinate(711402.720,6515666.887);
+        Coordinate noHolePt = new Coordinate(711439.87,6515692.40);
         noHolePt.setOrdinate(2, manager.getHeightAtPosition(noHolePt) + 4);
 
 
