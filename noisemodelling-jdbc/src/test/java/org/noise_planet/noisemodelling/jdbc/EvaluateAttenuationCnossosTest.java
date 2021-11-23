@@ -21,7 +21,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.noise_planet.noisemodelling.jdbc.Utils.aWeighting;
 import static org.noise_planet.noisemodelling.jdbc.Utils.addArray;
-import static org.noise_planet.noisemodelling.pathfinder.ComputeRays.dbaToW;
+import static org.noise_planet.noisemodelling.pathfinder.ComputeRays.*;
 
 public class EvaluateAttenuationCnossosTest {
 
@@ -2635,7 +2635,7 @@ public class EvaluateAttenuationCnossosTest {
      * building
      */
     @Test
-    public void testSourceOverHill() throws LayerDelaunayError, IOException {
+    public void testSourceOverHill() throws LayerDelaunayError, IOException, ParseException {
 
         PropagationProcessPathData attData = new PropagationProcessPathData();
         GeometryFactory factory = new GeometryFactory();
@@ -2646,13 +2646,22 @@ public class EvaluateAttenuationCnossosTest {
         //Create obstruction test object
         MeshBuilder mesh = new MeshBuilder();
 
+        WKTReader wktReader = new WKTReader();
+        Geometry sourceGeometry = wktReader.read("MULTILINESTRING Z ((711870.000000003 6515089.89999999 " +
+            "345.150006103516,711848.699999996 6515137.79999999 345.250012207031,711845.361071518 6515145.35896308 " +
+            "345.273205566406,711834.3 6515170.39999999 345.349987792969,711831.399999997 6515176.7 " +
+            "345.349987792969,711821.0 6515199.29999999 345.250012207031,711807.899999999 6515226.29999999 " +
+            "345.55,711794.499999999 6515252.59999999 345.55,711766.499999996 6515300.39999999 345.449993896484," +
+            "711761.500000001 6515307.59999999 345.55,711734.600000002 6515345.89999999 345.449993896484," +
+            "711698.899999999 6515389.79999999 345.949993896484,711656.000000003 6515434.8 345.949993896484," +
+            "711515.999999997 6515572.2 348.55,711501.700000001 6515587.79999999 349.449993896484," +
+            "711472.700000002 6515620.39999999 350.449993896484,711445.099999998 6515655.89999999 " +
+            "351.250012207031,711428.900000002 6515678.79999999 352.449993896484,711399.199999998 " +
+            "6515725.09999999 353.349987792969,711385.599999999 6515750.99999999 353.750012207031," +
+            "711370.0 6515784.49999999 353.949993896484))");
+
         // Ground Surface
 
-        Polygon env = factory.createPolygon(new Coordinate[]{new Coordinate(-250, -250, baseHeight),
-                new Coordinate(-250, 250, baseHeight),
-                new Coordinate(250, 250, baseHeight),
-                new Coordinate(250, -250, baseHeight),
-                new Coordinate(-250, -250, baseHeight)});
         // extract dem from file
         List<Coordinate> pts = new ArrayList<>(650);
         String line;
@@ -2668,6 +2677,7 @@ public class EvaluateAttenuationCnossosTest {
                 }
             }
         }
+        pts.addAll(Arrays.asList(sourceGeometry.getCoordinates()));
         ConvexHull c = new ConvexHull(pts.toArray(new Coordinate[0]), factory);
         mesh.finishPolygonFeeding(c.getConvexHull());
 
@@ -2675,20 +2685,23 @@ public class EvaluateAttenuationCnossosTest {
         FastObstructionTest manager = new FastObstructionTest(mesh.getPolygonWithHeight(), mesh.getTriangles(),
                 mesh.getTriNeighbors(), mesh.getVertices());
 
-        Coordinate holePt = new Coordinate(711375.10,6515624.63);
+        Coordinate holePt = new Coordinate(711360.47,6515626.01);
         holePt.setOrdinate(2, manager.getHeightAtPosition(holePt) + 4);
 
-        Coordinate srcPt = new Coordinate(711400.331,6515665.262);
-        srcPt.setOrdinate(2, manager.getHeightAtPosition(srcPt) + 0.05);
+        //Coordinate srcPt = new Coordinate(711400.331,6515665.262);
+        //srcPt.setOrdinate(2, manager.getHeightAtPosition(srcPt) + 0.05);
 
-        Coordinate noHolePt = new Coordinate(711439.87,6515692.40);
+        Coordinate noHolePt = new Coordinate(711493.87,6515726.49);
         noHolePt.setOrdinate(2, manager.getHeightAtPosition(noHolePt) + 4);
 
 
         PropagationProcessData rayData = new PropagationProcessData(manager);
         rayData.addReceiver(holePt);
         rayData.addReceiver(noHolePt);
-        rayData.addSource(factory.createPoint(srcPt));
+        //rayData.addSource(factory.createPoint(srcPt));
+        rayData.addSource(1L, sourceGeometry);
+
+
         rayData.setComputeHorizontalDiffraction(true);
 
         rayData.setComputeVerticalDiffraction(true);
@@ -2706,11 +2719,12 @@ public class EvaluateAttenuationCnossosTest {
 
         exportScene("target/testSourceOverHill.kml", manager, propDataOut);
         //assertEquals(1, propDataOut.getVerticesSoundLevel().size());
-
-        //double[] L = addArray(propDataOut.getVerticesSoundLevel().get(0).value, new double[]{93 - 26.2, 93 - 16.1,
-        //        93 - 8.6, 93 - 3.2, 93, 93 + 1.2, 93 + 1.0, 93 - 1.1});
-        System.out.println(Arrays.toString(propDataOut.getVerticesSoundLevel().get(0).value));
-        System.out.println(Arrays.toString(propDataOut.getVerticesSoundLevel().get(1).value));
+        double[] L = addArray(propDataOut.getVerticesSoundLevel().get(0).value, new double[]{93 - 26.2, 93 - 16.1,
+               93 - 8.6, 93 - 3.2, 93, 93 + 1.2, 93 + 1.0, 93 - 1.1});
+        System.out.println(wToDba(sumArray(dbaToW(L))));
+        L = addArray(propDataOut.getVerticesSoundLevel().get(1).value, new double[]{93 - 26.2, 93 - 16.1,
+                93 - 8.6, 93 - 3.2, 93, 93 + 1.2, 93 + 1.0, 93 - 1.1});
+        System.out.println(wToDba(sumArray(dbaToW(L))));
         //assertArrayEquals(new double[]{12.7, 21.07, 27.66, 31.48, 31.42, 28.74, 23.75, 13.92}, L, ERROR_EPSILON_high);//p=0.5
 
     }

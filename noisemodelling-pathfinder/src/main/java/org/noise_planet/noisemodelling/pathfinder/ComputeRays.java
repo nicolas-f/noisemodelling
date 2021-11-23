@@ -592,6 +592,9 @@ public class ComputeRays {
             data.freeFieldFinder.computePropagationPath(srcCoord, receiverCoord, false, inters, true);
         }
         List<Coordinate> rSground = data.freeFieldFinder.getGroundProfile(inters);
+        if(inters.size() < 2) {
+
+        }
         altR = rSground.get(inters.size() - 1).z;    // altitude Receiver
         altS = rSground.get(0).z; // altitude Source
         double angle = new LineSegment(rSground.get(0), rSground.get(rSground.size() - 1)).angle();
