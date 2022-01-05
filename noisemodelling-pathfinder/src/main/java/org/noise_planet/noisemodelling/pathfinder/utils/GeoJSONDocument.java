@@ -4,6 +4,16 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import org.cts.CRSFactory;
+import org.cts.IllegalCoordinateException;
+import org.cts.crs.CRSException;
+import org.cts.crs.CoordinateReferenceSystem;
+import org.cts.crs.GeodeticCRS;
+import org.cts.op.CoordinateOperation;
+import org.cts.op.CoordinateOperationException;
+import org.cts.op.CoordinateOperationFactory;
+import org.cts.registry.EPSGRegistry;
+import org.cts.registry.RegistryManager;
 import org.locationtech.jts.geom.Coordinate;
 import org.noise_planet.noisemodelling.pathfinder.PointPath;
 import org.noise_planet.noisemodelling.pathfinder.PropagationPath;
@@ -21,6 +31,7 @@ import java.util.Locale;
 public class GeoJSONDocument {
     JsonGenerator jsonGenerator;
     String crs = "EPSG:4326";
+    private CoordinateOperation transform = null;
     int rounding = -1;
 
     public GeoJSONDocument(OutputStream outputStream) throws IOException {
@@ -79,6 +90,23 @@ public class GeoJSONDocument {
         jsonGenerator.writeEndObject();
     }
 
+    public void setInputCRS(String crs) throws CRSException, CoordinateOperationException {
+        // Create a new CRSFactory, a necessary element to create a CRS without defining one by one all its components
+        CRSFactory cRSFactory = new CRSFactory();
+
+        // Add the appropriate registry to the CRSFactory's registry manager. Here the EPSG registry is used.
+        RegistryManager registryManager = cRSFactory.getRegistryManager();
+        registryManager.addRegistry(new EPSGRegistry());
+
+        // CTS will read the EPSG registry seeking the 4326 code, when it finds it,
+        // it will create a CoordinateReferenceSystem using the parameters found in the registry.
+        CoordinateReferenceSystem crsKML = cRSFactory.getCRS("EPSG:4326");
+        CoordinateReferenceSystem crsSource = cRSFactory.getCRS(crs);
+        if(crsKML instanceof GeodeticCRS && crsSource instanceof GeodeticCRS) {
+            transform = CoordinateOperationFactory.createCoordinateOperations((GeodeticCRS) crsSource, (GeodeticCRS) crsKML).iterator().next();
+        }
+    }
+
     /**
      * Write topography triangles
      * @param triVertices
@@ -116,11 +144,21 @@ public class GeoJSONDocument {
      * @throws IOException
      */
     private void writeCoordinate(Coordinate coordinate) throws IOException {
+        Coordinate c = new Coordinate(coordinate);
+        if(transform != null) {
+            try {
+                double[] result = transform.transform(new double[]{c.x, c.y});
+                c.x = result[0];
+                c.y = result[1];
+            } catch (IllegalCoordinateException | CoordinateOperationException ex) {
+                throw new IOException(ex);
+            }
+        }
         jsonGenerator.writeStartArray();
-        writeNumber(coordinate.x);
-        writeNumber(coordinate.y);
-        if (!Double.isNaN(coordinate.z)) {
-            writeNumber(coordinate.z);
+        writeNumber(c.x);
+        writeNumber(c.y);
+        if (!Double.isNaN(c.z)) {
+            writeNumber(c.z);
         }
         jsonGenerator.writeEndArray();
     }
