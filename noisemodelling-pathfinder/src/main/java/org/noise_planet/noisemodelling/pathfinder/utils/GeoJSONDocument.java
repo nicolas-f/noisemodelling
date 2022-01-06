@@ -30,7 +30,7 @@ import java.util.Locale;
  */
 public class GeoJSONDocument {
     JsonGenerator jsonGenerator;
-    String crs = "EPSG:4326";
+    public static final String CRS = "EPSG:4326";
     private CoordinateOperation transform = null;
     int rounding = -1;
 
@@ -49,7 +49,7 @@ public class GeoJSONDocument {
         jsonGenerator.writeObjectFieldStart("crs");
         jsonGenerator.writeStringField("type", "name");
         jsonGenerator.writeObjectFieldStart("properties");
-        jsonGenerator.writeStringField("name", crs);
+        jsonGenerator.writeStringField("name", CRS);
         jsonGenerator.writeEndObject(); // properties
         jsonGenerator.writeEndObject(); // crs
         jsonGenerator.writeEndObject(); // {
@@ -90,6 +90,12 @@ public class GeoJSONDocument {
         jsonGenerator.writeEndObject();
     }
 
+    /**
+     * Set crs of input data, all coordinates will be transformed into 4326 projection
+     * @param crs CRS of input data
+     * @throws CRSException
+     * @throws CoordinateOperationException
+     */
     public void setInputCRS(String crs) throws CRSException, CoordinateOperationException {
         // Create a new CRSFactory, a necessary element to create a CRS without defining one by one all its components
         CRSFactory cRSFactory = new CRSFactory();
@@ -100,7 +106,7 @@ public class GeoJSONDocument {
 
         // CTS will read the EPSG registry seeking the 4326 code, when it finds it,
         // it will create a CoordinateReferenceSystem using the parameters found in the registry.
-        CoordinateReferenceSystem crsKML = cRSFactory.getCRS("EPSG:4326");
+        CoordinateReferenceSystem crsKML = cRSFactory.getCRS(CRS);
         CoordinateReferenceSystem crsSource = cRSFactory.getCRS(crs);
         if(crsKML instanceof GeodeticCRS && crsSource instanceof GeodeticCRS) {
             transform = CoordinateOperationFactory.createCoordinateOperations((GeodeticCRS) crsSource, (GeodeticCRS) crsKML).iterator().next();
