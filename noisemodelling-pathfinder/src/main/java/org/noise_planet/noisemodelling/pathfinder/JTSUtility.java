@@ -144,7 +144,7 @@ public class JTSUtility {
      * @param  listPoints X Y Z points, all should be on the same plane as first and last points.
      * @return X Z projected points
      */
-    public static List<Coordinate> getNewCoordinateSystem(List<Coordinate> listPoints) {
+    public static List<Coordinate> getNewCoordinateSystemOld(List<Coordinate> listPoints) {
         List<Coordinate> newCoord = new ArrayList<>(listPoints.size());
         //get angle by ray source-receiver with the X-axis.
         double angle = new LineSegment(listPoints.get(0), listPoints.get(listPoints.size() - 1)).angle();
@@ -159,6 +159,25 @@ public class JTSUtility {
         return newCoord;
     }
 
+    /**
+     * ChangeCoordinateSystem, use original coordinate in 3D to change into a new markland in 2D
+     * with new x' computed by algorithm and y' is original height of point.
+     * @param  listPoints X Y Z points, all should be on the same plane as first and last points.
+     * @return X Z projected points
+     */
+    public static List<Coordinate> getNewCoordinateSystem(List<Coordinate> listPoints) {
+        if(listPoints.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Coordinate> newCoord = new ArrayList<>(listPoints.size());
+        newCoord.add(new Coordinate(0, listPoints.get(0).z));
+        for (int idPoint = 1; idPoint < listPoints.size(); idPoint++) {
+            final Coordinate pt = listPoints.get(idPoint);
+            // Get 2D distance
+            newCoord.add(new Coordinate(newCoord.get(idPoint - 1).x + pt.distance(listPoints.get(idPoint - 1)), pt.z));
+        }
+        return newCoord;
+    }
     /**
      * ChangeCoordinateSystem, use original coordinate in 3D to change into a new markland in 2D with new x' computed by algorithm and y' is original height of point.
      * Attention this function can just be used when the points in the same plane.
