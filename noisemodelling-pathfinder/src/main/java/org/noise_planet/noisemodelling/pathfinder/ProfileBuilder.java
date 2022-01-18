@@ -70,6 +70,8 @@ public class ProfileBuilder {
     /** {@link Geometry} factory. */
     private static final GeometryFactory FACTORY = new GeometryFactory();
     private static final double DELTA = 1e-3;
+    /** Epsilon value for topographic intersection tests */
+    private static final double SEGMENT_INTERSECTION_EPSILON = 1e-7;
 
     /** If true, no more data can be add. */
     private boolean isFeedingFinished = false;
@@ -101,6 +103,8 @@ public class ProfileBuilder {
     private final List<LineString> topoLines = new ArrayList<>();
     /** Topographic triangle facets. */
     private List<Triangle> topoTriangles = new ArrayList<>();
+    /** Triangle neighbors index */
+    private List<Triangle> topoNeighbors;
     /** Topographic Vertices .*/
     private List<Coordinate> vertices = new ArrayList<>();
     /** Topographic RTree. */
@@ -734,6 +738,7 @@ public class ProfileBuilder {
         if(topoPoints.size()+topoLines.size() > 1) {
             //Feed the Delaunay layer
             LayerDelaunay layerDelaunay = new LayerTinfour();
+            layerDelaunay.setRetrieveNeighbors(true);
             try {
                 layerDelaunay.setMaxArea(maxArea);
             } catch (LayerDelaunayError e) {
@@ -766,6 +771,7 @@ public class ProfileBuilder {
             }
             try {
                 topoTriangles = layerDelaunay.getTriangles();
+                topoNeighbors = layerDelaunay.getNeighbors();
             } catch (LayerDelaunayError e) {
                 LOGGER.error("Error while getting triangles", e);
                 return null;
@@ -778,29 +784,14 @@ public class ProfileBuilder {
                 LOGGER.error("Error while getting vertices", e);
                 return null;
             }
-            // wallIndex set will merge shared triangle segments
-            Set<IntegerTuple> wallIndex = new HashSet<>();
+            // Place in the rtree all triangles in order to quickly find triangle from a coordinate
             for (int i = 0; i < topoTriangles.size(); i++) {
                 final Triangle tri = topoTriangles.get(i);
-                wallIndex.add(new IntegerTuple(tri.getA(), tri.getB(), i));
-                wallIndex.add(new IntegerTuple(tri.getB(), tri.getC(), i));
-                wallIndex.add(new IntegerTuple(tri.getC(), tri.getA(), i));
-                // Insert triangle in rtree
-                if(topoTree != null) {
-                    Coordinate vA = vertices.get(tri.getA());
-                    Coordinate vB = vertices.get(tri.getB());
-                    Coordinate vC = vertices.get(tri.getC());
-                    Envelope env = FACTORY.createLineString(new Coordinate[]{vA, vB, vC}).getEnvelopeInternal();
-                    topoTree.insert(env, i);
-                }
+                Envelope triangleEnvelope = new Envelope(vertices.get(tri.getA()));
+                triangleEnvelope.expandToInclude(vertices.get(tri.getB()));
+                triangleEnvelope.expandToInclude(vertices.get(tri.getC()));
+                topoTree.insert(triangleEnvelope, i);
             }
-            //TODO : Seems to be useless, to check
-            /*for (IntegerTuple wallId : wallIndex) {
-                Coordinate vA = vertices.get(wallId.nodeIndexA);
-                Coordinate vB = vertices.get(wallId.nodeIndexB);
-                Wall wall = new Wall(vA, vB, wallId.triangleIdentifier, TOPOGRAPHY);
-                processedWalls.add(wall);
-            }*/
         }
         //Update building z
         if(topoTree != null) {
@@ -1298,6 +1289,79 @@ public class ProfileBuilder {
         }
         cut.zGround = null;
         return 0.0;
+    }
+
+    /**
+     * Compute the next triangle index.Find the shortest intersection point of
+     * triIndex segments to the p1 coordinate
+     *
+     * @param triIndex        Triangle index
+     * @param propagationLine Propagation line
+     * @return Next triangle to the specified direction, -1 if there is no
+     * triangle neighbor.
+     */
+    private int getNextTri(final int triIndex,
+                                             final LineSegment propagationLine,
+                                             HashSet<Integer> navigationHistory) {
+        final Triangle tri = topoTriangles.get(triIndex);
+        final Triangle triNeighbors = topoNeighbors.get(triIndex);
+        int nearestIntersectionSide = -1;
+        int idneigh;
+        double nearestIntersectionPtDist = Double.MAX_VALUE;
+        // Find intersection pt
+        final Coordinate aTri = this.vertices.get(tri.getA());
+        final Coordinate bTri = this.vertices.get(tri.getB());
+        final Coordinate cTri = this.vertices.get(tri.getC());
+        double distline_line;
+        //if there is no intersection, by default we set the - max value to Topography intersection to avoid the problem
+        // Intersection First Side
+        idneigh = triNeighbors.get(2);
+        if (idneigh != -1 && !navigationHistory.contains(idneigh)) {
+            Coordinate[] closestPoints = propagationLine.closestPoints(new LineSegment(aTri, bTri));
+            Coordinate intersectionTest = null;
+            if(closestPoints.length == 2 && closestPoints[0].distance(closestPoints[1]) < SEGMENT_INTERSECTION_EPSILON) {
+                intersectionTest = closestPoints[0];
+            }
+            if(intersectionTest != null) {
+                distline_line = propagationLine.p1.distance(intersectionTest);
+                if (distline_line < nearestIntersectionPtDist) {
+                    nearestIntersectionPtDist = distline_line;
+                    nearestIntersectionSide = 2;
+                }
+            }
+        }
+        // Intersection Second Side
+        idneigh = triNeighbors.get(0);
+        if (idneigh != -1 && !navigationHistory.contains(idneigh)) {
+            Coordinate[] closestPoints = propagationLine.closestPoints(new LineSegment(bTri, cTri));
+            Coordinate intersectionTest = null;
+            if(closestPoints.length == 2 && closestPoints[0].distance(closestPoints[1]) < SEGMENT_INTERSECTION_EPSILON) {
+                intersectionTest = closestPoints[0];
+            }
+            if(intersectionTest != null) {
+                distline_line = propagationLine.p1.distance(intersectionTest);
+                if (distline_line < nearestIntersectionPtDist) {
+                    nearestIntersectionPtDist = distline_line;
+                    nearestIntersectionSide = 0;
+                }
+            }
+        }
+        // Intersection Third Side
+        idneigh = triNeighbors.get(1);
+        if (idneigh != -1 && !navigationHistory.contains(idneigh)) {
+            Coordinate[] closestPoints = propagationLine.closestPoints(new LineSegment(cTri, aTri));
+            Coordinate intersectionTest = null;
+            if(closestPoints.length == 2 && closestPoints[0].distance(closestPoints[1]) < SEGMENT_INTERSECTION_EPSILON) {
+                intersectionTest = closestPoints[0];
+            }
+            if(intersectionTest != null) {
+                distline_line = propagationLine.p1.distance(intersectionTest);
+                if (distline_line < nearestIntersectionPtDist) {
+                    nearestIntersectionSide = 1;
+                }
+            }
+        }
+        return nearestIntersectionSide;
     }
 
     /**
@@ -2067,46 +2131,6 @@ public class ProfileBuilder {
             wallTree.query(pathEnv, visitor);
         } catch (IllegalStateException ex) {
             //Ignore
-        }
-    }
-
-
-    /**
-     * Hold two integers. Used to store unique triangle segments
-     */
-    private static class IntegerTuple {
-        int nodeIndexA;
-        int nodeIndexB;
-        int triangleIdentifier;
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            IntegerTuple that = (IntegerTuple) o;
-            return nodeIndexA == that.nodeIndexA && nodeIndexB == that.nodeIndexB;
-        }
-
-        @Override
-        public String toString() {
-            return "IntegerTuple{" + "nodeIndexA=" + nodeIndexA + ", nodeIndexB=" + nodeIndexB + ", " +
-                    "triangleIdentifier=" + triangleIdentifier + '}';
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(nodeIndexA, nodeIndexB);
-        }
-
-        public IntegerTuple(int nodeIndexA, int nodeIndexB, int triangleIdentifier) {
-            if(nodeIndexA < nodeIndexB) {
-                this.nodeIndexA = nodeIndexA;
-                this.nodeIndexB = nodeIndexB;
-            } else {
-                this.nodeIndexA = nodeIndexB;
-                this.nodeIndexB = nodeIndexA;
-            }
-            this.triangleIdentifier = triangleIdentifier;
         }
     }
 }
