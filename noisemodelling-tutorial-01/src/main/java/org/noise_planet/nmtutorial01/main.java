@@ -108,6 +108,9 @@ class Main {
                 noiseMap.generateReceivers(connection, i, j, "RECEIVERS", "TRIANGLES", pk);
             }
         }
+
+        sql.execute("DELETE FROM RECEIVERS WHERE PK > 200");
+
         // Import MNT
 
         logger.info("Import digital elevation model");

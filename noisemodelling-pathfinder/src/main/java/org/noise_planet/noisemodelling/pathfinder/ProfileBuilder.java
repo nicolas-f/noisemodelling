@@ -51,6 +51,7 @@ import org.locationtech.jts.index.ItemVisitor;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.operation.distance.DistanceOp;
 import org.locationtech.jts.triangulate.quadedge.Vertex;
+import org.noise_planet.noisemodelling.pathfinder.utils.STRTreeRay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +71,7 @@ import java.util.stream.Collectors;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static org.locationtech.jts.algorithm.Orientation.isCCW;
+import static org.noise_planet.noisemodelling.pathfinder.JTSUtility.TRIANGLE_INTERSECTION_EPSILON;
 import static org.noise_planet.noisemodelling.pathfinder.JTSUtility.dist2D;
 import static org.noise_planet.noisemodelling.pathfinder.ProfileBuilder.IntersectionType.BUILDING;
 import static org.noise_planet.noisemodelling.pathfinder.ProfileBuilder.IntersectionType.RECEIVER;
@@ -90,6 +92,7 @@ import static org.noise_planet.noisemodelling.pathfinder.ProfileBuilder.Intersec
  */
 public class ProfileBuilder {
     public static final double epsilon = 1e-7;
+    public static final double RAY_INTERSECTION_EPSILON = NaN;
     /** Class {@link java.util.logging.Logger}. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ProfileBuilder.class);
     /** Default RTree node capacity. */
@@ -116,11 +119,11 @@ public class ProfileBuilder {
     /** List of walls. */
     private final List<Wall> walls = new ArrayList<>();
     /** Building RTree. */
-    private final STRtree buildingTree;
+    private final STRTreeRay buildingTree;
     /** Building RTree. */
-    private final STRtree wallTree = new STRtree(TREE_NODE_CAPACITY);
+    private final STRTreeRay wallTree = new STRTreeRay(TREE_NODE_CAPACITY);
     /** Global RTree. */
-    private STRtree rtree;
+    private STRTreeRay rtree;
 
     /** List of topographic points. */
     private final List<Coordinate> topoPoints = new ArrayList<>();
@@ -140,8 +143,6 @@ public class ProfileBuilder {
 
     /** Sources geometries.*/
     private final List<Geometry> sources = new ArrayList<>();
-    /** Sources RTree. */
-    private STRtree sourceTree;
     /** Receivers .*/
     private final List<Coordinate> receivers = new ArrayList<>();
 
@@ -167,7 +168,7 @@ public class ProfileBuilder {
      * Main empty constructor.
      */
     public ProfileBuilder() {
-        buildingTree = new STRtree(buildingNodeCapacity);
+        buildingTree = new STRTreeRay(buildingNodeCapacity);
     }
 
     //TODO : when a source/receiver are underground, should an offset be applied ?
@@ -183,7 +184,7 @@ public class ProfileBuilder {
         this.topoNodeCapacity = topoNodeCapacity;
         this.groundNodeCapacity = groundNodeCapacity;
         this.maxLineLength = maxLineLength;
-        buildingTree = new STRtree(buildingNodeCapacity);
+        buildingTree = new STRTreeRay(buildingNodeCapacity);
     }
 
     /**
@@ -762,13 +763,6 @@ public class ProfileBuilder {
      */
     public ProfileBuilder finishFeeding() {
         isFeedingFinished = true;
-        //Process sources
-        if(!sources.isEmpty()) {
-            sourceTree = new STRtree();
-            for (int i = 0; i < sources.size(); i++) {
-                sourceTree.insert(sources.get(i).getEnvelopeInternal(), i);
-            }
-        }
         //Process topographic points and lines
         if(topoPoints.size()+topoLines.size() > 1) {
             //Feed the Delaunay layer
@@ -880,7 +874,7 @@ public class ProfileBuilder {
             }
         }
         //Process buildings
-        rtree = new STRtree(buildingNodeCapacity);
+        rtree = new STRTreeRay(buildingNodeCapacity);
         for (int j = 0; j < buildings.size(); j++) {
             Building building = buildings.get(j);
             List<Wall> walls = new ArrayList<>();
@@ -1040,21 +1034,22 @@ public class ProfileBuilder {
         // (for large area of the line segment envelope)
         List<LineSegment> lines = new ArrayList<>();
         LineSegment fullLine = new LineSegment(c0, c1);
-        double l = dist2D(c0, c1);
-        //If the line length if greater than the MAX_LINE_LENGTH value, split it into multiple lines
-        if(l < maxLineLength) {
-            lines.add(fullLine);
-        }
-        else {
-            double frac = maxLineLength /l;
-            for(int i = 0; i<l/ maxLineLength; i++) {
-                Coordinate p0 = fullLine.pointAlong(i*frac);
-                p0.z = c0.z + (c1.z - c0.z) * i*frac;
-                Coordinate p1 = fullLine.pointAlong(Math.min((i+1)*frac, 1.0));
-                p1.z = c0.z + (c1.z - c0.z) * Math.min((i+1)*frac, 1.0);
-                lines.add(new LineSegment(p0, p1));
-            }
-        }
+        lines.add(fullLine);
+//        double l = dist2D(c0, c1);
+//        //If the line length if greater than the MAX_LINE_LENGTH value, split it into multiple lines
+//        if(l < maxLineLength) {
+//            lines.add(fullLine);
+//        }
+//        else {
+//            double frac = maxLineLength /l;
+//            for(int i = 0; i<l/ maxLineLength; i++) {
+//                Coordinate p0 = fullLine.pointAlong(i*frac);
+//                p0.z = c0.z + (c1.z - c0.z) * i*frac;
+//                Coordinate p1 = fullLine.pointAlong(Math.min((i+1)*frac, 1.0));
+//                p1.z = c0.z + (c1.z - c0.z) * Math.min((i+1)*frac, 1.0);
+//                lines.add(new LineSegment(p0, p1));
+//            }
+//        }
         //Buildings and Ground effect
         if(rtree != null) {
             addGroundBuildingCutPts(lines, fullLine, profile);
@@ -1174,10 +1169,20 @@ public class ProfileBuilder {
         profile.addReceiver(c1);
     }
 
+    private static List queryTreeRay(STRTreeRay treeRay, Coordinate p0, Coordinate p1) {
+        return treeRay.query(new STRTreeRay.RayEnvelope(p0, p1, RAY_INTERSECTION_EPSILON));
+        //return treeRay.query(new Envelope(p0, p1));
+    }
+
+    private static void queryTreeRay(STRTreeRay treeRay, Coordinate p0, Coordinate p1, ItemVisitor visitor) {
+        treeRay.query(new STRTreeRay.RayEnvelope(p0, p1, RAY_INTERSECTION_EPSILON), visitor);
+        //treeRay.query(new Envelope(p0, p1), visitor);
+    }
+
     private void addGroundBuildingCutPts(List<LineSegment> lines, LineSegment fullLine, CutProfile profile) {
         List<Integer> indexes = new ArrayList<>();
         for (LineSegment line : lines) {
-            indexes.addAll(rtree.query(new Envelope(line.p0, line.p1)));
+            indexes.addAll(queryTreeRay(rtree,line.p0, line.p1));
         }
         indexes = indexes.stream().distinct().collect(Collectors.toList());
         for (int i : indexes) {
@@ -2327,18 +2332,16 @@ public class ProfileBuilder {
      * @return Building identifier (1-n) intersected by the line
      */
     public void getBuildingsOnPath(Coordinate p1, Coordinate p2, ItemVisitor visitor) {
-        Envelope pathEnv = new Envelope(p1, p2);
         try {
-            buildingTree.query(pathEnv, visitor);
+            queryTreeRay(buildingTree, p1, p2, visitor);
         } catch (IllegalStateException ex) {
             //Ignore
         }
     }
 
     public void getWallsOnPath(Coordinate p1, Coordinate p2, ItemVisitor visitor) {
-        Envelope pathEnv = new Envelope(p1, p2);
         try {
-            wallTree.query(pathEnv, visitor);
+            queryTreeRay(wallTree, p1, p2, visitor);
         } catch (IllegalStateException ex) {
             //Ignore
         }
