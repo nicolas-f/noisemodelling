@@ -192,6 +192,7 @@ public class LDENPointNoiseMapFactoryTest {
         try {
             RootProgressVisitor progressLogger = new RootProgressVisitor(1, false, 1);
             pointNoiseMap.initialize(connection, new EmptyProgressVisitor());
+            //pointNoiseMap.setGridDim(1);
             factory.start();
             Map<PointNoiseMap.CellIndex, Integer> cells = pointNoiseMap.searchPopulatedCells(connection);
             ProgressVisitor progressVisitor = progressLogger.subProcess(cells.size());
@@ -951,7 +952,7 @@ public class LDENPointNoiseMapFactoryTest {
             if(builder != null) {
                 kmlDocument.writeBuildings(builder);
             }
-            if(result != null) {
+            if(result != null && result.getInputData().sourceGeometries.size() >0 && result.getInputData().receivers.size() >0 ) {
                 kmlDocument.writeProfile(builder.getProfile(result.getInputData().sourceGeometries.get(0).getCoordinate(),result.getInputData().receivers.get(0)));
             }
 
