@@ -388,7 +388,6 @@ public class ComputeCnossosRays {
 
     private static List<Coordinate> computePts2D(List<ProfileBuilder.CutPoint> pts) {
         List<Coordinate> pts2D = pts.stream()
-                .filter(cut -> cut.getType() != GROUND_EFFECT)
                 .map(ProfileBuilder.CutPoint::getCoordinate)
                 .collect(Collectors.toList());
         pts2D = JTSUtility.getNewCoordinateSystem(pts2D);
