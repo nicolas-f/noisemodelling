@@ -114,20 +114,18 @@ public class LDENComputeRaysOut extends ComputeRaysOutAttenuation {
 
 
         @Override
-        public double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, List<PropagationPath> propagationPath) {
-            ldenComputeRaysOut.rayCount.addAndGet(propagationPath.size());
+        public double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, PropagationPath propagationPath) {
+            ldenComputeRaysOut.rayCount.addAndGet(1);
             if(ldenComputeRaysOut.keepRays) {
                 if(ldenComputeRaysOut.inputData != null && sourceId < ldenComputeRaysOut.inputData.sourcesPk.size() &&
-                        receiverId < ldenComputeRaysOut.inputData.receiversPk.size()) {
-                    for(PropagationPath path : propagationPath) {
-                        // Copy path content in order to keep original ids for other method calls
-                        PropagationPath pathPk = new PropagationPath(path);
-                        pathPk.setIdReceiver(ldenComputeRaysOut.inputData.receiversPk.get((int)receiverId).intValue());
-                        pathPk.setIdSource(ldenComputeRaysOut.inputData.sourcesPk.get((int)sourceId).intValue());
-                        propagationPaths.add(pathPk);
-                    }
+                    receiverId < ldenComputeRaysOut.inputData.receiversPk.size()) {
+                    // Copy path content in order to keep original ids for other method calls
+                    PropagationPath pathPk = new PropagationPath(propagationPath);
+                    pathPk.setIdReceiver(ldenComputeRaysOut.inputData.receiversPk.get((int)receiverId).intValue());
+                    pathPk.setIdSource(ldenComputeRaysOut.inputData.sourcesPk.get((int)sourceId).intValue());
+                    propagationPaths.add(pathPk);
                 } else {
-                    propagationPaths.addAll(propagationPath);
+                    propagationPaths.add(propagationPath);
                 }
             }
             double[] ldenLevels = lDENThreadRaysOut[0].addPropagationPaths(sourceId, sourceLi, receiverId, propagationPath);

@@ -10,7 +10,7 @@ public interface IComputeRaysOut {
      * @param sourceLi Source power per meter coefficient ( > 1.0 for line source segments with greater length than 1 meter)
      * @param propagationPath Propagation path result
      */
-    double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, List<PropagationPath> propagationPath);
+    double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, PropagationPath propagationPath);
 
     /**
      * No more propagation paths will be pushed for this receiver identifier

@@ -73,10 +73,10 @@ public class ComputeCnossosRaysOut implements IComputeRaysOut {
     }
 
     @Override
-    public double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, List<PropagationPath> propagationPath) {
-        rayCount.addAndGet(propagationPath.size());
+    public double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, PropagationPath propagationPath) {
+        rayCount.addAndGet(1);
         if (keepRays) {
-            propagationPaths.addAll(propagationPath);
+            propagationPaths.add(propagationPath);
         }
         return new double[0];
     }
@@ -103,20 +103,18 @@ public class ComputeCnossosRaysOut implements IComputeRaysOut {
         }
 
         @Override
-        public double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, List<PropagationPath> propagationPath) {
-            multiThreadParent.rayCount.addAndGet(propagationPath.size());
+        public double[] addPropagationPaths(long sourceId, double sourceLi, long receiverId, PropagationPath propagationPath) {
+            multiThreadParent.rayCount.addAndGet(1);
             if (multiThreadParent.keepRays) {
                 if (multiThreadParent.inputData != null && sourceId < multiThreadParent.inputData.sourcesPk.size() &&
                         receiverId < multiThreadParent.inputData.receiversPk.size()) {
-                    for (PropagationPath path : propagationPath) {
-                        // Copy path content in order to keep original ids for other method calls
-                        PropagationPath pathPk = new PropagationPath(path);
-                        pathPk.setIdReceiver(multiThreadParent.inputData.receiversPk.get((int) receiverId).intValue());
-                        pathPk.setIdSource(multiThreadParent.inputData.sourcesPk.get((int) sourceId).intValue());
-                        propagationPaths.add(pathPk);
-                    }
+                    // Copy path content in order to keep original ids for other method calls
+                    PropagationPath pathPk = new PropagationPath(propagationPath);
+                    pathPk.setIdReceiver(multiThreadParent.inputData.receiversPk.get((int) receiverId).intValue());
+                    pathPk.setIdSource(multiThreadParent.inputData.sourcesPk.get((int) sourceId).intValue());
+                    propagationPaths.add(pathPk);
                 } else {
-                    propagationPaths.addAll(propagationPath);
+                    propagationPaths.add(propagationPath);
                 }
             }
             return new double[0];

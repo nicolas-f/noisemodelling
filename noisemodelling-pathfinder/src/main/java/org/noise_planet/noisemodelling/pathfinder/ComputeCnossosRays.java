@@ -280,7 +280,15 @@ public class ComputeCnossosRays {
                 if(raysCount != null) {
                     raysCount.addAndGet(propagationPaths.size());
                 }
-                return dataOut.addPropagationPaths(src.getId(), srcLi, rcv.getId(), propagationPaths);
+                double[] propagationAttenuationSpectrum = null;
+                for(PropagationPath propagationPath : propagationPaths) {
+                    double[] attenuation = dataOut.addPropagationPaths(src.getId(), srcLi, rcv.getId(), propagationPath);
+                    if(propagationAttenuationSpectrum == null) {
+                        propagationAttenuationSpectrum = attenuation;
+                    } else {
+                        propagationAttenuationSpectrum = sumDbArray(attenuation, propagationAttenuationSpectrum);
+                    }
+                }
             }
         }
         return new double[0];
