@@ -445,7 +445,7 @@ public class ComputeRaysOutAttenuation implements IComputeRaysOut {
             this.theta = 0;
         }
 
-        public VerticeSL(long sourceId, long receiverId, double[] value, double phi, double theta, double distance) {
+        public VerticeSL(long receiverId, long sourceId, double[] value, double phi, double theta, double distance) {
             this.sourceId = sourceId;
             this.receiverId = receiverId;
             this.value = value;
