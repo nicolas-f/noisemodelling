@@ -34,8 +34,11 @@
 package org.noise_planet.noisemodelling.propagation;
 
 
+import org.cts.op.CoordinateOperation;
 import org.locationtech.jts.algorithm.Angle;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.math.Vector2D;
 import org.locationtech.jts.math.Vector3D;
 import org.noise_planet.noisemodelling.pathfinder.*;
 
@@ -423,8 +426,9 @@ public class ComputeRaysOutAttenuation implements IComputeRaysOut {
         public final long sourceId;
         public final long receiverId;
         public final double[] value;
-        double phi;
-        double theta;
+        public final double phi;
+        public final double theta;
+        public final double distance;
 
         /**
          *
@@ -436,6 +440,18 @@ public class ComputeRaysOutAttenuation implements IComputeRaysOut {
             this.sourceId = sourceId;
             this.receiverId = receiverId;
             this.value = value;
+            this.phi = 0;
+            this.distance = 0;
+            this.theta = 0;
+        }
+
+        public VerticeSL(long sourceId, long receiverId, double[] value, double phi, double theta, double distance) {
+            this.sourceId = sourceId;
+            this.receiverId = receiverId;
+            this.value = value;
+            this.phi = phi;
+            this.theta = theta;
+            this.distance = distance;
         }
     }
 
@@ -469,7 +485,16 @@ public class ComputeRaysOutAttenuation implements IComputeRaysOut {
                 }
             }
             if (aGlobalMeteo != null) {
-                receiverAttenuationLevels.add(new VerticeSL(receiverId, sourceId, aGlobalMeteo));
+                Coordinate[] ray3d = propagationPath.asGeom().getCoordinates();
+                double length = 0;
+                for(int i = 1; i < ray3d.length; i++) {
+                    length += ray3d[i].distance3D(ray3d[i-1]);
+                }
+                Vector2D v = new Vector2D(ray3d[ray3d.length - 1], ray3d[ray3d.length - 2]);
+                double theta = v.angle();
+                double phi = new Vector2D(ray3d[ray3d.length - 1].distance(ray3d[ray3d.length - 2]),
+                        ray3d[ray3d.length - 1].z - ray3d[ray3d.length - 2].z).angle();
+                receiverAttenuationLevels.add(new VerticeSL(receiverId, sourceId, aGlobalMeteo, phi, theta, length));
                 return aGlobalMeteo;
             } else {
                 return new double[0];
