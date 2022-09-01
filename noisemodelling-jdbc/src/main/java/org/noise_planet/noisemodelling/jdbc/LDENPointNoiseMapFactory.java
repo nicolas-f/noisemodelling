@@ -303,7 +303,7 @@ public class LDENPointNoiseMapFactory implements PointNoiseMap.PropagationProces
             query.append(tableName);
             query.append(" VALUES (? "); // ID_RECEIVER
             if(!ldenConfig.mergeSources) {
-                query.append(", ?"); // ID_SOURCE
+                query.append(", ?, ?, ?"); // ID_SOURCE DISTANCE THETA PHI
             }
             if (!ldenConfig.computeLAEQOnly) {
                 query.append(", ?".repeat(ldenConfig.propagationProcessPathDataDay.freq_lvl.size())); // freq value
@@ -325,6 +325,9 @@ public class LDENPointNoiseMapFactory implements PointNoiseMap.PropagationProces
                 ps.setLong(parameterIndex++, row.receiverId);
                 if(!ldenConfig.mergeSources) {
                     ps.setLong(parameterIndex++, row.sourceId);
+                    ps.setDouble(parameterIndex++, row.distance);
+                    ps.setDouble(parameterIndex++, row.theta);
+                    ps.setDouble(parameterIndex++, row.phi);
                 }
 
                 if (!ldenConfig.computeLAEQOnly){
@@ -369,6 +372,9 @@ public class LDENPointNoiseMapFactory implements PointNoiseMap.PropagationProces
             if(!ldenConfig.mergeSources) {
                 sb.append(" (IDRECEIVER bigint NOT NULL");
                 sb.append(", IDSOURCE bigint NOT NULL");
+                sb.append(", DISTANCE REAL NOT NULL");
+                sb.append(", THETA REAL NOT NULL");
+                sb.append(", PHI REAL NOT NULL");
             } else {
                 sb.append(" (IDRECEIVER bigint NOT NULL");
             }

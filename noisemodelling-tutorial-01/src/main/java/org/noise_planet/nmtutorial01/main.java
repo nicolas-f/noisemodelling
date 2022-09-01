@@ -139,7 +139,8 @@ class Main {
         ldenConfig.setComputeLEvening(true);
         ldenConfig.setComputeLNight(true);
         ldenConfig.setComputeLDEN(true);
-        ldenConfig.setExportRaysMethod(LDENConfig.ExportRaysMethods.TO_MEMORY);
+        ldenConfig.setMergeSources(false);
+        ldenConfig.setExportRaysMethod(LDENConfig.ExportRaysMethods.NONE);
 
         LDENPointNoiseMapFactory tableWriter = new LDENPointNoiseMapFactory(connection, ldenConfig);
 
@@ -217,6 +218,7 @@ class Main {
         bezierContouring.setPointTable(ldenConfig.getlDenTable());
         bezierContouring.createTable(connection);
         logger.info("Export iso contours");
+        SHPWrite.exportTable(connection, "target/"+ldenConfig.getlDayTable()+".shp", ldenConfig.getlDayTable());
         SHPWrite.exportTable(connection, "target/"+bezierContouring.getOutputTable()+".shp", bezierContouring.getOutputTable(), ValueBoolean.TRUE);
         if(JDBCUtilities.tableExists(connection,  ldenConfig.getRaysTable())) {
             SHPWrite.exportTable(connection, "target/" + ldenConfig.getRaysTable() + ".shp", ldenConfig.getRaysTable(), ValueBoolean.TRUE);

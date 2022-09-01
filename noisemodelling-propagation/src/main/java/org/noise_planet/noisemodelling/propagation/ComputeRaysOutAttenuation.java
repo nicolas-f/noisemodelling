@@ -453,6 +453,22 @@ public class ComputeRaysOutAttenuation implements IComputeRaysOut {
             this.theta = theta;
             this.distance = distance;
         }
+
+        public VerticeSL(long receiverId, long sourceId, double[] value, PropagationPath propagationPath) {
+            this.sourceId = sourceId;
+            this.receiverId = receiverId;
+            this.value = value;
+            Coordinate[] ray3d = propagationPath.asGeom().getCoordinates();
+            double length = 0;
+            for(int i = 1; i < ray3d.length; i++) {
+                length += ray3d[i].distance3D(ray3d[i-1]);
+            }
+            this.distance = length;
+            Vector2D v = new Vector2D(ray3d[ray3d.length - 1], ray3d[ray3d.length - 2]);
+            this.theta = Math.toDegrees(v.angle());
+            this.phi = Math.toDegrees(new Vector2D(ray3d[ray3d.length - 1].distance(ray3d[ray3d.length - 2]),
+                    ray3d[ray3d.length - 1].z - ray3d[ray3d.length - 2].z).angle());
+        }
     }
 
     public static class ThreadRaysOut implements IComputeRaysOut {
@@ -485,16 +501,7 @@ public class ComputeRaysOutAttenuation implements IComputeRaysOut {
                 }
             }
             if (aGlobalMeteo != null) {
-                Coordinate[] ray3d = propagationPath.asGeom().getCoordinates();
-                double length = 0;
-                for(int i = 1; i < ray3d.length; i++) {
-                    length += ray3d[i].distance3D(ray3d[i-1]);
-                }
-                Vector2D v = new Vector2D(ray3d[ray3d.length - 1], ray3d[ray3d.length - 2]);
-                double theta = v.angle();
-                double phi = new Vector2D(ray3d[ray3d.length - 1].distance(ray3d[ray3d.length - 2]),
-                        ray3d[ray3d.length - 1].z - ray3d[ray3d.length - 2].z).angle();
-                receiverAttenuationLevels.add(new VerticeSL(receiverId, sourceId, aGlobalMeteo, phi, theta, length));
+                receiverAttenuationLevels.add(new VerticeSL(receiverId, sourceId, aGlobalMeteo, propagationPath));
                 return aGlobalMeteo;
             } else {
                 return new double[0];

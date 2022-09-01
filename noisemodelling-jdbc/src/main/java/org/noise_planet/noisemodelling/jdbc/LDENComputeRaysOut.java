@@ -130,12 +130,12 @@ public class LDENComputeRaysOut extends ComputeRaysOutAttenuation {
                     propagationPaths.add(propagationPath);
                 }
             }
-            double[] ldenLevels = lDENThreadRaysOut[0].addPropagationPaths(sourceId, sourceLi, receiverId, propagationPath);
-            ldenLevels = PowerUtils.sumDbArray(ldenLevels, lDENThreadRaysOut[1].addPropagationPaths(sourceId, sourceLi,
+            double[] globalLevel = lDENThreadRaysOut[0].addPropagationPaths(sourceId, sourceLi, receiverId, propagationPath);
+            globalLevel = PowerUtils.sumDbArray(globalLevel, lDENThreadRaysOut[1].addPropagationPaths(sourceId, sourceLi,
                     receiverId, propagationPath));
-            ldenLevels = PowerUtils.sumDbArray(ldenLevels, lDENThreadRaysOut[2].addPropagationPaths(sourceId, sourceLi,
+            globalLevel = PowerUtils.sumDbArray(globalLevel, lDENThreadRaysOut[2].addPropagationPaths(sourceId, sourceLi,
                     receiverId, propagationPath));
-            return ldenLevels;
+            return globalLevel;
         }
 
         /**
@@ -210,63 +210,41 @@ public class LDENComputeRaysOut extends ComputeRaysOutAttenuation {
             }
             double[] dayLevels = new double[0], eveningLevels = new double[0], nightLevels = new double[0];
             if (!ldenConfig.mergeSources) {
-                // Aggregate by source id
-                Map<Long, DENAttenuation> levelsPerSourceLines = new HashMap<>();
+                ConcurrentLinkedDeque<VerticeSL>[] queues = new ConcurrentLinkedDeque[] {ldenComputeRaysOut.ldenData.lDayLevels,
+                        ldenComputeRaysOut.ldenData.lEveningLevels,
+                        ldenComputeRaysOut.ldenData.lNightLevels};
+                List<double[]>[] soundSourceLevels = new List[] {
+                        ldenComputeRaysOut.ldenPropagationProcessData.wjSourcesD,
+                        ldenComputeRaysOut.ldenPropagationProcessData.wjSourcesE,
+                        ldenComputeRaysOut.ldenPropagationProcessData.wjSourcesN
+                };
+                int stackSize = Math.max(Math.max(lDENThreadRaysOut[0].receiverAttenuationLevels.size(),
+                        lDENThreadRaysOut[1].receiverAttenuationLevels.size()),
+                        lDENThreadRaysOut[2].receiverAttenuationLevels.size());
+                for(int idRay = 0; idRay < stackSize; idRay ++) {
+                    if(lDENThreadRaysOut[0].receiverAttenuationLevels.size() > idRay) {
+                        VerticeSL attLevel = lDENThreadRaysOut[0].receiverAttenuationLevels.get(idRay);
+                        dayLevels = sumArray(wToDba(
+                                ldenComputeRaysOut.ldenPropagationProcessData.wjSourcesD.get((int) attLevel.sourceId)),
+                                attLevel.value);
+                        pushInStack();
+                    }
+                }
                 for (LDENConfig.TIME_PERIOD timePeriod : LDENConfig.TIME_PERIOD.values()) {
                     ThreadRaysOut threadRaysOut = lDENThreadRaysOut[timePeriod.ordinal()];
                     for (VerticeSL lvl : threadRaysOut.receiverAttenuationLevels) {
-                        DENAttenuation denAttenuation;
-                        if (!levelsPerSourceLines.containsKey(lvl.sourceId)) {
-                            denAttenuation = new DENAttenuation();
-                            levelsPerSourceLines.put(lvl.sourceId, denAttenuation);
-                        } else {
-                            denAttenuation = levelsPerSourceLines.get(lvl.sourceId);
+                        final long sourceId = lvl.sourceId;
+                        long sourcePK = sourceId;
+                        if (ldenComputeRaysOut.inputData != null) {
+                            // Retrieve original source identifier
+                            if (sourceId < ldenComputeRaysOut.inputData.sourcesPk.size()) {
+                                sourcePK = ldenComputeRaysOut.inputData.sourcesPk.get((int) sourceId);
+                            }
                         }
-                        if (denAttenuation.getTimePeriodLevel(timePeriod) == null) {
-                            denAttenuation.setTimePeriodLevel(timePeriod, lvl.value);
-                        } else {
-                            // same receiver, same source already exists, merge attenuation
-                            denAttenuation.setTimePeriodLevel(timePeriod, sumDbArray(
-                                    denAttenuation.getTimePeriodLevel(timePeriod), lvl.value));
-                        }
-                    }
-                }
-                long sourcePK;
-                for (Map.Entry<Long, DENAttenuation> entry : levelsPerSourceLines.entrySet()) {
-                    final long sourceId = entry.getKey();
-                    sourcePK = sourceId;
-                    if (ldenComputeRaysOut.inputData != null) {
-                        // Retrieve original source identifier
-                        if (entry.getKey() < ldenComputeRaysOut.inputData.sourcesPk.size()) {
-                            sourcePK = ldenComputeRaysOut.inputData.sourcesPk.get((int) sourceId);
-                        }
-                    }
-                    if (ldenConfig.computeLDay || ldenConfig.computeLDEN) {
-                        dayLevels = sumArray(wToDba(ldenComputeRaysOut.ldenPropagationProcessData.wjSourcesD.get((int) sourceId)), entry.getValue().dayLevels);
-                        if(ldenConfig.computeLDay) {
-                            pushInStack(ldenComputeRaysOut.ldenData.lDayLevels, new VerticeSL(receiverPK, sourcePK, dayLevels));
-                        }
-                    }
-                    if (ldenConfig.computeLEvening || ldenConfig.computeLDEN) {
-                        eveningLevels = sumArray(wToDba(ldenComputeRaysOut.ldenPropagationProcessData.wjSourcesE.get((int) sourceId)), entry.getValue().eveningLevels);
-                        if(ldenConfig.computeLEvening) {
-                            pushInStack(ldenComputeRaysOut.ldenData.lEveningLevels, new VerticeSL(receiverPK, sourcePK, eveningLevels));
-                        }
-                    }
-                    if (ldenConfig.computeLNight || ldenConfig.computeLDEN) {
-                        nightLevels = sumArray(wToDba(ldenComputeRaysOut.ldenPropagationProcessData.wjSourcesN.get((int) sourceId)), entry.getValue().nightLevels);
-                        if(ldenConfig.computeLNight) {
-                            pushInStack(ldenComputeRaysOut.ldenData.lNightLevels, new VerticeSL(receiverPK, sourcePK, nightLevels));
-                        }
-                    }
-                    if (ldenConfig.computeLDEN) {
-                        double[] levels = new double[dayLevels.length];
-                        for(int idFrequency = 0; idFrequency < levels.length; idFrequency++) {
-                            levels[idFrequency] = (12 * dayLevels[idFrequency] +
-                                    4 * dbaToW(wToDba(eveningLevels[idFrequency]) + 5) +
-                                    8 * dbaToW(wToDba(nightLevels[idFrequency]) + 10)) / 24.0;
-                        }
-                        pushInStack(ldenComputeRaysOut.ldenData.lDenLevels, new VerticeSL(receiverPK, sourcePK, levels));
+                        VerticeSL receiverLevel = new VerticeSL(receiverPK, sourcePK,
+                                sumArray(wToDba(soundSourceLevels[timePeriod.ordinal()].get((int) sourceId)), lvl.value),
+                                lvl.phi, lvl.theta, lvl.distance);
+                        pushInStack(queues[timePeriod.ordinal()], receiverLevel);
                     }
                 }
             } else {
