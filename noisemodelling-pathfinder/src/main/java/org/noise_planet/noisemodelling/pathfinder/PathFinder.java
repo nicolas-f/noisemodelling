@@ -1501,43 +1501,27 @@ public class PathFinder {
                 }
                 points.addAll(lastPts.subList(1, lastPts.size()));
                 double baseX = 0;
-                for(int i=0; i<points.size(); i++) {
-                    Coordinate c = points.get(i).coordinate;
-                    c.setX(c.getX()+baseX);
-                    if(points.get(i).type.equals(REFL)){
-                        baseX = points.get(i).coordinate.getX();
+                for (PointPath point : points) {
+                    Coordinate c = point.coordinate;
+                    c.setX(c.getX() + baseX);
+                    if (point.type.equals(REFL)) {
+                        baseX = point.coordinate.getX();
                     }
                 }
-                for (int i = 1; i < points.size(); i++) {
+                for (int i = 1; i < points.size()-  1; i++) {
                     if (points.get(i).type == REFL) {
-                        if (i < points.size() - 1) {
-                            // A diffraction point may have offset in height the reflection coordinate
-                            points.get(i).coordinate.z = Vertex.interpolateZ(points.get(i).coordinate, points.get(i - 1).coordinate, points.get(i + 1).coordinate);
-                            //check if in building && if under floor
-                            Geometry geom;
-                            if(points.get(i).getBuildingId()!=-1) {
-                                geom = data.profileBuilder.getBuilding(points.get(i).getBuildingId()).getGeometry();
-                            }
-                            else {
-                                geom = data.profileBuilder.getWall(points.get(i).getWallId()).getLine();
-                            }
-                            if (points.get(i).coordinate.z > geom.getCoordinate().z
-                                    || points.get(i).coordinate.z <= data.profileBuilder.getZGround(points.get(i).coordinate)) {
-                                points.clear();
-                                segments.clear();
-                                break;
-                            }
-                        } else {
-                            LOGGER.warn("Invalid state, reflexion point on last point");
-                            points.clear();
-                            segments.clear();
-                            break;
-                        }
+                        // A diffraction point may have offset in height the reflection coordinate
+                        final Coordinate p0 = points.get(i - 1).coordinate;
+                        final Coordinate p1 = points.get(i).coordinate;
+                        final Coordinate p2 = points.get(i + 1).coordinate;
+                        // compute Y value (altitude) by interpolating the Y values of the two neighboring points
+                        points.get(i).coordinate = new CoordinateXY(p1.x, (p1.x-p0.x)/(p2.x-p0.x)*(p2.y-p0.y)+p0.y);
+                        //TODO check if ray is intersecting over the wall now
                     }
                 }
 
 
-                if (rayPath.size() > 0) {
+                if (!rayPath.isEmpty()) {
                     List<Coordinate> pts = new ArrayList<>();
                     pts.add(srcCoord);
                     rayPath.forEach(mrr -> pts.add(mrr.getReceiverPos()));
