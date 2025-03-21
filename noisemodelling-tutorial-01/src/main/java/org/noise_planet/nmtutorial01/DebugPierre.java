@@ -24,13 +24,13 @@ public class DebugPierre {
                         true, ""));) {
 
             SHPRead.importTable(connection, "/Users/fortin/Downloads/NoiseModelling_without_gui(2)/resources/Lavaur/Buildings_Lavaur.shp");
-            SHPRead.importTable(connection, "/Users/fortin/Downloads/NoiseModelling_without_gui(2)/resources/Lavaur/Receivers_Lavaur.shp");
+            SHPRead.importTable(connection, "/Users/fortin/Downloads/NoiseModelling_without_gui(2)/RECEIVERS_HOME.shp");
             SHPRead.importTable(connection, "/Users/fortin/Downloads/NoiseModelling_without_gui(2)/resources/Lavaur/Siren_Lavaur.shp");
 
             try(Statement st = connection.createStatement()) {
                 st.execute("CREATE TABLE SOURCE AS SELECT ST_UPDATEZ(the_geom, 15) the_geom FROM SIREN_LAVAUR");
                 st.execute("ALTER TABLE SOURCE ADD COLUMN IDSOURCE SERIAL NOT NULL PRIMARY KEY");
-                st.execute("CREATE TABLE RECEIVERS(IRECEIVERS INTEGER PRIMARY KEY, THE_GEOM) AS SELECT \"S.NO\" IDRECEIVER, ST_UPDATEZ(the_geom, 1.5) the_geom FROM Receivers_Mazamet");
+                st.execute("CREATE TABLE RECEIVERS(IRECEIVERS INTEGER PRIMARY KEY, THE_GEOM) AS SELECT PK IDRECEIVER, ST_UPDATEZ(the_geom, 1.5) the_geom FROM RECEIVERS_HOME");
             }
 
             // Init NoiseModelling
@@ -54,7 +54,7 @@ public class DebugPierre {
             noiseMapByReceiverMaker.run(connection, rootProgressVisitor);
 
             SHPWrite.exportTable(connection, "target/RECEIVERS_LEVEL.shp", "RECEIVERS_LEVEL", ValueBoolean.get(true));
-            FGBWrite.execute(connection, "target/RAYS.cs", "RAYS", true);
+            FGBWrite.execute(connection, "target/RAYS.fgb", "RAYS", true);
         }
     }
 }
