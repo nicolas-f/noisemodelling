@@ -16,6 +16,9 @@ import org.noise_planet.noisemodelling.pathfinder.profilebuilder.CutProfile;
  * All the datas Path of Cnossos
  */
 public class CnossosPath extends Path {
+
+
+    public boolean favorable; // if true, favorable meteorological condition path
     public  double[] aAtm = new double[0];
     public  double[] aDiv = new double[0];
     public  double[] aRef = new double[0];
@@ -69,6 +72,7 @@ public class CnossosPath extends Path {
 
     public CnossosPath(CnossosPath other) {
         super(other);
+        this.favorable = other.favorable;
         this.aAtm = other.aAtm;
         this.aDiv = other.aDiv;
         this.aRef = other.aRef;
@@ -96,6 +100,13 @@ public class CnossosPath extends Path {
         this.e = other.e;
         this.deltaRetroH = other.deltaRetroH;
         this.deltaRetroF = other.deltaRetroF;
+    }
+    public boolean isFavorable() {
+        return favorable;
+    }
+
+    public void setFavorable(boolean favorable) {
+        this.favorable = favorable;
     }
 
     public static class ABoundary {

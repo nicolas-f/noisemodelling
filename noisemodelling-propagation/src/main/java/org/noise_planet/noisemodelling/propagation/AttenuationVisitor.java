@@ -39,11 +39,23 @@ public class AttenuationVisitor implements CutPlaneVisitor {
         final SceneWithAttenuation scene = multiThreadParent.scene;
         // Source surface reflectivity
         double gs = scene.sourceGs.getOrDefault(cutProfile.getSource().sourcePk, SceneWithAttenuation.DEFAULT_GS);
-        CnossosPath cnossosPath = CnossosPathBuilder.computeCnossosPathFromCutProfile(cutProfile, scene.isBodyBarrier(),
-                scene.profileBuilder.exactFrequencyArray, gs);
-        if(cnossosPath != null) {
-            addPropagationPath(cnossosPath);
+
+        CnossosPath cnossosPathF = CnossosPathBuilder.computeCnossosPathFromCutProfile(cutProfile, scene.isBodyBarrier(),
+                scene.profileBuilder.exactFrequencyArray, gs, true);
+
+        CnossosPath cnossosPathH = CnossosPathBuilder.computeCnossosPathFromCutProfile(cutProfile, scene.isBodyBarrier(),
+                scene.profileBuilder.exactFrequencyArray, gs, false);
+
+        if(cnossosPathF != null) {
+            cnossosPathF.setFavorable(true);
+            addPropagationPath(cnossosPathF);
         }
+
+        if(cnossosPathH != null) {
+            cnossosPathH.setFavorable(false);
+            addPropagationPath(cnossosPathH);
+        }
+
         return PathSearchStrategy.CONTINUE;
     }
 

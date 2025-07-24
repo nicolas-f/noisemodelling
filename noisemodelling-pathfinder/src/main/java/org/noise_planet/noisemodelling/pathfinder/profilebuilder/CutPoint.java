@@ -36,7 +36,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = CutPointTopography.class, name = "Topography"),
         @JsonSubTypes.Type(value = CutPointVEdgeDiffraction.class, name = "VEdgeDiffraction")
 })
-public abstract class CutPoint implements Comparable<CutPoint> {
+public class CutPoint implements Comparable<CutPoint> {
     /** {@link Coordinate} of the cut point. */
     public Coordinate coordinate = new Coordinate();
 

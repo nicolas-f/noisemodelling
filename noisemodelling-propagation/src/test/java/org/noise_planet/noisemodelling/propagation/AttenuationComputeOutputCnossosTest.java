@@ -5402,7 +5402,7 @@ public class AttenuationComputeOutputCnossosTest {
      */
     @Test
     public void TC28() throws IOException {
-        AttenuationComputeOutput propDataOut =  computeCnossosPath("TC28_Direct", "TC28_Right");
+        AttenuationComputeOutput propDataOut =  computeCnossosPath("TC28_Direct", "TC28_Right", "TC28_Left");
 
         /* Table 346 */
         List<Coordinate> expectedZProfile = Arrays.asList(
@@ -5490,27 +5490,23 @@ public class AttenuationComputeOutputCnossosTest {
                 {0.0, 0.68, 3.32, 1.12, 1022.31, 0.49, 0.49}
         };
 
-        CnossosPath SR = propDataOut.getPropagationPaths().get(0);
-
+        CnossosPath SR = propDataOut.getPropagationPaths().get(1); // Favor =  0 / Hom = 1
         assertZProfil(expectedZProfile, Arrays.asList(SR.getSRSegment().getPoints2DGround()));
         assertZProfil(expectedZProfileSO, Arrays.asList(SR.getSegmentList().get(0).getPoints2DGround()));
         assertZProfil(expectedZProfileOR, Arrays.asList(
                 SR.getSegmentList().get(SR.getSegmentList().size() - 1).getPoints2DGround()));
-
-
-
         assertPlanes(segmentsMeanPlanes0,SR.getSegmentList());
 
-        CnossosPath pathRight = propDataOut.getPropagationPaths().get(1);
+        CnossosPath pathRight = propDataOut.getPropagationPaths().get(3); // Favor =  2 / Hom = 3
         assertZProfil(expectedZProfileRight, Arrays.asList(pathRight.getSRSegment().getPoints2DGround()));
         assertPlanes(segmentsMeanPlanes1, pathRight.getSRSegment());
 
 
-        // CnossosPath pathLeft = propDataOut.getPropagationPaths().get(2);
+         CnossosPath pathLeft = propDataOut.getPropagationPaths().get(5);
         // Error in CNOSSOS unit test, left diffraction is going over a building but not in their 3D view !
         // Why the weird left path in homogeneous ? it is not explained.
-        // assertZProfil(expectedZProfileLeft, Arrays.asList(pathLeft.getSRSegment().getPoints2DGround()));
-        // assertPlanes(segmentsMeanPlanes2,propDataOut.getPropagationPaths().get(2).getSRSegment()); // if b = 0.68: -> z2 = 0.32. In Cnossos z2 = 1.32 if b = 0.68
+         assertZProfil(expectedZProfileLeft, Arrays.asList(pathLeft.getSRSegment().getPoints2DGround()));
+         assertPlanes(segmentsMeanPlanes2,pathLeft.getSRSegment()); // if b = 0.68: -> z2 = 0.32. In Cnossos z2 = 1.32 if b = 0.68
 
         //Expected values
         //Path0 : vertical plane
@@ -5626,7 +5622,7 @@ public class AttenuationComputeOutputCnossosTest {
         SegmentPath s0 = propDataOut.getPropagationPaths().get(0).getSRSegment();
         SegmentPath s1 = propDataOut.getPropagationPaths().get(1).getSRSegment();
         assertEquals(s0.dp, s1.dp);
-        assertEquals(s0.testFormH, s1.testFormH);
+        assertEquals(s0.testForm, s1.testForm);
         assertArrayEquals(propDataOut.receiversAttenuationLevels.pop().levels, propDataOut.receiversAttenuationLevels.pop().levels, Double.MIN_VALUE);
     }
 
@@ -5679,7 +5675,7 @@ public class AttenuationComputeOutputCnossosTest {
         SegmentPath s0 = propDataOut.getPropagationPaths().get(0).getSRSegment();
         SegmentPath s1 = propDataOut.getPropagationPaths().get(1).getSRSegment();
         assertEquals(s0.dp, s1.dp);
-        assertEquals(s0.testFormH, s1.testFormH);
+        assertEquals(s0.testForm, s1.testForm);
         assertArrayEquals(propDataOut.receiversAttenuationLevels.pop().levels, propDataOut.receiversAttenuationLevels.pop().levels, Double.MIN_VALUE);
     }
 
@@ -5870,7 +5866,7 @@ public class AttenuationComputeOutputCnossosTest {
         SegmentPath s0 = propDataOut.getPropagationPaths().get(0).getSRSegment();
         SegmentPath s1 = propDataOut.getPropagationPaths().get(1).getSRSegment();
         assertEquals(s0.dp, s1.dp);
-        assertEquals(s0.testFormH, s1.testFormH);
+        assertEquals(s0.testForm, s1.testForm);
         assertArrayEquals(propDataOut.receiversAttenuationLevels.pop().levels, propDataOut.receiversAttenuationLevels.pop().levels, Double.MIN_VALUE);
     }
 
@@ -5909,7 +5905,7 @@ public class AttenuationComputeOutputCnossosTest {
         SegmentPath s0 = propDataOut.getPropagationPaths().get(0).getSRSegment();
         SegmentPath s1 = propDataOut.getPropagationPaths().get(1).getSRSegment();
         assertEquals(s0.dp, s1.dp);
-        assertEquals(s0.testFormH, s1.testFormH);
+        assertEquals(s0.testForm, s1.testForm);
         assertArrayEquals(propDataOut.receiversAttenuationLevels.pop().levels, propDataOut.receiversAttenuationLevels.pop().levels, Double.MIN_VALUE);
     }
 
@@ -6011,8 +6007,8 @@ public class AttenuationComputeOutputCnossosTest {
     private static void assertPlane(double[] expectedPlane, SegmentPath segment) {
         assertEquals(expectedPlane[0], segment.a, DELTA_PLANES, "a");
         assertEquals(expectedPlane[1], segment.b, DELTA_PLANES, "b");
-        assertEquals(expectedPlane[2], segment.zsH, DELTA_PLANES, "zs");
-        assertEquals(expectedPlane[3], segment.zrH, DELTA_PLANES, "zr");
+        assertEquals(expectedPlane[2], segment.zs, DELTA_PLANES, "zs");
+        assertEquals(expectedPlane[3], segment.zr, DELTA_PLANES, "zr");
         assertEquals(expectedPlane[4], segment.dp, DELTA_PLANES, "dp");
         assertEquals(expectedPlane[5], segment.gPath, DELTA_PLANES, "gPath");
         if(!Double.isNaN(expectedPlane[6])) {

@@ -131,27 +131,27 @@ public class AttenuationCnossos {
 
             if (pathParameters.isFavorable()) {
                 if (data.isPrime2520()) {
-                    if (segmentPath.testFormF <= 1) {
+                    if (segmentPath.testForm <= 1) {
                         aGroundMin = -3 * (1 - segmentPath.gm);
                     } else {
-                        aGroundMin = -3 * (1 - segmentPath.gm) * (1 + 2 * (1 - (1 / segmentPath.testFormF)));
+                        aGroundMin = -3 * (1 - segmentPath.gm) * (1 + 2 * (1 - (1 / segmentPath.testForm)));
                     }
                 } else {
-                    if (segmentPath.testFormH <= 1) {
+                    if (segmentPath.testForm <= 1) {
                         aGroundMin = -3 * (1 - segmentPath.gm);
                     } else {
-                        aGroundMin = -3 * (1 - segmentPath.gm) * (1 + 2 * (1 - (1 / segmentPath.testFormH)));
+                        aGroundMin = -3 * (1 - segmentPath.gm) * (1 + 2 * (1 - (1 / segmentPath.testForm)));
                     }
                 }
                 /* eq. 2.5.20 */
                 AGround = -10 * log10(4 * pow(k, 2) / pow(segmentPath.dp, 2) *
-                        (pow(segmentPath.zsF, 2) - sqrt(2 * cf / k) * segmentPath.zsF + cf / k) *
-                        (pow(segmentPath.zrF, 2) - sqrt(2 * cf / k) * segmentPath.zrF + cf / k));
+                        (pow(segmentPath.zs, 2) - sqrt(2 * cf / k) * segmentPath.zs + cf / k) *
+                        (pow(segmentPath.zr, 2) - sqrt(2 * cf / k) * segmentPath.zr + cf / k));
             } else {
                 /* eq. 2.5.15 */
                 AGround = -10 * log10(4 * pow(k, 2)/ pow(segmentPath.dp, 2) *
-                        (pow(segmentPath.zsH, 2) - sqrt(2 * cf / k) * segmentPath.zsH + cf / k) *
-                        (pow(segmentPath.zrH, 2) - sqrt(2 * cf / k) * segmentPath.zrH + cf / k));
+                        (pow(segmentPath.zs, 2) - sqrt(2 * cf / k) * segmentPath.zs + cf / k) *
+                        (pow(segmentPath.zr, 2) - sqrt(2 * cf / k) * segmentPath.zr + cf / k));
                 /* eq. 2.5.18 */
                 aGroundMin = -3 * (1 - segmentPath.gm);
             }
@@ -237,10 +237,10 @@ public class AttenuationCnossos {
 
             if (pathParameters.isFavorable()) {
                 // The lower bound of Aground,F (calculated with unmodified heights) depends on the geometry of the path
-                if (segmentPath.testFormF <= 1) {
+                if (segmentPath.testForm <= 1) {
                     aGroundMin = -3 * (1 - segmentPath.gm);
                 } else {
-                    aGroundMin = -3 * (1 - segmentPath.gm) * (1 + 2 * (1 - (1 / segmentPath.testFormF)));
+                    aGroundMin = -3 * (1 - segmentPath.gm) * (1 + 2 * (1 - (1 / segmentPath.testForm)));
                 }
             } else {
                 aGroundMin = -3;
@@ -334,7 +334,7 @@ public class AttenuationCnossos {
         // Eq 2.5.30 - Eq. 2.5.31 - Eq. 2.5.32
         for (int idf : difBands) {
             // if Deltadif > 25: Deltadif = 25 dB for a diffraction on a horizontal edge and only on the term Deltadif which figures in the calculation of Adif. This upper bound shall not be applied in the Deltadif terms that intervene in the calculation of Deltaground, or for a diffraction on a vertical edge (lateral diffraction) in the case of industrial noise mapping
-            if (segmentPath.get(segmentPath.size() - 1).zrH > 0.0000001) {// see 5.3 Equivalent heights from AFNOR document
+            if (segmentPath.get(segmentPath.size() - 1).zr > 0.0000001) {// see 5.3 Equivalent heights from AFNOR document
                 deltaGroundSO[idf] = getDeltaGround(aGroundSO[idf], DeltaDifSpR[idf], deltaDifSR[idf]);
                 deltaGroundOR[idf] = getDeltaGround(aGroundOR[idf], deltaDifSRp[idf], deltaDifSR[idf]);
             } else {
@@ -791,8 +791,8 @@ public class AttenuationCnossos {
         double dp = path.dp;
         double gm = forceGPath ? path.gPath : path.gPathPrime;
         double aGroundHMin = -3*(1-gm);
-        double zs = path.zsH;
-        double zr = path.zrH;
+        double zs = path.zs;
+        double zr = path.zr;
         double aGroundHComputed = -10 * log10(4 * (k*k) / (dp*dp) *
                 (zs*zs - sqrt(2 * cf / k) * zs + cf / k) *
                 (zr*zr - sqrt(2 * cf / k) * zr + cf / k));
@@ -823,14 +823,14 @@ public class AttenuationCnossos {
             proPathParameters.groundAttenuation.cfF[idFreq] = cf;
         }
         double gm = forceGPath ? path.gPath : path.gPathPrime;
-        double aGroundFMin = path.testFormH <= 1 ? -3 * (1 - gm) : -3 * (1 - gm) * (1 + 2 * (1 - (1 / path.testFormH)));
+        double aGroundFMin = path.testForm <= 1 ? -3 * (1 - gm) : -3 * (1 - gm) * (1 + 2 * (1 - (1 / path.testForm)));
         if(path.gPath == 0) {
             return aGroundFMin;
         }
         else {
             double dp = path.dp;
-            double zs = path.zsF;
-            double zr = path.zrF;
+            double zs = path.zs;
+            double zr = path.zr;
             double aGroundFComputed = -10 * log10(4 * (k*k) / (dp*dp) *
                     (zs*zs - sqrt(2 * cf / k) * zs + cf / k) *
                     (zr*zr - sqrt(2 * cf / k) * zr + cf / k));
@@ -989,36 +989,35 @@ public class AttenuationCnossos {
         Vector3D fieldVectorPropagation = Orientation.rotate(proPathParameters.getSourceOrientation(),
                 Orientation.toVector(proPathParameters.raySourceReceiverDirectivity), false);
         int roseIndex = AttenuationParameters.getRoseIndex(Math.atan2(fieldVectorPropagation.getY(), fieldVectorPropagation.getX()));
-        // Homogenous conditions
-        if (data.getWindRose()[roseIndex] != 1) {
-            proPathParameters.setFavorable(false);
-
-
-            aBoundary = AttenuationCnossos.aBoundary(proPathParameters, data);
-            aRetroDiff = AttenuationCnossos.deltaRetrodif(proPathParameters, data);
-            for (int idfreq = 0; idfreq < data.getFrequencies().size(); idfreq++) {
-                aGlobalMeteoHom[idfreq] = -(aDiv[idfreq] + aAtm[idfreq] + aBoundary[idfreq] - aRef[idfreq] + aRetroDiff[idfreq] - deltaBodyScreen[idfreq]); // Eq. 2.5.6
+        if (!proPathParameters.isFavorable()){
+            // Homogenous conditions
+            if (data.getWindRose()[roseIndex] != 1) {
+                aBoundary = AttenuationCnossos.aBoundary(proPathParameters, data);
+                aRetroDiff = AttenuationCnossos.deltaRetrodif(proPathParameters, data);
+                for (int idfreq = 0; idfreq < data.getFrequencies().size(); idfreq++) {
+                    aGlobalMeteoHom[idfreq] = -(aDiv[idfreq] + aAtm[idfreq] + aBoundary[idfreq] - aRef[idfreq] + aRetroDiff[idfreq] - deltaBodyScreen[idfreq]); // Eq. 2.5.6
+                }
+                //For testing purpose
+                if(exportAttenuationMatrix) {
+                    proPathParameters.aRetroDiffH = aRetroDiff.clone();
+                    proPathParameters.double_aBoundaryH = aBoundary.clone();
+                    proPathParameters.aGlobalH = aGlobalMeteoHom.clone();
+                }
             }
-            //For testing purpose
-            if(exportAttenuationMatrix) {
-                proPathParameters.aRetroDiffH = aRetroDiff.clone();
-                proPathParameters.double_aBoundaryH = aBoundary.clone();
-                proPathParameters.aGlobalH = aGlobalMeteoHom.clone();
-            }
-        }
-        // Favorable conditions
-        if (data.getWindRose()[roseIndex] != 0) {
-            proPathParameters.setFavorable(true);
-            aBoundary = AttenuationCnossos.aBoundary(proPathParameters, data);
-            aRetroDiff = AttenuationCnossos.deltaRetrodif(proPathParameters, data);
-            for (int idfreq = 0; idfreq < data.getFrequencies().size(); idfreq++) {
-                aGlobalMeteoFav[idfreq] = -(aDiv[idfreq] + aAtm[idfreq] + aBoundary[idfreq] - aRef[idfreq] + aRetroDiff[idfreq] -deltaBodyScreen[idfreq]); // Eq. 2.5.8
-            }
-            //For testing purpose
-            if(exportAttenuationMatrix) {
-                proPathParameters.double_aBoundaryF = aBoundary.clone();
-                proPathParameters.aRetroDiffF = aRetroDiff.clone();
-                proPathParameters.aGlobalF = aGlobalMeteoFav.clone();
+        }else {
+            // Favorable conditions
+            if (data.getWindRose()[roseIndex] != 0) {
+                aBoundary = AttenuationCnossos.aBoundary(proPathParameters, data);
+                aRetroDiff = AttenuationCnossos.deltaRetrodif(proPathParameters, data);
+                for (int idfreq = 0; idfreq < data.getFrequencies().size(); idfreq++) {
+                    aGlobalMeteoFav[idfreq] = -(aDiv[idfreq] + aAtm[idfreq] + aBoundary[idfreq] - aRef[idfreq] + aRetroDiff[idfreq] - deltaBodyScreen[idfreq]); // Eq. 2.5.8
+                }
+                //For testing purpose
+                if (exportAttenuationMatrix) {
+                    proPathParameters.double_aBoundaryF = aBoundary.clone();
+                    proPathParameters.aRetroDiffF = aRetroDiff.clone();
+                    proPathParameters.aGlobalF = aGlobalMeteoFav.clone();
+                }
             }
         }
 

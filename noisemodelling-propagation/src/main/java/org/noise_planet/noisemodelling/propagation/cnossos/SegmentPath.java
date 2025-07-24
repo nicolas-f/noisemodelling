@@ -41,18 +41,14 @@ public class SegmentPath {
     public Double gPathPrime = null;    //Gpath prime , calculated from Gpath and geometry
     public Double gw = null;
     public Double gm = null;
-    public Double zsH = null; // The equivalent source height
-    public Double zrH = null; //the equivalent receiver height
-    public Double testFormH = null;
+    public Double zs = null; // The equivalent source height
+    public Double zr = null; //the equivalent receiver height
+    public Double testForm = null;
 
     public Coordinate sMeanPlane = null; // projection of source  points on ground for each segment
     public Coordinate rMeanPlane = null; // projection of receiver points on ground for each segment
     public Coordinate sPrime = null;
     public Coordinate rPrime = null;
-
-    public Double zsF = null;
-    public Double zrF = null;
-    public Double testFormF = null;
 
     public Double dPath; // direct ray between source and receiver passing by diffraction and reflection points
     public Double d ; // direct ray between source and receiver
@@ -132,7 +128,7 @@ public class SegmentPath {
 
     public void setGpath(double gPath, double gS) {
         this.gPath = gPath;
-        this.gPathPrime = this.testFormH <= 1 ? this.gPath*(this.testFormH) + gS*(1-this.testFormH) : this.gPath;
+        this.gPathPrime = this.testForm <= 1 ? this.gPath*(this.testForm) + gS*(1-this.testForm) : this.gPath;
     }
 
     public Double getGw() {
@@ -150,18 +146,11 @@ public class SegmentPath {
 
 
     public Double getZs() {
-        return zsH;
+        return zs;
     }
 
     public Double getZr() {
-        return zrH;
+        return zr;
     }
 
-    public Double getZsPrime() {
-        return zsF;
-    }
-
-    public Double getZrPrime() {
-        return zrF;
-    }
 }

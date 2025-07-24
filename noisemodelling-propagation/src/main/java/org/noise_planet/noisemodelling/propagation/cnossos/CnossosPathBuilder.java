@@ -137,7 +137,8 @@ public class CnossosPathBuilder {
      * @return the calculated segment
      */
     public static SegmentPath computeSegment(Coordinate src, Coordinate rcv, double[] meanPlane) {
-        return computeSegment(src, rcv, meanPlane, 0, 0);
+        boolean favorable = false;
+        return computeSegment(src, rcv, meanPlane, 0, 0, favorable);
     }
 
     /**
@@ -150,7 +151,7 @@ public class CnossosPathBuilder {
      * @return the computed segment path
      */
 
-    public static SegmentPath computeSegment(Coordinate src, Coordinate rcv, double[] meanPlane, double gPath, double gS) {
+    public static SegmentPath computeSegment(Coordinate src, Coordinate rcv, double[] meanPlane, double gPath, double gS, boolean favorable) {
         SegmentPath seg = new SegmentPath();
         Coordinate sourcePointOnMeanPlane = projectPointOnLine(src, meanPlane[0], meanPlane[1]);
         Coordinate receiverPointOnMeanPlane = projectPointOnLine(rcv, meanPlane[0], meanPlane[1]);
@@ -165,19 +166,26 @@ public class CnossosPathBuilder {
 
         seg.d = src.distance(rcv);
         seg.dp =sourcePointOnMeanPlane.distance(receiverPointOnMeanPlane);
-        seg.zsH = src.distance(sourcePointOnMeanPlane);
-        seg.zrH = rcv.distance(receiverPointOnMeanPlane);
+        seg.zs = src.distance(sourcePointOnMeanPlane);
+        seg.zr = rcv.distance(receiverPointOnMeanPlane);
+        seg.testForm = seg.dp/(30*(seg.zs +seg.zr));
+        if (favorable) {
+            double deltaZT = 6e-3 * seg.dp / (seg.zs + seg.zr);
+            double deltaZS = ALPHA0 * pow((seg.zs / (seg.zs + seg.zr)), 2) * (seg.dp*seg.dp / 2); //2.5.19
+            double deltaZR = ALPHA0 * pow((seg.zr / (seg.zs + seg.zr)), 2) * (seg.dp*seg.dp / 2);
+
+            seg.zs = seg.zs + deltaZS + deltaZT;
+            seg.zr = seg.zr + deltaZR + deltaZT;
+            seg.testForm = seg.dp/(30*(seg.zs +seg.zr));
+
+        }
+
         seg.a = meanPlane[0];
         seg.b = meanPlane[1];
-        seg.testFormH = seg.dp/(30*(seg.zsH +seg.zrH));
+
         seg.gPath = gPath;
-        seg.gPathPrime = seg.testFormH <= 1 ? seg.gPath*(seg.testFormH) + gS*(1-seg.testFormH) : seg.gPath; // 2.5.14
-        double deltaZT = 6e-3 * seg.dp / (seg.zsH + seg.zrH);
-        double deltaZS = ALPHA0 * pow((seg.zsH / (seg.zsH + seg.zrH)), 2) * (seg.dp*seg.dp / 2); //2.5.19
-        seg.zsF = seg.zsH + deltaZS + deltaZT;
-        double deltaZR = ALPHA0 * pow((seg.zrH / (seg.zsH + seg.zrH)), 2) * (seg.dp*seg.dp / 2);
-        seg.zrF = seg.zrH + deltaZR + deltaZT;
-        seg.testFormF = seg.dp/(30*(seg.zsF +seg.zrF));
+        seg.gPathPrime = seg.testForm <= 1 ? seg.gPath*(seg.testForm) + gS*(1-seg.testForm) : seg.gPath; // 2.5.14
+
         return seg;
     }
 
@@ -191,19 +199,24 @@ public class CnossosPathBuilder {
         return 2*max(1000, 8*d)* asin(mn/(2*max(1000, 8*d)));
     }
 
-    /**
-     * Given the vertical cut profile (can be a single plane or multiple like a folding panel) return the ray path
-     * following Cnossos specification, or null if there is no valid path.
-     * @param cutProfile Vertical cut of a domain
-     * @param bodyBarrier
-     * @param exactFrequencyArray Expected frequencies
-     * @param gS Ground factor of the source area
-     * @return The cnossos path or null
-     */
-    public static CnossosPath computeCnossosPathFromCutProfile(CutProfile cutProfile , boolean bodyBarrier, List<Double> exactFrequencyArray, double gS) {
+
+        /**
+         * Given the vertical cut profile (can be a single plane or multiple like a folding panel) return the ray path
+         * following Cnossos specification, or null if there is no valid path.
+         * @param cutProfile Vertical cut of a domain
+         * @param bodyBarrier
+         * @param exactFrequencyArray Expected frequencies
+         * @param gS Ground factor of the source area
+         * @return The cnossos path or null
+         */
+
+    public static CnossosPath computeCnossosPathFromCutProfile(CutProfile cutProfile , boolean bodyBarrier, List<Double> exactFrequencyArray, double gS, boolean favorable) {
+
         List<SegmentPath> segments = new ArrayList<>();
         List<PointPath> points = new ArrayList<>();
-        final List<CutPoint> cutProfilePoints = cutProfile.cutPoints;
+        List<CutPoint> cutProfilePoints = cutProfile.cutPoints;
+
+        if (favorable) cutProfilePoints = CurvedProfileGenerator.applyTransformation(cutProfilePoints);
 
         List<Coordinate> pts2D = cutProfile.computePts2D();
         if(pts2D.size() != cutProfilePoints.size()) {
@@ -215,12 +228,12 @@ public class CnossosPathBuilder {
         double[] meanPlane = JTSUtility.getMeanPlaneCoefficients(pts2DGround);
         Coordinate firstPts2D = pts2D.get(0);
         Coordinate lastPts2D = pts2D.get(pts2D.size()-1);
-        SegmentPath srPath = computeSegment(firstPts2D, lastPts2D, meanPlane, cutProfile.getGPath(), cutProfile.getSource().groundCoefficient);
+        SegmentPath srPath = computeSegment(firstPts2D, lastPts2D, meanPlane, cutProfile.getGPath(), cutProfile.getSource().groundCoefficient, favorable);
         srPath.setPoints2DGround(pts2DGround);
         srPath.dc = CGAlgorithms3D.distance(cutProfile.getReceiver().getCoordinate(),
                 cutProfile.getSource().getCoordinate());
         CnossosPath pathParameters = new CnossosPath(cutProfile);
-        pathParameters.setFavorable(true);
+        pathParameters.setFavorable(favorable);
         pathParameters.setPointList(points);
         pathParameters.setSegmentList(segments);
         pathParameters.setSRSegment(srPath);
@@ -373,7 +386,7 @@ public class CnossosPathBuilder {
                     Coordinate[] segmentGroundPoints = Arrays.copyOfRange(pts2DGround, i0Ground,cut2DGroundIndex.get(pointIndex) + 1);
                     meanPlane = JTSUtility.getMeanPlaneCoefficients(segmentGroundPoints);
                     SegmentPath seg = computeSegment(pts2D.get(previousPivotPoint), pts2D.get(pointIndex),
-                            meanPlane, cutProfile.getGPath(cutPt0, cutProfilePoints.get(pointIndex), Scene.DEFAULT_G_BUILDING), gS);
+                            meanPlane, cutProfile.getGPath(cutPt0, cutProfilePoints.get(pointIndex), Scene.DEFAULT_G_BUILDING), gS, favorable);
                     seg.setPoints2DGround(segmentGroundPoints);
                     previousPivotPoint = pointIndex;
                     segments.add(seg);
@@ -388,7 +401,7 @@ public class CnossosPathBuilder {
                 meanPlane = JTSUtility.getMeanPlaneCoefficients(segmentGroundPoints);
                 SegmentPath seg = computeSegment(pts2D.get(previousPivotPoint), pts2D.get(pts2D.size() - 1),
                         meanPlane, cutProfile.getGPath(cutPt1, cutProfilePoints.get(cutProfilePoints.size() - 1), Scene.DEFAULT_G_BUILDING),
-                        gS);
+                        gS, favorable);
                 seg.setPoints2DGround(segmentGroundPoints);
                 segments.add(seg);
             }
@@ -400,7 +413,7 @@ public class CnossosPathBuilder {
             meanPlane = JTSUtility.getMeanPlaneCoefficients(segmentGroundPoints);
             SegmentPath path = computeSegment(pts2D.get(i0), pts2D.get(i1), meanPlane,
                     cutProfile.getGPath(cutProfilePoints.get(i0), cutProfilePoints.get(i1), Scene.DEFAULT_G_BUILDING),
-                    cutProfilePoints.get(i0).groundCoefficient);
+                    cutProfilePoints.get(i0).groundCoefficient, favorable);
             path.dc = cutPt0.getCoordinate().distance3D(cutPt1.getCoordinate());
             path.setPoints2DGround(segmentGroundPoints);
             segments.add(path);

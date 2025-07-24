@@ -46,8 +46,7 @@ public class Path {
     private SegmentPath srSegment; // list of source-receiver path (including prime path)
     private List<PointPath> pointList; // list of points (source, receiver or diffraction and reflection points)
     private List<SegmentPath> segmentList; // list of segments [S,O1] and [On-1,R] (O1 and On-1 are respectively the first diffraction point and On-1 the last diffration point)
-    private boolean favorable; // if true, favorable meteorological condition path TODO move to cnossospathparameters
-    private String timePeriod=""; // time period if relevant (day, evening, night or other parameters, use LDenConfig.TIME_PERIOD)
+   private String timePeriod=""; // time period if relevant (day, evening, night or other parameters, use LDenConfig.TIME_PERIOD)
     Orientation sourceOrientation = new Orientation(0,0,0);
     public Orientation raySourceReceiverDirectivity = new Orientation(); // direction of the source->receiver path relative to the source heading
     double gs;
@@ -67,7 +66,6 @@ public class Path {
         this.srSegment = other.srSegment;
         this.pointList = other.pointList;
         this.segmentList = other.segmentList;
-        this.favorable = other.favorable;
         this.timePeriod = other.timePeriod;
         this.sourceOrientation = other.sourceOrientation;
         this.raySourceReceiverDirectivity = other.raySourceReceiverDirectivity;
@@ -202,14 +200,6 @@ public class Path {
         this.segmentList = segmentList;
     }
 
-    public boolean isFavorable() {
-        return favorable;
-    }
-
-    public void setFavorable(boolean favorable) {
-        this.favorable =  favorable;
-    }
-
     double computeZs(SegmentPath segmentPath) {
         double zs = pointList.get(segmentPath.idPtStart).coordinate.z - projectPointOnSegment(pointList.get(segmentPath.idPtStart).coordinate,segmentPath.meanGdPlane,segmentPath.pInit).z;
         return ((zs > 0) ? zs : 0); // Section 2.5.3 - If the equivalent height of a point becomes negative, i.e. if the point is located below the mean ground plane, a null height is retained, and the equivalent point is then identical with its possible image.
@@ -228,9 +218,9 @@ public class Path {
     public double computeZsPrime(SegmentPath segmentPath) {
         // The height corrections deltazs and deltazr convey the effect of the sound ray bending. deltazT accounts for the effect of the turbulence.
         double alpha0 = 2 * Math.pow(10, -4);
-        double deltazt = 6 * Math.pow(10, -3) * segmentPath.dp / (segmentPath.zsH + segmentPath.zrH);
-        double deltazs = alpha0 * Math.pow((segmentPath.zsH / (segmentPath.zsH + segmentPath.zrH)), 2) * (Math.pow(segmentPath.dp, 2) / 2);
-        return segmentPath.zsH + deltazs + deltazt;
+        double deltazt = 6 * Math.pow(10, -3) * segmentPath.dp / (segmentPath.zs + segmentPath.zr);
+        double deltazs = alpha0 * Math.pow((segmentPath.zs / (segmentPath.zs + segmentPath.zr)), 2) * (Math.pow(segmentPath.dp, 2) / 2);
+        return segmentPath.zs + deltazs + deltazt;
     }
 
     /**
@@ -241,9 +231,9 @@ public class Path {
     public double computeZrPrime(SegmentPath segmentPath) {
         // The height corrections deltazs and deltazr convey the effect of the sound ray bending. deltazT accounts for the effect of the turbulence.
         double alpha0 = 2 * Math.pow(10, -4);
-        double deltazt = 6 * Math.pow(10, -3) * segmentPath.dp / (segmentPath.zsH + segmentPath.zrH);
-        double deltazr = alpha0 * Math.pow((segmentPath.zrH / (segmentPath.zsH + segmentPath.zrH)), 2) * (Math.pow(segmentPath.dp, 2) / 2);
-        return segmentPath.zrH + deltazr + deltazt;
+        double deltazt = 6 * Math.pow(10, -3) * segmentPath.dp / (segmentPath.zs + segmentPath.zr);
+        double deltazr = alpha0 * Math.pow((segmentPath.zr / (segmentPath.zs + segmentPath.zr)), 2) * (Math.pow(segmentPath.dp, 2) / 2);
+        return segmentPath.zr + deltazr + deltazt;
     }
 
     /*
