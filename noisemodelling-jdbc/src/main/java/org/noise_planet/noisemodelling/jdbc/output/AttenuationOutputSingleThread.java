@@ -11,6 +11,7 @@ package org.noise_planet.noisemodelling.jdbc.output;
 
 import org.h2gis.api.ProgressVisitor;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.math.Vector3D;
 import org.noise_planet.noisemodelling.jdbc.EmissionTableGenerator;
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters;
 import org.noise_planet.noisemodelling.jdbc.input.SceneDatabaseInputSettings;
@@ -20,6 +21,7 @@ import org.noise_planet.noisemodelling.pathfinder.PathFinder;
 import org.noise_planet.noisemodelling.pathfinder.profilebuilder.CutPointReceiver;
 import org.noise_planet.noisemodelling.pathfinder.profilebuilder.CutPointSource;
 import org.noise_planet.noisemodelling.pathfinder.profilebuilder.CutProfile;
+import org.noise_planet.noisemodelling.pathfinder.utils.geometry.Orientation;
 import org.noise_planet.noisemodelling.propagation.AttenuationParameters;
 import org.noise_planet.noisemodelling.propagation.ReceiverNoiseLevel;
 import org.noise_planet.noisemodelling.propagation.cnossos.AttenuationCnossos;
@@ -100,15 +102,56 @@ public class AttenuationOutputSingleThread implements CutPlaneVisitor {
     }
 
     private double[] processAndStoreAttenuation(AttenuationParameters data, CnossosPath proPathParameters, String period) {
-        double[] attenuation = AttenuationCnossos.computeCnossosAttenuation(data, proPathParameters, multiThread.sceneWithEmission,
+        double[] aglobalSR = null;
+        Vector3D fieldVectorPropagation = Orientation.rotate(proPathParameters.getSourceOrientation(),
+                Orientation.toVector(proPathParameters.raySourceReceiverDirectivity), false);
+        int roseIndex = AttenuationParameters.getRoseIndex(Math.atan2(fieldVectorPropagation.getY(), fieldVectorPropagation.getX()));
+
+        AttenuationCnossos.computeCnossosAttenuation(data, proPathParameters, multiThread.sceneWithEmission,
                 multiThread.noiseMapDatabaseParameters.exportAttenuationMatrix);
+        if(cnossosPaths.size() > 0){
+            if(cnossosPaths.get(cnossosPaths.size()-1).getSRSegment().s.equals(proPathParameters.getSRSegment().s) && cnossosPaths.get(cnossosPaths.size()-1).getSRSegment().r.equals(proPathParameters.getSRSegment().r)){
+                aglobalSR = sumArrayWithPonderation(cnossosPaths.get(cnossosPaths.size()-1).aGlobal, proPathParameters.aGlobal, data.getWindRose()[roseIndex]);
+                // Apply attenuation due to sound direction
+                int sourceId = proPathParameters.getCutProfile().getSource().id;
+                double sourceLi = proPathParameters.getCutProfile().getSource().li;
+
+                if(multiThread.sceneWithEmission != null && !multiThread.sceneWithEmission.isOmnidirectional(sourceId)) {
+                    Orientation directivityToPick = proPathParameters.raySourceReceiverDirectivity;
+                    double[] attSource = multiThread.sceneWithEmission.getSourceAttenuation( sourceId,
+                            multiThread.sceneWithEmission.profileBuilder.frequencyArray.stream().mapToDouble(value -> value).toArray(), Math.toRadians(directivityToPick.yaw),
+                            Math.toRadians(directivityToPick.pitch));
+                    if(multiThread.noiseMapDatabaseParameters.exportAttenuationMatrix) {
+                        proPathParameters.aSource = attSource;
+                    }
+                    aglobalSR = sumArray(aglobalSR, attSource);
+                }
+
+                // For line source, take account of li coefficient
+                if(sourceLi > 1.0) {
+                    for (int i = 0; i < aglobalSR.length; i++) {
+                        aglobalSR[i] = wToDb(dBToW(aglobalSR[i]) * sourceLi);
+                    }
+                }
+                // Keep global attenuation
+                if(multiThread.noiseMapDatabaseParameters.exportAttenuationMatrix) {
+                    proPathParameters.aGlobalL = aglobalSR.clone();
+                    cnossosPaths.get(cnossosPaths.size() - 1).aGlobalL = aglobalSR.clone();
+                }
+            }else{
+                aglobalSR = proPathParameters.aGlobal.clone();
+            }
+
+        }else{
+            aglobalSR = proPathParameters.aGlobal.clone();
+        }
         if(multiThread.noiseMapDatabaseParameters.exportRaysMethod == NoiseMapDatabaseParameters.ExportRaysMethods.TO_RAYS_TABLE &&
                 multiThread.noiseMapDatabaseParameters.exportAttenuationMatrix) {
             CnossosPath cnossosPath = new CnossosPath(proPathParameters);
             cnossosPath.setTimePeriod(period);
             cnossosPaths.add(cnossosPath);
         }
-        return attenuation;
+        return aglobalSR;
     }
 
     /**

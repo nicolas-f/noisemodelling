@@ -9,16 +9,21 @@
 
 package org.noise_planet.noisemodelling.propagation;
 
+import org.locationtech.jts.math.Vector3D;
 import org.noise_planet.noisemodelling.pathfinder.CutPlaneVisitor;
 import org.noise_planet.noisemodelling.pathfinder.PathFinder;
 import org.noise_planet.noisemodelling.pathfinder.profilebuilder.CutProfile;
 import org.noise_planet.noisemodelling.pathfinder.utils.AcousticIndicatorsFunctions;
+import org.noise_planet.noisemodelling.pathfinder.utils.geometry.Orientation;
 import org.noise_planet.noisemodelling.propagation.cnossos.AttenuationCnossos;
 import org.noise_planet.noisemodelling.propagation.cnossos.CnossosPath;
 import org.noise_planet.noisemodelling.propagation.cnossos.CnossosPathBuilder;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.noise_planet.noisemodelling.pathfinder.utils.AcousticIndicatorsFunctions.*;
+import static org.noise_planet.noisemodelling.pathfinder.utils.AcousticIndicatorsFunctions.dBToW;
 
 /**
  * Receive vertical cut plane, compute the attenuation corresponding to this plane
@@ -40,19 +45,26 @@ public class AttenuationVisitor implements CutPlaneVisitor {
         // Source surface reflectivity
         double gs = scene.sourceGs.getOrDefault(cutProfile.getSource().sourcePk, SceneWithAttenuation.DEFAULT_GS);
 
-        CnossosPath cnossosPathF = CnossosPathBuilder.computeCnossosPathFromCutProfile(cutProfile, scene.isBodyBarrier(),
-                scene.profileBuilder.exactFrequencyArray, gs, true);
 
         CnossosPath cnossosPathH = CnossosPathBuilder.computeCnossosPathFromCutProfile(cutProfile, scene.isBodyBarrier(),
                 scene.profileBuilder.exactFrequencyArray, gs, false);
 
+        CnossosPath cnossosPathF = CnossosPathBuilder.computeCnossosPathFromCutProfile(cutProfile, scene.isBodyBarrier(),
+                scene.profileBuilder.exactFrequencyArray, gs, true);
+
         if(cnossosPathF != null) {
             cnossosPathF.setFavorable(true);
+            if(pathParameters.size() >= 2){
+                cnossosPathF.double_aBoundary = pathParameters.get(0).double_aBoundary; // double_aBoundary is calculated once for the direct path and will be the same for all paths.
+            }
             addPropagationPath(cnossosPathF);
         }
 
         if(cnossosPathH != null) {
             cnossosPathH.setFavorable(false);
+            if(pathParameters.size() >= 2){
+                cnossosPathH.double_aBoundary = pathParameters.get(1).double_aBoundary;
+            }
             addPropagationPath(cnossosPathH);
         }
 
@@ -65,9 +77,50 @@ public class AttenuationVisitor implements CutPlaneVisitor {
     }
 
     private void processPath(String period, AttenuationParameters AttenuationParameters, CnossosPath path) {
-        double[] aGlobalMeteo = AttenuationCnossos.computeCnossosAttenuation(AttenuationParameters, path,
+        double[] aglobalSR = null;
+        Vector3D fieldVectorPropagation = Orientation.rotate(path.getSourceOrientation(),
+                Orientation.toVector(path.raySourceReceiverDirectivity), false);
+        int roseIndex = AttenuationParameters.getRoseIndex(Math.atan2(fieldVectorPropagation.getY(), fieldVectorPropagation.getX()));
+
+        AttenuationCnossos.computeCnossosAttenuation(AttenuationParameters, path,
                 multiThreadParent.scene, multiThreadParent.exportAttenuationMatrix);
-        if (aGlobalMeteo != null && aGlobalMeteo.length > 0) {
+
+        if(!pathParameters.isEmpty()) {
+            if (pathParameters.get(pathParameters.size() - 1).getSRSegment().s.equals(path.getSRSegment().s) && pathParameters.get(pathParameters.size() - 1).getSRSegment().r.equals(path.getSRSegment().r)) {
+                aglobalSR = sumArrayWithPonderation(pathParameters.get(pathParameters.size() - 1).aGlobal, path.aGlobal, AttenuationParameters.getWindRose()[roseIndex]);
+                int sourceId = path.getCutProfile().getSource().id;
+                double sourceLi = path.getCutProfile().getSource().li;
+
+                if(multiThreadParent.scene != null && !multiThreadParent.scene.isOmnidirectional(sourceId)) {
+                    Orientation directivityToPick = path.raySourceReceiverDirectivity;
+                    double[] attSource = multiThreadParent.scene.getSourceAttenuation( sourceId,
+                            multiThreadParent.scene.profileBuilder.frequencyArray.stream().mapToDouble(value -> value).toArray(), Math.toRadians(directivityToPick.yaw),
+                            Math.toRadians(directivityToPick.pitch));
+                    if(multiThreadParent.exportAttenuationMatrix) {
+                        path.aSource = attSource;
+                    }
+                    aglobalSR = sumArray(aglobalSR, attSource);
+                }
+
+                // For line source, take account of li coefficient
+                if(sourceLi > 1.0) {
+                    for (int i = 0; i < aglobalSR.length; i++) {
+                        aglobalSR[i] = wToDb(dBToW(aglobalSR[i]) * sourceLi);
+                    }
+                }
+                // Keep global attenuation
+                if(multiThreadParent.exportAttenuationMatrix) {
+                    path.aGlobalL = aglobalSR.clone();
+                    pathParameters.get(pathParameters.size() - 1).aGlobalL = aglobalSR.clone();
+                }
+            }else {
+                aglobalSR = path.aGlobal.clone();
+            }
+        }else{
+            aglobalSR = path.aGlobal.clone();
+        }
+
+        if (aglobalSR != null && aglobalSR.length > 0) {
             multiThreadParent.cnossosPathCount.addAndGet(1);
             if(keepRays) {
                 pathParameters.add(path);
@@ -75,7 +128,7 @@ public class AttenuationVisitor implements CutPlaneVisitor {
             receiverAttenuationLevels.add(new ReceiverNoiseLevel(
                     new PathFinder.SourcePointInfo(path.getCutProfile().getSource()),
                     new PathFinder.ReceiverPointInfo(path.getCutProfile().getReceiver()),
-                    period, aGlobalMeteo));
+                    period, aglobalSR));
         }
     }
 

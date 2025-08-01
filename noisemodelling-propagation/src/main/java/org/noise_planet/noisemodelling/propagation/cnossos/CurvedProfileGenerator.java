@@ -76,6 +76,8 @@ public class CurvedProfileGenerator {
             CutPoint curvedCutPoint = new CutPoint(point);
             curvedCutPoint.setZGround(zGp-translation);
             curvedCutPoint.setCoordinate(new Coordinate(x,y,zp-translation));
+            point.setCoordinate(curvedCutPoint.coordinate);
+            point.setZGround(curvedCutPoint.zGround);
             curvedProfile.add(curvedCutPoint);
             k++;
         }

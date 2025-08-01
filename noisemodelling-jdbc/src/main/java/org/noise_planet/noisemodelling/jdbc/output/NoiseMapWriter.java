@@ -159,7 +159,7 @@ public class NoiseMapWriter implements Callable<Boolean> {
                 ps.setString(parameterIndex++, json);
             }
             if(databaseParameters.exportAttenuationMatrix) {
-                double globalValue = sumDbArray(row.aGlobal);
+                double globalValue = sumDbArray(row.aGlobalL);
                 ps.setDouble(parameterIndex++, globalValue);
             }
             if(exportPeriod) {
