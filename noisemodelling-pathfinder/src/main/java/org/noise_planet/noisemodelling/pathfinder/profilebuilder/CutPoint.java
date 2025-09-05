@@ -99,7 +99,7 @@ public class CutPoint implements Comparable<CutPoint> {
 
     /**
      * Retrieve the coordinate of the point.
-     * @return The coordinate of the point.
+     * @return The coordinate of the point. z is the altitude of the point. (sea level = 0m)
      */
     public Coordinate getCoordinate(){
         return coordinate;
@@ -114,8 +114,8 @@ public class CutPoint implements Comparable<CutPoint> {
     }
 
     /**
-     * Retrieve the topographic height of the point.
-     * @return The topographic height of the point.
+     * Retrieve the topographic height of the ground. (sea level = 0m)
+     * @return The topographic height of the ground. (sea level = 0m)
      */
     public Double getzGround() {
         return zGround;

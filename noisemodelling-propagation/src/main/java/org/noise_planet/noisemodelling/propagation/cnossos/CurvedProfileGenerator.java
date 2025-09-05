@@ -21,6 +21,35 @@ public class CurvedProfileGenerator {
 
     // Method to transform a list of flat coordinates to curved coordinates
 
+
+    public static double computeZp(Coordinate cs, Coordinate cr, double C0, Coordinate p) {
+        double xpp = p.x - (cs.x+cr.x)/2;
+        double ypp = p.y - (cs.y+cr.y)/2;
+        double zpp = p.z - (cs.z+cr.z)/2;
+
+        double xpp2 = xpp*xpp;
+        double ypp2 = ypp*ypp;
+        double zpp2 = zpp*zpp;
+
+        return (C0*(xpp2+ypp2+zpp2+zpp*C0))/(xpp2+ypp2+((C0+zpp)*(C0+zpp)));
+    }
+
+
+    public static Coordinate[] applyTransformation(Coordinate cs, Coordinate cr,double hs,double hr,  Coordinate[] flatProfile) {
+        Coordinate[] curvedProfile = new Coordinate[flatProfile.length];
+
+        // Radius of curvature
+        double R_c = 2 * Math.max(1000, 8 * cs.distance(cr));
+        double C0 = 2*(((hs+hr)/2)+R_c);
+        double zs = computeZp(cs, cr, C0, cs) - cs.z;
+
+        for (int i = 0; i < flatProfile.length; i++) {
+            double zp = computeZp(cs, cr, C0, flatProfile[i]);
+            curvedProfile[i] = new Coordinate(flatProfile[i].x, flatProfile[i].y, zp - zs); // Adjust z to keep the endpoints consistent
+        }
+        return curvedProfile;
+    }
+
     /**
      * Salomons, E., Van Maercke, D., Defrance, J., & De Roo, F. (2011). The Harmonoise sound propagation model. Acta acustica united with acustica, 97(1), 62-74.
      * @param flatProfile

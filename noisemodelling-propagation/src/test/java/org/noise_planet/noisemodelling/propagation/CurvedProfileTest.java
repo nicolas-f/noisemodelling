@@ -21,6 +21,33 @@ import java.util.List;
 public class CurvedProfileTest {
 
     @Test
+    public void curvedProfile2() {
+        Coordinate from = new Coordinate(100, 25, 110);
+        Coordinate to = new Coordinate(500, 25, 110);
+
+        int numberOfIntermediatePoints = 10;
+
+        Coordinate[] coordinates = new Coordinate[numberOfIntermediatePoints+2];
+        coordinates[0] = from;
+        coordinates[coordinates.length-1] = to;
+        for (int i = 1; i <= numberOfIntermediatePoints; i++) {
+            double ratio = (double)i / (numberOfIntermediatePoints + 1);
+            double x = from.x + ratio * (to.x - from.x);
+            double y = from.y + ratio * (to.y - from.y);
+            double z = from.z + ratio * (to.z - from.z);
+            coordinates[i] = new Coordinate(x, y, z);
+        }
+        Coordinate[] curvedProfile = CurvedProfileGenerator.applyTransformation(from, to, 1, 1, coordinates);
+        // print the transformed curved coordinates for python plot
+        for (Coordinate coord : curvedProfile) {
+            System.out.println(coord.x + "," + coord.y + "," + coord.z);
+        }
+
+    }
+
+
+
+    @Test
     public void curvedProfile() {
         // Test the implementation with some dummy data
         List<CutPoint> flatProfile = new ArrayList<>();
@@ -35,7 +62,6 @@ public class CurvedProfileTest {
         flatProfile.get(2).setZGround(0);
         flatProfile.get(3).setZGround(0);
         flatProfile.get(4).setZGround(0);
-
 
         double distance = flatProfile.get(0).getCoordinate().distance(flatProfile.get(4).getCoordinate());
         System.out.println("distance = " + distance);
