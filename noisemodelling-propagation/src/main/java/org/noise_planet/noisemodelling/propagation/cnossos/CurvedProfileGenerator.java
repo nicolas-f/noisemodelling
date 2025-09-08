@@ -35,11 +35,20 @@ public class CurvedProfileGenerator {
     }
 
 
+    /**
+     * Salomons, E., Van Maercke, D., Defrance, J., & De Roo, F. (2011). The Harmonoise sound propagation model. Acta acustica united with acustica, 97(1), 62-74.
+     * @param cs Source coordinate
+     * @param cr Receiver coordinate
+     * @param hs Height of source above ground
+     * @param hr Height of receiver above ground
+     * @param flatProfile Array of coordinates representing the flat profile (should be discretized with segments distance < 50 m)
+     * @return Array of coordinates representing the curved profile
+     */
     public static Coordinate[] applyTransformation(Coordinate cs, Coordinate cr,double hs,double hr,  Coordinate[] flatProfile) {
         Coordinate[] curvedProfile = new Coordinate[flatProfile.length];
 
         // Radius of curvature
-        double R_c = 2 * Math.max(1000, 8 * cs.distance(cr));
+        double R_c = 2 * Math.max(1000, 8 * cs.distance3D(cr));
         double C0 = 2*(((hs+hr)/2)+R_c);
         double zs = computeZp(cs, cr, C0, cs) - cs.z;
 
@@ -63,119 +72,19 @@ public class CurvedProfileGenerator {
         CutPoint receiverPoint = flatProfile.get(flatProfile.size() - 1);
         Coordinate cs = sourcePoint.getCoordinate();
         Coordinate cr = receiverPoint.getCoordinate();
-        double hs = cs.getZ()-sourcePoint.zGround;
-        double hr = cr.getZ()-receiverPoint.zGround;
-
-        // Radius of curvature
-        double R_c = 2 * Math.max(1000, 8 * cs.distance(cr));
+        double hs = cs.getZ() - sourcePoint.zGround;
+        double hr = cr.getZ() - receiverPoint.zGround;
 
         List<CutPoint> curvedProfile = new ArrayList<>();
-        int k=0;
-        double translation =0;
-        for (CutPoint point : flatProfile) {
-            Coordinate coord = point.getCoordinate();
-            // Extract flat coordinates (x, y, z)
-            double x = coord.getX();
-            double y = coord.getY();  // For 3D case, the y value can be included.
-            double z = coord.getZ();
-            double zGround = point.getzGround();
+        Coordinate[] curvedCoords = applyTransformation(cs, cr, hs, hr, flatProfile.stream().map(CutPoint::getCoordinate).toArray(Coordinate[]::new));
+        Coordinate[] groundCoords = applyTransformation(cs, cr, hs, hr, flatProfile.stream().map(p -> new Coordinate(p.getCoordinate().x, p.getCoordinate().y, p.zGround)).toArray(Coordinate[]::new));
 
-            double C0 = 2*(((hs+hr)/2)+R_c);
-
-            double xpp = x - (cs.x+cr.x)/2;
-            double ypp = y - (cs.y+cr.y)/2;
-            double zpp = z - (cs.z+cr.z)/2;
-            double zGpp = zGround - (cs.z+cr.z)/2;
-
-
-            double xpp2 = xpp*xpp;
-            double ypp2 = ypp*ypp;
-            double zpp2 = zpp*zpp;
-            double zGpp2 = zGpp*zGpp;
-            double C02 = C0  *C0;
-
-            double xp = (C02*xpp)/(xpp2+((C0+zpp)*(C0+zpp)));
-            double yp = (C02*ypp)/(ypp2+((C0+zpp)*(C0+zpp)));
-            double zp = (C0*(xpp2+ypp2+zpp2+zpp*C0))/(xpp2+ypp2+((C0+zpp)*(C0+zpp)));
-            double zGp = (C0*(xpp2+ypp2+zGpp2+zGpp*C0))/(xpp2+ypp2+((C0+zGpp)*(C0+zGpp)));
-
-            if (k==0) translation = zp -z;
-
-            // Create new coordinate (x and y nearly unchanged for large R)
-            CutPoint curvedCutPoint = new CutPoint(point);
-            curvedCutPoint.setZGround(zGp-translation);
-            curvedCutPoint.setCoordinate(new Coordinate(x,y,zp-translation));
-            point.setCoordinate(curvedCutPoint.coordinate);
-            point.setZGround(curvedCutPoint.zGround);
-            curvedProfile.add(curvedCutPoint);
-            k++;
-        }
-
-        return curvedProfile;
-    }
-
-
-
-    /**
-     * Curves the flat profile based on the source-receiver distance.
-     * @param flatProfile The original flat profile as a list of (x, y) points.
-     * @param sourceReceiverDistance The distance between the source and receiver.
-     * @return A new list of points representing the curved profile.
-     */
-    public List<CutPoint> curveProfile(List<CutPoint> flatProfile, double sourceReceiverDistance) {
-
-        double R = 2 * Math.max(1000, 8 * sourceReceiverDistance);
-
-        List<CutPoint> curvedProfile = new ArrayList<>();
-        if (flatProfile == null || flatProfile.size() < 2) return curvedProfile;
-
-        // Get chord endpoints
-        CutPoint sourcePoint = flatProfile.get(0);
-        CutPoint receiverPoint = flatProfile.get(flatProfile.size() - 1);
-        Coordinate c1 = sourcePoint.getCoordinate();
-        Coordinate cn = receiverPoint.getCoordinate();
-
-        // Chord vector and length
-        double dx = cn.x - c1.x;
-        double dy = cn.y - c1.y;
-        double dz = cn.z - c1.z;
-        double chordLength = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-
-
-        // Chord direction (unit vector)
-        double ux = dx / chordLength;
-        double uy = dy / chordLength;
-        double uz = dz / chordLength;
-
-        // For vertical curvature, assume bending is downward in z
-        for (CutPoint point : flatProfile) {
-            Coordinate c = point.getCoordinate();
-            // Project point onto chord (get its fractional position t in [0,1])
-            double px = c.x - c1.x;
-            double py = c.y - c1.y;
-            double pz = c.z - c1.z;
-            double proj = px * ux + py * uy + pz * uz; // Scalar projection
-            double t = proj / chordLength;
-
-            // Compute (x, y, z) along straight chord for t
-            double flatX = c1.x + t * dx;
-            double flatY = c1.y + t * dy;
-            double flatZ = c.z ;
-
-            // Compute horizontal offset from chord midpoint for sagitta
-            double alongArc = t * chordLength;
-            double offsetFromMid = alongArc - chordLength / 2.0;
-            double sagitta = R - Math.sqrt(R * R - offsetFromMid * offsetFromMid);
-
-            // Bend "down" in z
-            double curvedZ = flatZ + sagitta;
-
-            // Create new coordinate (x and y nearly unchanged for large R)
-            Coordinate curvedCoord = new Coordinate(flatX, flatY, curvedZ);
-            CutPoint curvedCutPoint = point;
-            point.setCoordinate(curvedCoord);
-            curvedProfile.add(curvedCutPoint);
+        for (int i = 0; i < curvedCoords.length; i++) {
+            CutPoint cp = flatProfile.get(i);
+            CutPoint newCp = cp.clone();
+            newCp.setZGround(groundCoords[i].z);
+            newCp.setCoordinate(curvedCoords[i]);
+            curvedProfile.add(newCp);
         }
         return curvedProfile;
     }

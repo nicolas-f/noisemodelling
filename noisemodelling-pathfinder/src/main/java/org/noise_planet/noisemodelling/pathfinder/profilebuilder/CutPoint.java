@@ -36,7 +36,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = CutPointTopography.class, name = "Topography"),
         @JsonSubTypes.Type(value = CutPointVEdgeDiffraction.class, name = "VEdgeDiffraction")
 })
-public class CutPoint implements Comparable<CutPoint> {
+public class CutPoint implements Comparable<CutPoint>, Cloneable {
     /** {@link Coordinate} of the cut point. */
     public Coordinate coordinate = new Coordinate();
 
@@ -63,6 +63,17 @@ public class CutPoint implements Comparable<CutPoint> {
         this.coordinate = coordinate;
         this.zGround = zGround;
         this.groundCoefficient = groundCoefficient;
+    }
+
+    @Override
+    public CutPoint clone() {
+        try {
+            CutPoint cloned = (CutPoint) super.clone();
+            cloned.setCoordinate(new Coordinate(coordinate));
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(); // Can't happen
+        }
     }
 
     /**

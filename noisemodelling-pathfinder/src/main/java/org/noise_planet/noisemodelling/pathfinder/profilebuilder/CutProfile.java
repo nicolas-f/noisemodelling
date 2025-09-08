@@ -41,6 +41,13 @@ public class CutProfile {
     }
 
     /**
+     * @return the list of cut points
+     */
+    public List<CutPoint> getCutPoints() {
+        return cutPoints;
+    }
+
+    /**
      * Insert and sort cut points,
      * @param sortBySourcePosition After inserting points, sort the by the distance from the source
      * @param cutPointsToInsert
