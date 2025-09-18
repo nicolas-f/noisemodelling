@@ -4,11 +4,7 @@
 
 package org.noise_planet.noisemodelling.wps.Import_and_Export
 
-import geoserver.GeoServer
-import geoserver.catalog.Store
-import jdk.internal.org.xml.sax.SAXException
 import org.apache.commons.io.FilenameUtils
-import org.geotools.jdbc.JDBCDataStore
 import org.h2gis.api.EmptyProgressVisitor
 import org.h2gis.api.ProgressVisitor
 import org.h2gis.utilities.GeometryTableUtilities
@@ -25,8 +21,6 @@ import org.xml.sax.helpers.DefaultHandler
 import org.xml.sax.helpers.XMLReaderFactory
 import org.xml.sax.SAXException
 
-import javax.xml.parsers.SAXParser
-import javax.xml.parsers.SAXParserFactory
 import java.nio.channels.FileChannel
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -74,29 +68,7 @@ outputs = [
         ]
 ]
 
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if (dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
-    Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
-    return jdbcDataStore.getDataSource().getConnection()
-}
 
-
-def run(input) {
-
-    // Get name of the database
-    // by default an embedded h2gis database is created
-    // Advanced user can replace this database for a postGis or h2Gis server database.
-    String dbName = "h2gisdb"
-
-    // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable {
-        Connection connection ->
-            return [result: exec(connection, input)]
-    }
-}
 
 
 def exec(Connection connection, input) {

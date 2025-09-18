@@ -31,7 +31,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -203,7 +202,7 @@ public class GenerateReferenceDeviation {
     }
 
     private static void addUTDeviationDetails(String utName, StringBuilder sb, JsonNode expectedValues, CnossosPath actual, double[] powerLevel) {
-        double[] actualLH = addArray(actual.aGlobalH, powerLevel);
+        double[] actualLH = addArray(actual.aGlobal, powerLevel);
         double[] expectedLH = asArray(expectedValues.get("LH"));
         DeviationResult lhDeviation = computeDeviation(expectedLH, actualLH);
         sb.append(String.format(Locale.ROOT, "\n\n%s \n" +

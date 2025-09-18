@@ -11,12 +11,8 @@
  */
 
 package org.noise_planet.noisemodelling.wps.Data_Assimilation
-
-import geoserver.GeoServer
-import geoserver.catalog.Store
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
-import org.geotools.jdbc.JDBCDataStore
 import org.h2gis.utilities.SpatialResultSet
 import org.h2gis.utilities.wrapper.ConnectionWrapper
 import org.slf4j.Logger
@@ -71,8 +67,8 @@ static def exec(Connection connection, input){
 
     Sql sql = new Sql(connection)
 
-    sql.execute("ALTER TABLE RECEIVERS_LEVEL ADD COLUMN TEMP DOUBLE PRECISION")
-    sql.execute("UPDATE RECEIVERS_LEVEL SET TEMP = (SELECT TEMP_VAL FROM FILTERED_CONFIGURATIONS RC WHERE RC.IT = RECEIVERS_LEVEL.PERIOD)")
+    //sql.execute("ALTER TABLE RECEIVERS_LEVEL ADD COLUMN TEMP DOUBLE PRECISION")
+    //sql.execute("UPDATE RECEIVERS_LEVEL SET TEMP = (SELECT TEMP_VAL FROM FILTERED_CONFIGURATIONS RC WHERE RC.IT = RECEIVERS_LEVEL.PERIOD)")
 
     sql.execute("CREATE INDEX IF NOT EXISTS idx_observation_t ON " + observationTable +"(EPOCH); " )
     sql.execute(" CREATE INDEX IF NOT EXISTS idx_observation_L ON  "+ observationTable +"(LAEQ);")
@@ -87,7 +83,7 @@ static def exec(Connection connection, input){
     // Average simulated temperatures by period
     sql.execute(" DROP TABLE IF EXISTS NOISE_TEMP_UNIQ ")
     sql.execute("CREATE TABLE NOISE_TEMP_UNIQ AS " +
-            "    SELECT IT as PERIOD, AVG(TEMP_VAL) AS TEMP" +
+            "    SELECT IT as PERIOD, TEMP_VAL AS TEMP" +
             "    FROM FILTERED_CONFIGURATIONS GROUP BY PERIOD;")
     sql.execute("CREATE INDEX IF NOT EXISTS idx_noise_temp_uniq_period ON NOISE_TEMP_UNIQ(PERIOD)")
 
@@ -134,14 +130,15 @@ static def exec(Connection connection, input){
     sql.execute("CREATE TABLE agg_data (" +
             "    EPOCH integer," +
             "    PERIOD CHARACTER VARYING," +
-            "    median_abs_diff float) ;")
+            "    median_abs_diff float, "+
+            "    IDSENSOR integer) ;")
 
     sql.execute("DROP TABLE BEST_CONFIGURATION IF EXISTS")
     sql.execute("CREATE TABLE BEST_CONFIGURATION (" +
             "    EPOCH integer," +
             "    PERIOD CHARACTER VARYING," +
-            "    min_median_diff float) ;")
-
+            "    min_median_diff float,"+
+            "    IDSENSOR integer) ;")
 
     int i =0
     int tmax = tValues.size()
@@ -175,10 +172,11 @@ static def exec(Connection connection, input){
         SELECT 
             f1.EPOCH, 
             f2.PERIOD, 
-            ROUND(MEDIAN(ABS(f1.LAEQ - f2.LAEQ)), 4) AS median_abs_diff
+            ROUND(MEDIAN(ABS(f1.LAEQ - f2.LAEQ)), 4) AS median_abs_diff,
+            f1.IDRECEIVER
         FROM filtered_obs f1, filtered_noise f2 
         WHERE f1.EPOCH= """+t+"""
-        GROUP BY f1.EPOCH, f2.PERIOD
+        GROUP BY f1.EPOCH, f2.PERIOD,f1.IDRECEIVER
         """)
 
         sql.execute("INSERT INTO BEST_CONFIGURATION  SELECT * FROM agg_data a  WHERE median_abs_diff = ( SELECT MIN(median_abs_diff)  FROM agg_data )")
@@ -201,28 +199,4 @@ static def exec(Connection connection, input){
     logger.info('End Extract best configuration')
     return "Calculation Done ! The table BEST_CONFIGURATION_FULL has been created."
 
-}
-// run the script
-static def run(input) {
-
-    // Get name of the database
-    // by default an embedded h2gis database is created
-    // Advanced user can replace this database for a postGis or h2Gis server database.
-    String dbName = "h2gisdb"
-
-    // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable {
-        Connection connection ->
-            return [result: exec(connection, input)]
-    }
-}
-
-// Open Connection to Geoserver
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if (dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
-    Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
-    return jdbcDataStore.getDataSource().getConnection()
 }

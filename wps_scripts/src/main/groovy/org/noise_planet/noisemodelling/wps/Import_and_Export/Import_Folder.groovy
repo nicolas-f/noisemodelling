@@ -17,11 +17,9 @@
 
 package org.noise_planet.noisemodelling.wps.Import_and_Export
 
-import geoserver.GeoServer
-import geoserver.catalog.Store
+
 import groovy.io.FileType
 import org.apache.commons.io.FilenameUtils
-import org.geotools.jdbc.JDBCDataStore
 import org.h2gis.api.EmptyProgressVisitor
 import org.h2gis.functions.io.csv.CSVDriverFunction
 import org.h2gis.functions.io.dbf.DBFDriverFunction
@@ -30,7 +28,6 @@ import org.h2gis.functions.io.gpx.GPXDriverFunction
 import org.h2gis.functions.io.osm.OSMDriverFunction
 import org.h2gis.functions.io.shp.SHPDriverFunction
 import org.h2gis.functions.io.tsv.TSVDriverFunction
-import org.h2gis.utilities.GeometryMetaData
 import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.TableLocation
@@ -89,14 +86,6 @@ outputs = [
         ]
 ]
 
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if (dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
-    Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
-    return jdbcDataStore.getDataSource().getConnection()
-}
 
 def exec(Connection connection, input) {
 
@@ -274,18 +263,4 @@ def exec(Connection connection, input) {
     // print to WPS Builder
     return resultString
 
-}
-
-def run(input) {
-
-    // Get name of the database
-    // by default an embedded h2gis database is created
-    // Advanced user can replace this database for a postGis or h2Gis server database.
-    String dbName = "h2gisdb"
-
-    // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable {
-        Connection connection ->
-            return [result: exec(connection, input)]
-    }
 }

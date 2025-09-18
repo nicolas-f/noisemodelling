@@ -18,7 +18,6 @@
  * @Author Nicolas Fortin, Université Gustave Eiffel
  */
 
-import org.h2gis.api.ProgressVisitor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.Connection

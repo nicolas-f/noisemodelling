@@ -4,10 +4,7 @@
 
 package org.noise_planet.noisemodelling.wps.Experimental
 
-import geoserver.GeoServer
-import geoserver.catalog.Store
 import groovy.sql.Sql
-import org.geotools.jdbc.JDBCDataStore
 import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.SpatialResultSet
@@ -31,17 +28,8 @@ inputs = [databaseName    : [name: 'Name of the database', title: 'Name of the d
 outputs = [result: [name: 'result', title: 'Result', type: String.class]]
 
 
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if (dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
-    Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
-    return jdbcDataStore.getDataSource().getConnection()
-}
 
-
-def run(input) {
+def exec(Connection connection,input) {
 
     String output = null
     // -------------------
@@ -66,76 +54,73 @@ def run(input) {
     System.out.println("Run ...")
 
     // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable { Connection connection ->
 
-        //Need to change the ConnectionWrapper to WpsConnectionWrapper to work under postgis database
-        connection = new ConnectionWrapper(connection)
-        System.out.println("Connection to the database ok ...")
+    //Need to change the ConnectionWrapper to WpsConnectionWrapper to work under postgis database
+    connection = new ConnectionWrapper(connection)
+    System.out.println("Connection to the database ok ...")
 
-        //Get the geometry field of the source table
-        TableLocation sourceTableIdentifier = TableLocation.parse(sources_table_name)
-        List<String> geomFields = GeometryTableUtilities.getGeometryColumnNames(connection, sourceTableIdentifier)
-        if (geomFields.isEmpty()) {
-            output = String.format("The table %s does not exists or does not contain a geometry field", sourceTableIdentifier)
-            throw new SQLException(String.format("The table %s does not exists or does not contain a geometry field", sourceTableIdentifier));
-        }
-        String sourceGeomName = geomFields.get(0);
-
-        //Get the primary key field of the source table
-        int pkIndex = JDBCUtilities.getIntegerPrimaryKey(connection, TableLocation.parse(sources_table_name))
-        if (pkIndex < 1) {
-            throw new IllegalArgumentException(String.format("Source table %s does not contain a primary key", sourceTableIdentifier));
-        }
-
-        // open sql connection
-        Sql sql = new Sql(connection)
-
-        // create empty LW_ROADS
-        sql.execute("drop table if exists LW_ROADS;")
-        sql.execute("create table LW_ROADS (IDSOURCE integer, the_geom Geometry, " +
-                "Ld63 double precision, Ld125 double precision, Ld250 double precision, Ld500 double precision, Ld1000 double precision, Ld2000 double precision, Ld4000 double precision, Ld8000 double precision," +
-                "Le63 double precision, Le125 double precision, Le250 double precision, Le500 double precision, Le1000 double precision, Le2000 double precision, Le4000 double precision, Le8000 double precision," +
-                "Ln63 double precision, Ln125 double precision, Ln250 double precision, Ln500 double precision, Ln1000 double precision, Ln2000 double precision, Ln4000 double precision, Ln8000 double precision);")
-
-        def qry = 'INSERT INTO LW_ROADS(IDSOURCE,the_geom, ' +
-                'Ld63, Ld125, Ld250, Ld500, Ld1000,Ld2000, Ld4000, Ld8000,' +
-                'Le63, Le125, Le250, Le500, Le1000,Le2000, Le4000, Le8000,' +
-                'Ln63, Ln125, Ln250, Ln500, Ln1000,Ln2000, Ln4000, Ln8000) ' +
-                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);'
-
-
-        long start = System.currentTimeMillis()
-        System.out.println("Start ...")
-        // fill the table LW_ROADS
-        sql.withBatch(100, qry) { ps ->
-            PreparedStatement st = connection.prepareStatement("SELECT * FROM " + sources_table_name)
-            SpatialResultSet rs = st.executeQuery().unwrap(SpatialResultSet.class)
-            while (rs.next()) {
-                System.println(rs)
-                Geometry geo = rs.getGeometry()
-                def results = computeLw(rs.getLong(pkIndex), geo, rs)
-
-                ps.addBatch(rs.getLong(pkIndex) as Integer, geo as Geometry,
-                        results[0][0] as Double, results[0][1] as Double, results[0][2] as Double,
-                        results[0][3] as Double, results[0][4] as Double, results[0][5] as Double,
-                        results[0][6] as Double, results[0][7] as Double,
-                        results[1][0] as Double, results[1][1] as Double, results[1][2] as Double,
-                        results[1][3] as Double, results[1][4] as Double, results[1][5] as Double,
-                        results[1][6] as Double, results[1][7] as Double,
-                        results[2][0] as Double, results[2][1] as Double, results[2][2] as Double,
-                        results[2][3] as Double, results[2][4] as Double, results[2][5] as Double,
-                        results[2][6] as Double, results[2][7] as Double)
-            }
-        }
-
-        sql.execute("UPDATE LW_ROADS SET THE_GEOM = ST_UPDATEZ(The_geom,0.05);")
-        sql.execute("ALTER TABLE LW_ROADS ADD pk INT AUTO_INCREMENT PRIMARY KEY;")
-        long computationTime = System.currentTimeMillis() - start;
-        output = "The Table LW_ROADS have been created"
-        return [result: output]
-
-
+    //Get the geometry field of the source table
+    TableLocation sourceTableIdentifier = TableLocation.parse(sources_table_name)
+    List<String> geomFields = GeometryTableUtilities.getGeometryColumnNames(connection, sourceTableIdentifier)
+    if (geomFields.isEmpty()) {
+        output = String.format("The table %s does not exists or does not contain a geometry field", sourceTableIdentifier)
+        throw new SQLException(String.format("The table %s does not exists or does not contain a geometry field", sourceTableIdentifier));
     }
+    String sourceGeomName = geomFields.get(0);
+
+    //Get the primary key field of the source table
+    int pkIndex = JDBCUtilities.getIntegerPrimaryKey(connection, TableLocation.parse(sources_table_name))
+    if (pkIndex < 1) {
+        throw new IllegalArgumentException(String.format("Source table %s does not contain a primary key", sourceTableIdentifier));
+    }
+
+    // open sql connection
+    Sql sql = new Sql(connection)
+
+    // create empty LW_ROADS
+    sql.execute("drop table if exists LW_ROADS;")
+    sql.execute("create table LW_ROADS (IDSOURCE integer, the_geom Geometry, " +
+            "Ld63 double precision, Ld125 double precision, Ld250 double precision, Ld500 double precision, Ld1000 double precision, Ld2000 double precision, Ld4000 double precision, Ld8000 double precision," +
+            "Le63 double precision, Le125 double precision, Le250 double precision, Le500 double precision, Le1000 double precision, Le2000 double precision, Le4000 double precision, Le8000 double precision," +
+            "Ln63 double precision, Ln125 double precision, Ln250 double precision, Ln500 double precision, Ln1000 double precision, Ln2000 double precision, Ln4000 double precision, Ln8000 double precision);")
+
+    def qry = 'INSERT INTO LW_ROADS(IDSOURCE,the_geom, ' +
+            'Ld63, Ld125, Ld250, Ld500, Ld1000,Ld2000, Ld4000, Ld8000,' +
+            'Le63, Le125, Le250, Le500, Le1000,Le2000, Le4000, Le8000,' +
+            'Ln63, Ln125, Ln250, Ln500, Ln1000,Ln2000, Ln4000, Ln8000) ' +
+            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);'
+
+
+    long start = System.currentTimeMillis()
+    System.out.println("Start ...")
+    // fill the table LW_ROADS
+    sql.withBatch(100, qry) { ps ->
+        PreparedStatement st = connection.prepareStatement("SELECT * FROM " + sources_table_name)
+        SpatialResultSet rs = st.executeQuery().unwrap(SpatialResultSet.class)
+        while (rs.next()) {
+            System.println(rs)
+            Geometry geo = rs.getGeometry()
+            def results = computeLw(rs.getLong(pkIndex), geo, rs)
+
+            ps.addBatch(rs.getLong(pkIndex) as Integer, geo as Geometry,
+                    results[0][0] as Double, results[0][1] as Double, results[0][2] as Double,
+                    results[0][3] as Double, results[0][4] as Double, results[0][5] as Double,
+                    results[0][6] as Double, results[0][7] as Double,
+                    results[1][0] as Double, results[1][1] as Double, results[1][2] as Double,
+                    results[1][3] as Double, results[1][4] as Double, results[1][5] as Double,
+                    results[1][6] as Double, results[1][7] as Double,
+                    results[2][0] as Double, results[2][1] as Double, results[2][2] as Double,
+                    results[2][3] as Double, results[2][4] as Double, results[2][5] as Double,
+                    results[2][6] as Double, results[2][7] as Double)
+        }
+    }
+
+    sql.execute("UPDATE LW_ROADS SET THE_GEOM = ST_UPDATEZ(The_geom,0.05);")
+    sql.execute("ALTER TABLE LW_ROADS ADD pk INT AUTO_INCREMENT PRIMARY KEY;")
+    long computationTime = System.currentTimeMillis() - start;
+    output = "The Table LW_ROADS have been created"
+    return [result: output]
+
 
 }
 

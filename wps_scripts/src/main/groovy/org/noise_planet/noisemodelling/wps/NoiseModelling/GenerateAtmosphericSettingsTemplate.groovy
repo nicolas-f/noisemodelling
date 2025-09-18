@@ -12,10 +12,7 @@
 
 package org.noise_planet.noisemodelling.wps.NoiseModelling
 
-import geoserver.GeoServer
-import geoserver.catalog.Store
 import groovy.sql.Sql
-import org.geotools.jdbc.JDBCDataStore
 import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.dbtypes.DBTypes
 import org.h2gis.utilities.dbtypes.DBUtils
@@ -65,31 +62,6 @@ outputs = [
                 type       : String.class
         ]
 ]
-
-// Open Connection to Geoserver
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if (dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
-    Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
-    return jdbcDataStore.getDataSource().getConnection()
-}
-
-// run the script
-def run(input) {
-
-    // Get name of the database
-    // by default an embedded h2gis database is created
-    // Advanced user can replace this database for a postGis or h2Gis server database.
-    String dbName = "h2gisdb"
-
-    // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable {
-        Connection connection ->
-            return [result: exec(connection, input)]
-    }
-}
 
 // main function of the script
 def exec(Connection connection, Map input) {

@@ -11,12 +11,8 @@
  */
 
 package org.noise_planet.noisemodelling.wps.Data_Assimilation
-
-import geoserver.GeoServer
-import geoserver.catalog.Store
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
-import org.geotools.jdbc.JDBCDataStore
 import org.h2gis.utilities.wrapper.ConnectionWrapper
 
 import java.sql.Connection
@@ -64,28 +60,4 @@ static def exec(Connection connection,inputs) {
 
     return "Calculation Done ! The tables " + receiverTable + " and "+tableSensors +" have been merged."
 
-}
-// run the script
-static def run(input) {
-
-    // Get name of the database
-    // by default an embedded h2gis database is created
-    // Advanced user can replace this database for a postGis or h2Gis server database.
-    String dbName = "h2gisdb"
-
-    // Open connection
-    openGeoserverDataStoreConnection(dbName).withCloseable {
-        Connection connection ->
-            return [result: exec(connection, input)]
-    }
-}
-
-// Open Connection to Geoserver
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if (dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
-    Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
-    return jdbcDataStore.getDataSource().getConnection()
 }
