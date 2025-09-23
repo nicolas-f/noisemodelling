@@ -40,7 +40,7 @@
     <dependencies>
         <!--  Modules internes  -->
         <dependency>
-            <groupId>noisemodelling</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>noisemodelling-wps</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>

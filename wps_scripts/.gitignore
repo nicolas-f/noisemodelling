@@ -1,6 +1,7 @@
 out/
 .gradle
 build/
+!build/libs/noisemodelling/noisemodelling-wps/1.0-SNAPSHOT/noisemodelling-wps-1.0-SNAPSHOT.jar
 .idea
 dependencies/
 lib/
