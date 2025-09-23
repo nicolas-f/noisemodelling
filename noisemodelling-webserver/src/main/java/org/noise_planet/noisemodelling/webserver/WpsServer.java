@@ -27,10 +27,10 @@ import java.util.*;
 
 
 public class WpsServer {
-    private static final String BASE_PACKAGE = "org.noise_planet.noisemodelling.wps";
+    private static final String BASE_PACKAGE = "org.noise_planet.noisemodelling.scripts";
 
     private static final String SCRIPTS_ROOT =
-            "/home/maguettte/IdeaProjects/NoiseModelling/wps_scripts/src/main/groovy/"
+            "./noisemodelling-scripts/src/main/groovy/"
                     + BASE_PACKAGE.replace('.', '/');
 
     public static void main(String[] args) {
