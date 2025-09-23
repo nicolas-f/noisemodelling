@@ -154,10 +154,10 @@ test {
 }
 dependencies {
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    implementation('org.geotools:gt-jdbc:21.1') {
+    /*implementation('org.geotools:gt-jdbc:21.1') {
         exclude group: 'javax.media'
     }
-    implementation('org.geoserver.script:gs-script-groovy:2.15.1') {
+   implementation('org.geoserver.script:gs-script-groovy:2.15.1') {
         exclude group: 'org.geoscript'
         exclude group: 'no.ecc.vectortile'
         exclude group: 'javax.media'
@@ -176,7 +176,7 @@ dependencies {
         exclude group: 'org.geotools.xsd', module: 'gt-xsd-wps'
         exclude group: 'org.geotools', module: 'gt-process-raster'
         exclude group: 'org.geotools', module: 'gt-process-feature'
-    }
+    }*/
     implementation 'org.postgresql:postgresql:42.7.4'
     implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '[2.5, 2.6)'
     implementation group: 'org.ejml', name: 'all', version: '0.29'
