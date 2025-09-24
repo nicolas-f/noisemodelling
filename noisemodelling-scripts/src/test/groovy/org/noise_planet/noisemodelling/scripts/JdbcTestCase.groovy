@@ -10,13 +10,13 @@
  *
  */
 
-package org.noise_planet.noisemodelling.wps
+package org.noise_planet.noisemodelling.scripts
 
 import org.h2gis.utilities.JDBCUtilities
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
-import org.noise_planet.noisemodelling.runner.Main
+import org.noise_planet.noisemodelling.scripts.Main;
 
 import javax.sql.DataSource
 import java.sql.Connection

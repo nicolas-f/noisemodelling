@@ -38,7 +38,10 @@ public class WpsServer {
 
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("static/wpsbuilder", Location.CLASSPATH);
-        }).start(7000);
+        }).exception(Exception.class, (e, ctx) -> {
+            e.printStackTrace();               // affiche la stack dans la console
+            ctx.status(500).result("Erreur serveur : " + e.getMessage());
+        }).start(8000);
         //Connection connection = null;
         System.out.println("WPS Server debutt "+SCRIPTS_ROOT);
 
@@ -50,7 +53,7 @@ public class WpsServer {
                     ctx.result(buildCapabilitiesXml());
                     System.out.println("WPS here");
                 } catch (Exception e) {
-                    e.printStackTrace(); // log sur la console
+                    e.printStackTrace();
                     ctx.status(500).result("Erreur GetCapabilities : " + e.getMessage());
                 }
             } else if ("DescribeProcess".equalsIgnoreCase(request)) {
@@ -168,7 +171,7 @@ public class WpsServer {
         provider.setProviderName("NoiseModelling");
 
         OnlineResourceType site = Ows11Factory.eINSTANCE.createOnlineResourceType();
-        site.setHref("http://localhost:7000/");
+        site.setHref("http://localhost:8000/");
         provider.setProviderSite(site);
 
         ResponsiblePartySubsetType contact = Ows11Factory.eINSTANCE.createResponsiblePartySubsetType();
@@ -184,9 +187,9 @@ public class WpsServer {
         capabilities.setServiceProvider(provider);
 
         OperationsMetadataType ops = Ows11Factory.eINSTANCE.createOperationsMetadataType();
-        ops.getOperation().add(createOperation("GetCapabilities", "http://localhost:7000/wps"));
-        ops.getOperation().add(createOperation("DescribeProcess", "http://localhost:7000/wps"));
-        ops.getOperation().add(createOperation("Execute", "http://localhost:7000/wps"));
+        ops.getOperation().add(createOperation("GetCapabilities", "http://localhost:8000/wps"));
+        ops.getOperation().add(createOperation("DescribeProcess", "http://localhost:8000/wps"));
+        ops.getOperation().add(createOperation("Execute", "http://localhost:8000/wps"));
         capabilities.setOperationsMetadata(ops);
 
         ProcessOfferingsType offerings = Wps10Factory.eINSTANCE.createProcessOfferingsType();
@@ -231,14 +234,16 @@ public class WpsServer {
         );
         System.out.println("encoder "+encoder.toString());
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        encoder.encode(
-                capabilities,
-                new QName("http://www.opengis.net/wps/1.0.0", "Capabilities"),
-                out
-        );
-
-        return out.toString(StandardCharsets.UTF_8);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            encoder.encode(capabilities,
+                    new QName("http://www.opengis.net/wps/1.0.0", "Capabilities"),
+                    out);
+            return out.toString(StandardCharsets.UTF_8);
+        } catch (Throwable e) {
+            e.printStackTrace(); // <--- important
+            System.out.println("erreur "+e.getMessage());
+            throw e;
+        }
     }
 
     private static OperationType createOperation(String name, String baseUrl) {
@@ -521,7 +526,7 @@ public class WpsServer {
     }
 
     private static Map<String, List<String>> scanScriptsGrouped() {
-        System.out.println("Scan des scripts à partir de : " + SCRIPTS_ROOT);
+        System.out.println("Scan des scripts a partir de : " + SCRIPTS_ROOT);
         Map<String, List<String>> grouped = new TreeMap<>();
         File baseDir = new File(SCRIPTS_ROOT);
         if (!baseDir.exists()) return grouped;
@@ -554,9 +559,8 @@ public class WpsServer {
     }
 
     private static Connection openDatabaseConnection() throws SQLException, ClassNotFoundException {
-        File dbFile = new File("/home/maguettte/IdeaProjects/NoiseModelling/noisemodelling-webserver/projetManager");
-        String databasePath = "jdbc:h2:" + dbFile.getAbsolutePath() + ";AUTO_SERVER=TRUE";
-
+        String databasePath = "jdbc:h2:" + WpsServer.class.getResource("static/database").getPath() + ";AUTO_SERVER=TRUE";
+        System.out.println("databasePath:"+databasePath);
         Driver.load();
         Connection connection = DriverManager.getConnection(databasePath, "", "");
         H2GISFunctions.load(connection);

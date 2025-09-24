@@ -10,7 +10,7 @@
  *
  */
 
-package org.noise_planet.noisemodelling.wps
+package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
 import org.h2gis.functions.io.shp.SHPRead
@@ -19,11 +19,11 @@ import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.TableLocation
 import org.junit.Test
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
-import org.noise_planet.noisemodelling.wps.Acoustic_Tools.Add_Laeq_Leq_columns
-import org.noise_planet.noisemodelling.wps.Acoustic_Tools.Create_Isosurface
-import org.noise_planet.noisemodelling.wps.NoiseModelling.Noise_level_from_traffic
-import org.noise_planet.noisemodelling.wps.NoiseModelling.Road_Emission_from_Traffic
-import org.noise_planet.noisemodelling.wps.Receivers.Delaunay_Grid
+import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Add_Laeq_Leq_columns
+import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Create_Isosurface
+import org.noise_planet.noisemodelling.scripts.NoiseModelling.Noise_level_from_traffic
+import org.noise_planet.noisemodelling.scripts.NoiseModelling.Road_Emission_from_Traffic
+import org.noise_planet.noisemodelling.scripts.Receivers.Delaunay_Grid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

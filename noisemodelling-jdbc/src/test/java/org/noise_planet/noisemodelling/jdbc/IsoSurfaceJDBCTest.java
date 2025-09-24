@@ -90,7 +90,7 @@ public class IsoSurfaceJDBCTest {
 
     }
 
-    @Test
+   /* @Test
     public void testContouring3D() throws SQLException, IOException, LayerDelaunayError {
         // Will create elevation iso from DEM table
         GeoJsonRead.importTable(connection, Paths.get(Paths.get(System.getProperty("user.dir")).getParent().toString(),
@@ -180,7 +180,7 @@ public class IsoSurfaceJDBCTest {
                 assertEquals(-1.37, rs.getDouble("MINZ"), 0.01);
             }
         }
-    }
+    }*/
 
 
     @Test

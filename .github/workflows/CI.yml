@@ -34,11 +34,6 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Building
         run: mvn test install javadoc:test-javadoc javadoc:jar -B
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-      - name: Build and test WPS with Gradle
-        run:  ./gradlew build --info --stacktrace
-        working-directory: ./wps_scripts
       - name: Maven Deploy
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
@@ -46,44 +41,3 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         if: ${{ (env.MAVEN_USERNAME != null) && (github.ref == 'refs/heads/main') }}
         run: mvn clean deploy -B
-      - name: Clean gradle cache
-        run: rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-      - name: Restore gradle.properties
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        if: ${{ (env.MAVEN_USERNAME != null) && (github.ref == 'refs/heads/main') }}
-        shell: bash
-        run: |
-          mkdir -p ~/.gradle/
-          echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
-          echo "ossrhUsername=${MAVEN_USERNAME}" >> ~/.gradle/gradle.properties
-          echo "ossrhPassword=${MAVEN_PASSWORD}" >> ~/.gradle/gradle.properties
-          echo "signing.gnupg.passphrase=${MAVEN_GPG_PASSPHRASE}" >> ~/.gradle/gradle.properties
-      - name: Deploy WPS
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        if: ${{ (env.MAVEN_USERNAME != null) && (github.ref == 'refs/heads/main') }}
-        run: ./gradlew publish -d
-        working-directory: ./wps_scripts
-      - name: Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            $HOME/.m2/
-            $HOME/.gradle/caches/
-            $HOME/.gradle/wrapper/
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-
-      #Production of the archive
-      - name: Unzip production artifacts
-        run: ./gradlew assembleDist && unzip build/distributions/*.zip -d NoiseModelling_without_gui
-        working-directory: ./wps_scripts
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: NoiseModelling_without_gui
-          path: wps_scripts/NoiseModelling_without_gui/

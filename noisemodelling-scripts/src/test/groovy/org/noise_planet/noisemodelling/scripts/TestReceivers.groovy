@@ -10,7 +10,7 @@
  *
  */
 
-package org.noise_planet.noisemodelling.wps
+package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
 import org.h2.value.ValueBoolean
@@ -23,12 +23,12 @@ import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.TableLocation
 import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.geom.GeometryFactory
-import org.noise_planet.noisemodelling.wps.Geometric_Tools.Clean_Buildings_Table
-import org.noise_planet.noisemodelling.wps.Receivers.Building_Grid
-import org.noise_planet.noisemodelling.wps.Receivers.Building_Grid3D
-import org.noise_planet.noisemodelling.wps.Receivers.Delaunay_Grid
-import org.noise_planet.noisemodelling.wps.Receivers.Random_Grid
-import org.noise_planet.noisemodelling.wps.Receivers.Regular_Grid
+import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Clean_Buildings_Table
+import org.noise_planet.noisemodelling.scripts.Receivers.Building_Grid
+import org.noise_planet.noisemodelling.scripts.Receivers.Building_Grid3D
+import org.noise_planet.noisemodelling.scripts.Receivers.Delaunay_Grid
+import org.noise_planet.noisemodelling.scripts.Receivers.Random_Grid
+import org.noise_planet.noisemodelling.scripts.Receivers.Regular_Grid
 
 class TestReceivers extends JdbcTestCase {
 

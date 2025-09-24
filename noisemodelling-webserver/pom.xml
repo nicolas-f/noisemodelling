@@ -21,6 +21,12 @@
         <repository>
             <id>osgeo</id>
             <url>https://repo.osgeo.org/repository/release/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>orbisgis</id>
@@ -88,13 +94,13 @@
             <version>30.2</version>
         </dependency>
         <dependency>
-            <groupId>org.matsim</groupId>
-            <artifactId>matsim</artifactId>
-            <version>11.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-core</artifactId>
+            <version>30.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
             <version>30.2</version>
         </dependency>
         <dependency>
@@ -109,7 +115,22 @@
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-main</artifactId>
+            <artifactId>gt-referencing</artifactId>
+            <version>30.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-metadata</artifactId>
+            <version>30.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>30.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
             <version>30.2</version>
         </dependency>
         <dependency>
