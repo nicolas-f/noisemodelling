@@ -32,17 +32,14 @@ public class WpsServer {
     private static final String SCRIPTS_ROOT =
             "./noisemodelling-scripts/src/main/groovy/"
                     + BASE_PACKAGE.replace('.', '/');
-
+    static ScriptWrapper scriptWrapper = new ScriptWrapper("org.noise_planet.noisemodelling.scripts","./noisemodelling-scripts/src/main/groovy/");
+    static Map<String, List<String>> scripts = scriptWrapper.scanScriptsGrouped();
     public static void main(String[] args) {
         System.out.println("WPS Server debut "+SCRIPTS_ROOT);
 
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("static/wpsbuilder", Location.CLASSPATH);
-        }).exception(Exception.class, (e, ctx) -> {
-            e.printStackTrace();               // affiche la stack dans la console
-            ctx.status(500).result("Erreur serveur : " + e.getMessage());
         }).start(8000);
-        //Connection connection = null;
         System.out.println("WPS Server debutt "+SCRIPTS_ROOT);
 
         app.get("/wps", ctx -> {
@@ -50,7 +47,7 @@ public class WpsServer {
             if ("GetCapabilities".equalsIgnoreCase(request)) {
                 ctx.contentType("text/xml");
                 try {
-                    ctx.result(buildCapabilitiesXml());
+                    ctx.result(buildCapabilitiesXml(scripts));
                     System.out.println("WPS here");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -60,7 +57,7 @@ public class WpsServer {
                 System.out.println("WPS Server here " + request);
                 ctx.contentType("text/xml");
                 //ctx.result(buildDescribeProcessXml(ctx.queryParam("identifier")));
-                ctx.result(buildDescribeProcessXml(ctx.queryParam("identifier")));
+                ctx.result(buildDescribeProcessXml(ctx.queryParam("identifier"), scripts));
             }else {
                 ctx.status(400).result("Unknown request");
             }
@@ -140,11 +137,12 @@ public class WpsServer {
 
     }
 
-    private static String buildCapabilitiesXml() throws Exception {
+    private static String buildCapabilitiesXml(Map<String, List<String>> grouped) throws Exception {
         System.out.println("ici buildCapabilitiesXml appelllé");
 
 
         WPSCapabilitiesType capabilities = Wps10Factory.eINSTANCE.createWPSCapabilitiesType();
+        capabilities.setLang("en");
         capabilities.setService("WPS");
         capabilities.setVersion("1.0.0");
 
@@ -157,31 +155,24 @@ public class WpsServer {
 
 
         LanguageStringType title = Ows11Factory.eINSTANCE.createLanguageStringType();
-        title.setValue("NoiseModelling WPS");
+        title.setValue("Prototype GeoServer WPS");
         serviceId.getTitle().add(title);
+        //serviceId.getAbstract().add();
 
         LanguageStringType abs = Ows11Factory.eINSTANCE.createLanguageStringType();
-        abs.setValue("Service WPS pour exécuter les scripts NoiseModelling");
         serviceId.getAbstract().add(abs);
 
         capabilities.setServiceIdentification(serviceId);
 
         System.out.println("ici ServiceProvider");
         ServiceProviderType provider = Ows11Factory.eINSTANCE.createServiceProviderType();
-        provider.setProviderName("NoiseModelling");
+        provider.setProviderName("The Ancient Geographers");
 
         OnlineResourceType site = Ows11Factory.eINSTANCE.createOnlineResourceType();
         site.setHref("http://localhost:8000/");
         provider.setProviderSite(site);
 
         ResponsiblePartySubsetType contact = Ows11Factory.eINSTANCE.createResponsiblePartySubsetType();
-        contact.setIndividualName("Support ");
-        ContactType contactType = Ows11Factory.eINSTANCE.createContactType();
-        AddressType addr = Ows11Factory.eINSTANCE.createAddressType();
-        //addr.getElectronicMailAddress().add("support@noisemodelling.org");
-        addr.setElectronicMailAddress("support@noisemodelling.org");
-        contactType.setAddress(addr);
-        contact.setContactInfo(contactType);
         provider.setServiceContact(contact);
 
         capabilities.setServiceProvider(provider);
@@ -194,34 +185,40 @@ public class WpsServer {
 
         ProcessOfferingsType offerings = Wps10Factory.eINSTANCE.createProcessOfferingsType();
 
-        Map<String, List<String>> grouped = scanScriptsGrouped();
+        //Map<String, List<String>> grouped = scanScriptsGrouped();
         for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
             String group = entry.getKey();
             for (String process : entry.getValue()) {
+                File scriptFile = findScript(group, process);
+                if (scriptFile == null) throw new Exception("Script non trouvee: " + group+":"+process);
 
-                ProcessBriefType brief = Wps10Factory.eINSTANCE.createProcessBriefType();
+                Map<String, Object> metadata = parseGroovyScriptMetadata(scriptFile);
 
-                CodeType id = Ows11Factory.eINSTANCE.createCodeType();
-                id.setValue(group + ":" + process);
-                brief.setIdentifier(id);
+                ProcessBriefType processes = Wps10Factory.eINSTANCE.createProcessBriefType();
+                processes.setProcessVersion("1.0.0");
+
+                CodeType code = Ows11Factory.eINSTANCE.createCodeType();
+                code.setValue(group + ":" + process);
+                processes.setIdentifier(code);
 
                 LanguageStringType procTitle = Ows11Factory.eINSTANCE.createLanguageStringType();
-                procTitle.setValue(process);
-                brief.setTitle(procTitle);
+                procTitle.setValue(metadata.getOrDefault("title", process).toString());
+                processes.setTitle(procTitle);
 
-                LanguageStringType procAbstract = Ows11Factory.eINSTANCE.createLanguageStringType();
-                procAbstract.setValue("Description du process " + process);
-                brief.setAbstract(procAbstract);
+                LanguageStringType abstractText = Ows11Factory.eINSTANCE.createLanguageStringType();
+                abstractText.setValue(metadata.getOrDefault("description", process).toString());
+                processes.setAbstract(abstractText);
 
-                offerings.getProcess().add(brief);
+                offerings.getProcess().add(processes);
             }
         }
         capabilities.setProcessOfferings(offerings);
+
         System.out.println("etat capabilitie:"+capabilities.toString());
 
 
         Encoder encoder = new Encoder(new WPSConfiguration());
-        encoder.setIndenting(true);
+        encoder.setIndenting(false);
 
         encoder.getNamespaces().declarePrefix("wps",   "http://www.opengis.net/wps/1.0.0");
         encoder.getNamespaces().declarePrefix("ows",   "http://www.opengis.net/ows/1.1");
@@ -240,7 +237,7 @@ public class WpsServer {
                     out);
             return out.toString(StandardCharsets.UTF_8);
         } catch (Throwable e) {
-            e.printStackTrace(); // <--- important
+            e.printStackTrace();
             System.out.println("erreur "+e.getMessage());
             throw e;
         }
@@ -267,14 +264,14 @@ public class WpsServer {
     }
 
 
-    private static String buildDescribeProcessXml(String identifier) throws Exception {
+    private static String buildDescribeProcessXml(String identifier,Map<String, List<String>> grouped) throws Exception {
         ProcessDescriptionsType processDescriptions = Wps10Factory.eINSTANCE.createProcessDescriptionsType();
         processDescriptions.setLang("en");
         processDescriptions.setService("WPS");
         processDescriptions.setVersion("1.0.0");
 
         if (identifier == null || identifier.isEmpty() || identifier.equalsIgnoreCase("all")) {
-            Map<String, List<String>> grouped = scanScriptsGrouped();
+            //Map<String, List<String>> grouped = scanScriptsGrouped();
             for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
                 String group = entry.getKey();
                 for (String process : entry.getValue()) {
@@ -290,7 +287,7 @@ public class WpsServer {
         }
 
         Encoder encoder = new Encoder(new WPSConfiguration());
-        encoder.setIndenting(true);
+        encoder.setIndenting(false);
         encoder.setSchemaLocation(
                 "http://www.opengis.net/wps/1.0.0",
                 "http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd"
@@ -314,6 +311,7 @@ public class WpsServer {
         Map<String, Object> metadata = parseGroovyScriptMetadata(scriptFile);
 
         ProcessDescriptionType process = Wps10Factory.eINSTANCE.createProcessDescriptionType();
+        process.setProcessVersion("1.0.0");
         process.setStatusSupported(true);
         process.setStoreSupported(true);
 
@@ -326,7 +324,7 @@ public class WpsServer {
         process.setTitle(title);
 
         LanguageStringType abstractText = Ows11Factory.eINSTANCE.createLanguageStringType();
-        abstractText.setValue(metadata.getOrDefault("description", "Description du process " + processName).toString());
+        abstractText.setValue(metadata.getOrDefault("description", processName).toString());
         process.setAbstract(abstractText);
 
         // Input
@@ -369,13 +367,8 @@ public class WpsServer {
             outputTitle.setValue(entry.getValue().getOrDefault("title", entry.getKey()).toString());
             output.setTitle(outputTitle);
 
-            if (entry.getValue().containsKey("description")) {
-                LanguageStringType outputAbstract = Ows11Factory.eINSTANCE.createLanguageStringType();
-                outputAbstract.setValue(entry.getValue().get("description").toString());
-                output.setAbstract(outputAbstract);
-            }
-
-            configureLiteralOutput(output, entry.getValue());
+            LiteralOutputType literalOutput = Wps10Factory.eINSTANCE.createLiteralOutputType();
+            output.setLiteralOutput(literalOutput);
             outputs.getOutput().add(output);
         }
         if (!outputsMap.isEmpty()) process.setProcessOutputs(outputs);
@@ -388,85 +381,31 @@ public class WpsServer {
 
 
         DomainMetadataType dataType = Ows11Factory.eINSTANCE.createDomainMetadataType();
-        String typeName = "string";
+        String typeName = "xs:string";
         if (inputProps.containsKey("type")) {
             Object typeObj = inputProps.get("type");
             if (typeObj instanceof Class<?>) {
                 Class<?> typeClass = (Class<?>) typeObj;
-                if (typeClass == String.class) typeName = "string";
-                else if (typeClass == Integer.class) typeName = "integer";
-                else if (typeClass == Double.class || typeClass == Float.class) typeName = "double";
-                else if (typeClass == Boolean.class) typeName = "boolean";
+                if (typeClass == String.class) typeName = "xs:string";
+                else if (typeClass == Integer.class) typeName = "xs:integer";
+                else if (typeClass == Double.class || typeClass == Float.class) typeName = "xs:double";
+                else if (typeClass == Boolean.class) typeName = "xs:boolean";
             } else if (typeObj instanceof String) {
                 String typeStr = (String) typeObj;
-                if (typeStr.contains("String")) typeName = "string";
-                else if (typeStr.contains("Integer")) typeName = "integer";
-                else if (typeStr.contains("Double") || typeStr.contains("Float")) typeName = "double";
-                else if (typeStr.contains("Boolean")) typeName = "boolean";
+                if (typeStr.contains("String")) typeName = "xs:string";
+                else if (typeStr.contains("Integer")) typeName = "xs:integer";
+                else if (typeStr.contains("Double") || typeStr.contains("Float")) typeName = "xs:double";
+                else if (typeStr.contains("Boolean")) typeName = "xs:boolean";
             }
         }
         dataType.setValue(typeName);
         literalInput.setDataType(dataType);
-
-        AllowedValuesType allowedValues = Ows11Factory.eINSTANCE.createAllowedValuesType();
-        if (inputProps.containsKey("allowedValues")) {
-            Object allowedObj = inputProps.get("allowedValues");
-            if (allowedObj instanceof List) {
-                for (Object value : (List<?>) allowedObj) {
-                    allowedValues.getValue().add(String.valueOf(value));
-                }
-            }
-        }
-        literalInput.setAllowedValues(allowedValues);
-
-        if (inputProps.containsKey("default")) {
-            literalInput.setDefaultValue(String.valueOf(inputProps.get("default")));
-        } else {
-            literalInput.setDefaultValue("");
-        }
+        AnyValueType anyValue = Ows11Factory.eINSTANCE.createAnyValueType();
+        literalInput.setAnyValue(anyValue);
 
         input.setLiteralData(literalInput);
     }
 
-    private static void configureLiteralOutput(OutputDescriptionType output, Map<String, Object> outputProps) {
-        LiteralOutputType literalOutput = Wps10Factory.eINSTANCE.createLiteralOutputType();
-
-
-        DomainMetadataType dataType = Ows11Factory.eINSTANCE.createDomainMetadataType();
-        String typeName = "string";
-
-        if (outputProps.containsKey("type")) {
-            Object typeObj = outputProps.get("type");
-            if (typeObj instanceof Class) {
-                Class<?> typeClass = (Class<?>) typeObj;
-                if (typeClass == String.class) {
-                    typeName = "string";
-                } else if (typeClass == Integer.class) {
-                    typeName = "integer";
-                } else if (typeClass == Double.class || typeClass == Float.class) {
-                    typeName = "double";
-                } else if (typeClass == Boolean.class) {
-                    typeName = "boolean";
-                }
-            } else if (typeObj instanceof String) {
-                String typeStr = (String) typeObj;
-                if (typeStr.contains("String")) {
-                    typeName = "string";
-                } else if (typeStr.contains("Integer")) {
-                    typeName = "integer";
-                } else if (typeStr.contains("Double") || typeStr.contains("Float")) {
-                    typeName = "double";
-                } else if (typeStr.contains("Boolean")) {
-                    typeName = "boolean";
-                }
-            }
-        }
-
-        dataType.setValue(typeName);
-        literalOutput.setDataType(dataType);
-
-        output.setLiteralOutput(literalOutput);
-    }
     private static Map<String, Object> parseGroovyScriptMetadata(File scriptFile) throws IOException {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("title", scriptFile.getName().replace(".groovy", ""));
