@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Railways &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Ground surfaces" href="Input_ground.html" />
+    <link rel="prev" title="Roads" href="Input_roads.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Railways</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#railways-sections">Railways sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#table-definition">Table definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#geometry-modelling">Geometry modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#railways-traffic">Railways traffic</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Table definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Railways</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Input_railways.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="railways">
+<h1>Railways<a class="headerlink" href="#railways" title="Permalink to this heading"></a></h1>
+<p>NoiseModelling is a tool for producing noise maps. To do so, at different stages of the process, the application needs input data, respecting a strict formalism.</p>
+<p>Below are described the tables <code class="docutils literal notranslate"><span class="pre">RAIL_SECTIONS</span></code> and <code class="docutils literal notranslate"><span class="pre">RAIL_TRAFFIC</span></code>.</p>
+<p>The other tables are accessible via the left menu in the <code class="docutils literal notranslate"><span class="pre">Input</span> <span class="pre">tables</span> <span class="pre">&amp;</span> <span class="pre">parameters</span></code> section.</p>
+<figure class="align-center">
+<img alt="_images/rails_banner.png" src="_images/rails_banner.png" />
+</figure>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In the lists below, the columns noted with <code class="docutils literal notranslate"><span class="pre">*</span></code> are mandatory</p>
+</div>
+<section id="railways-sections">
+<h2>Railways sections<a class="headerlink" href="#railways-sections" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Table name : <code class="docutils literal notranslate"><span class="pre">RAIL_SECTIONS</span></code></p></li>
+<li><p>Description: contains all the sections of railways</p></li>
+</ul>
+<section id="table-definition">
+<h3>Table definition<a class="headerlink" href="#table-definition" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">THE_GEOM</span></code> *</dt><dd><ul>
+<li><p>Description: Railway’s geometry</p></li>
+<li><p>Type: Geometry (<code class="docutils literal notranslate"><span class="pre">LINESTRING</span></code> or <code class="docutils literal notranslate"><span class="pre">MULTILINESTRING</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">IDSECTION</span></code> *</dt><dd><ul>
+<li><p>Description: A section identifier (PRIMARY KEY)</p></li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">NTRACK</span></code> *</dt><dd><ul>
+<li><p>Description: Number of tracks</p></li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TRACKSPD</span></code> *</dt><dd><ul>
+<li><p>Description: Maximum speed on the section <em>(in km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TRANSFER</span></code></dt><dd><ul>
+<li><dl class="simple">
+<dt>Description: Track transfer function identifier</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> = Mono-bloc sleeper on soft rail pad</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> = Mono-bloc sleeper on medium rail pad</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">3</span></code> = Mono-bloc sleeper on stiff rail pad</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">4</span></code> = Bi-bloc sleeper on soft rail pad</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">5</span></code> = Bi-bloc sleeper on medium rail pad</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">6</span></code> = Bi-bloc sleeper on stiff rail pad</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">7</span></code> = Wooden sleeper (Traverse en bois)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ROUGHNESS</span></code></dt><dd><ul>
+<li><dl class="simple">
+<dt>Description: Rail roughness identifier</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> = Classic lines</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> = TGV (for France) lines</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">IMPACT</span></code></dt><dd><ul>
+<li><dl class="simple">
+<dt>Description: Impact noise coefficient identifier</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code> = No impact</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> = Single joint, switch or crossing per 100 m</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">CURVATURE</span></code></dt><dd><ul>
+<li><dl class="simple">
+<dt>Description: Section’s curvature identifier</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code> = R &gt; 500 m</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> = 300 m &lt; R &lt; 500 m</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> = R &lt; 300 m</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">BRIDGE</span></code></dt><dd><ul>
+<li><dl class="simple">
+<dt>Description: Bridge transfer function identifier</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code> = Any type of track or bridge except metal bridges with unballasted tracks</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> = Metal bridges with unballasted tracks + 5dB</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TRACKSPC</span></code></dt><dd><ul>
+<li><p>Description: Commercial speed on the section <em>(in km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ISTUNNEL</span></code></dt><dd><ul>
+<li><p>Description: Indicates whether the section is a tunnel or not (<code class="docutils literal notranslate"><span class="pre">0</span></code> = no / <code class="docutils literal notranslate"><span class="pre">1</span></code> = yes)</p></li>
+<li><p>Type: Boolean</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="geometry-modelling">
+<h3>Geometry modelling<a class="headerlink" href="#geometry-modelling" title="Permalink to this heading"></a></h3>
+<p>The modeling of the geometry is identical to the road’s one (see “<a class="reference internal" href="Input_roads.html"><span class="doc">Roads</span></a>” page). The only difference is that the affected height is not 5cm by default. It depends on the model used (<em>e.g</em> in CNOSSOS: rolling noise = 0.05m / aerodynamic noise = 4m ).</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="railways-traffic">
+<h2>Railways traffic<a class="headerlink" href="#railways-traffic" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Table name : <code class="docutils literal notranslate"><span class="pre">RAIL_TRAFFIC</span></code></p></li>
+<li><p>Description: contains all the railways traffic</p></li>
+</ul>
+<section id="id1">
+<h3>Table definition<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">IDTRAFFIC</span></code> *</dt><dd><ul>
+<li><p>Description: A traffic identifier (PRIMARY KEY)</p></li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">IDSECTION</span></code> *</dt><dd><ul>
+<li><p>Description: A section identifier, refering to <code class="docutils literal notranslate"><span class="pre">RAIL_SECTIONS</span></code> table</p></li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TRAINTYPE</span></code> *</dt><dd><ul>
+<li><p>Description: Type of vehicle, listed in the <a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/4.X/noisemodelling-emission/src/main/resources/org/noise_planet/noisemodelling/emission/Rail_Train_SNCF_2021.json">Rail_Train_SNCF_2021.json</a> file <em>(mainly for french SNCF)</em></p></li>
+<li><p>Type: Varchar</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TRAINSPD</span></code> *</dt><dd><ul>
+<li><p>Description: Maximum train speed <em>(in km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TDAY</span></code></dt><dd><ul>
+<li><p>Description: Hourly average train count, during the day (6-18h)</p></li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TEVENING</span></code></dt><dd><ul>
+<li><p>Description: Hourly average train count, during the evening (18-22h)</p></li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TNIGHT</span></code></dt><dd><ul>
+<li><p>Description: Hourly average train count, during the night (22-6h)</p></li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Input_roads.html" class="btn btn-neutral float-left" title="Roads" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Input_ground.html" class="btn btn-neutral float-right" title="Ground surfaces" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

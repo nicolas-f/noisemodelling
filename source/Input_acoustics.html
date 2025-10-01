@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acoustic parameters &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Requirements" href="Requirements.html" />
+    <link rel="prev" title="Receivers" href="Input_receivers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Acoustic parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#probability-of-occurrences">Probability of occurrences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#relative-humidity">Relative humidity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#air-temperature">Air temperature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#order-of-reflexion">Order of reflexion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#diffraction-on-horizontal-edges">Diffraction on horizontal edges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#diffraction-on-vertical-edges">Diffraction on vertical edges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#maximum-source-receiver-distance">Maximum source-receiver distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#maximum-source-reflexion-distance">Maximum source-reflexion distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#wall-absorption-coefficient">Wall absorption coefficient</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#separate-receiver-level-by-source-identifier">Separate receiver level by source identifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#thread-number">Thread number</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Acoustic parameters</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Input_acoustics.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="acoustic-parameters">
+<h1>Acoustic parameters<a class="headerlink" href="#acoustic-parameters" title="Permalink to this heading"></a></h1>
+<p>In the different WPS scripts of NoiseModelling, you will find many input parameters, mandatory or optional.</p>
+<p>Below we list the most important ones, indicating, where necessary, the default values and those we recommend (from an acoustic point of view).</p>
+<figure class="align-center">
+<img alt="_images/acoustics_parameters_banner.png" src="_images/acoustics_parameters_banner.png" />
+</figure>
+<p>The following parameters may be found in the scripts dealing with noise emission or propagation (<em>e.g</em> <code class="docutils literal notranslate"><span class="pre">Noise_level_from_traffic</span></code>, <code class="docutils literal notranslate"><span class="pre">Noise_level_from_source`</span></code>, …)</p>
+<section id="probability-of-occurrences">
+<h2>Probability of occurrences<a class="headerlink" href="#probability-of-occurrences" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confFavorableOccurrencesXXXXX</span></code> (with <code class="docutils literal notranslate"><span class="pre">XXXXX</span></code> = evening, day, night, …)</p></li>
+<li><p>Description: Comma-delimited string containing the probability ([0,1]) of occurrences of favourable propagation conditions. Follow the clockwise direction. The north slice is the last array index (n°16 in the schema below) not the first one</p></li>
+<li><p>Type: Double</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5</span></code></p></li>
+<li><p>Recommanded value:</p></li>
+</ul>
+<figure class="align-center">
+<img alt="_images/acoustics_parameters_confFavorableOccurrences.png" src="_images/acoustics_parameters_confFavorableOccurrences.png" />
+</figure>
+</section>
+<section id="relative-humidity">
+<h2>Relative humidity<a class="headerlink" href="#relative-humidity" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confHumidity</span></code></p></li>
+<li><p>Description: Humidity for noise propagation (%) [0,100]</p></li>
+<li><p>Type: Double</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">70</span></code></p></li>
+<li><p>Recommanded value: depends on the average conditions at the location where you perform the simulation</p></li>
+</ul>
+</section>
+<section id="air-temperature">
+<h2>Air temperature<a class="headerlink" href="#air-temperature" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confTemperature</span></code></p></li>
+<li><p>Description: Air temperature (°C)</p></li>
+<li><p>Type: Double</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">15</span></code></p></li>
+<li><p>Recommanded value: depends on the average conditions at the location where you perform the simulation</p></li>
+</ul>
+</section>
+<section id="order-of-reflexion">
+<h2>Order of reflexion<a class="headerlink" href="#order-of-reflexion" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confReflOrder</span></code></p></li>
+<li><p>Description: Maximum number of reflections to be taken into account. Warning: adding 1 order increases the processing time significantly</p></li>
+<li><p>Type: Integer</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p>Recommanded value: <code class="docutils literal notranslate"><span class="pre">1</span></code> or <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
+</ul>
+</section>
+<section id="diffraction-on-horizontal-edges">
+<h2>Diffraction on horizontal edges<a class="headerlink" href="#diffraction-on-horizontal-edges" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confDiffHorizontal</span></code></p></li>
+<li><p>Description: Compute or not the diffraction on horizontal edges</p></li>
+<li><p>Type: Boolean</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p>Recommanded value: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+</ul>
+</section>
+<section id="diffraction-on-vertical-edges">
+<h2>Diffraction on vertical edges<a class="headerlink" href="#diffraction-on-vertical-edges" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confDiffVertical</span></code></p></li>
+<li><p>Description: Compute or not the diffraction on vertical edges. Following Directive 2015/996, enable this option for rail and industrial sources only</p></li>
+<li><p>Type: Boolean</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p>Recommanded value:</p></li>
+</ul>
+</section>
+<section id="maximum-source-receiver-distance">
+<h2>Maximum source-receiver distance<a class="headerlink" href="#maximum-source-receiver-distance" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confMaxSrcDist</span></code></p></li>
+<li><p>Description: Maximum distance between source and receiver (meters)</p></li>
+<li><p>Type: Double</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">150</span></code></p></li>
+<li><p>Recommanded value: Between <code class="docutils literal notranslate"><span class="pre">500</span></code> and <code class="docutils literal notranslate"><span class="pre">800</span></code></p></li>
+</ul>
+<figure class="align-center">
+<img alt="_images/acoustics_parameters_confMaxSrcDist.png" src="_images/acoustics_parameters_confMaxSrcDist.png" />
+</figure>
+</section>
+<section id="maximum-source-reflexion-distance">
+<h2>Maximum source-reflexion distance<a class="headerlink" href="#maximum-source-reflexion-distance" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confMaxReflDist</span></code></p></li>
+<li><p>Description: Maximum search distance of walls / facades from the “Source-Receiver” segment, for the calculation of specular reflections (meters)</p></li>
+<li><p>Type: Double</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">50</span></code></p></li>
+<li><p>Recommanded value: Between <code class="docutils literal notranslate"><span class="pre">350</span></code> and <code class="docutils literal notranslate"><span class="pre">800</span></code></p></li>
+</ul>
+<figure class="align-center">
+<img alt="_images/acoustics_parameters_confMaxReflDist.png" src="_images/acoustics_parameters_confMaxReflDist.png" />
+</figure>
+</section>
+<section id="wall-absorption-coefficient">
+<h2>Wall absorption coefficient<a class="headerlink" href="#wall-absorption-coefficient" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">paramWallAlpha</span></code></p></li>
+<li><p>Description: Wall absorption coefficient [0,1] (between <code class="docutils literal notranslate"><span class="pre">0</span></code> : “fully absorbent” and <code class="docutils literal notranslate"><span class="pre">1</span></code> : “fully reflective”)</p></li>
+<li><p>Type: Double</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">0.1</span></code></p></li>
+<li><p>Recommanded value: <code class="docutils literal notranslate"><span class="pre">0.1</span></code></p></li>
+</ul>
+</section>
+<section id="separate-receiver-level-by-source-identifier">
+<h2>Separate receiver level by source identifier<a class="headerlink" href="#separate-receiver-level-by-source-identifier" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confExportSourceId</span></code></p></li>
+<li><p>Description: Keep source identifier in output in order to get noise contribution of each noise source</p></li>
+<li><p>Type: Boolean</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p>Recommanded value:</p></li>
+</ul>
+</section>
+<section id="thread-number">
+<h2>Thread number<a class="headerlink" href="#thread-number" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Parameter name: <code class="docutils literal notranslate"><span class="pre">confThreadNumber</span></code></p></li>
+<li><p>Description: Number of thread to use on the computer</p></li>
+<li><p>Type: Integer</p></li>
+<li><p>Default value: <code class="docutils literal notranslate"><span class="pre">0</span></code> (<code class="docutils literal notranslate"><span class="pre">0</span></code> = Automatic. Will check the number of cores and apply -1. (<em>e.g</em>: 8 cores = 7 cores will be used))</p></li>
+<li><p>Recommanded value: <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Input_receivers.html" class="btn btn-neutral float-left" title="Receivers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Requirements.html" class="btn btn-neutral float-right" title="Requirements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

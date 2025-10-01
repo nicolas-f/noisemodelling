@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noise Map from Point Source - GUI &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MATSim - GUI" href="Matsim_Tutorial.html" />
+    <link rel="prev" title="Noise Map from OSM - GUI" href="Noise_Map_From_OSM_Tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Noise Map from Point Source - GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-create-the-source-point">Step 1: Create the source point</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#load-data-into-qgis">Load data into QGIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initialize-the-source-point-layer">Initialize the source point layer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#add-a-new-source-point">Add a new source point</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-import-input-data-in-noisemodelling">Step 2: Import input data in NoiseModelling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-generate-the-noise-map">Step 3: Generate the noise map</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-the-receivers-grid">Create the receivers grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculate-noise-levels">Calculate noise levels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-noise-level-isosurfaces">Generate noise level isosurfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apply-a-color-palette-adapted-to-acoustics">Apply a color palette adapted to acoustics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-change-the-default-parameters">Step 4: Change the default parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-5-bonus-change-the-directivity">Step 5 (bonus): Change the directivity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#directivity">Directivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update-source-point-table">Update source point table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#import-data">Import data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-the-delaunay-triangulation">Generate the Delaunay triangulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compute-noise-level-from-source">Compute noise level from source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-isosurface">Create isosurface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-and-visualize-resulting-tables">Export and visualize resulting tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Noise Map from Point Source - GUI</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Noise_Map_From_Point_Source.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="noise-map-from-point-source-gui">
+<h1>Noise Map from Point Source - GUI<a class="headerlink" href="#noise-map-from-point-source-gui" title="Permalink to this heading"></a></h1>
+<p>In this tutorial, we are going to produce a noise map, based on a unique source point. The exercice will be made through NoiseModelling with Graphic User Interface (GUI).</p>
+<p>To make it more simple, we will use the data used in the <a class="reference internal" href="Get_Started_GUI.html"><span class="doc">Get Started - GUI</span></a> tutorial.</p>
+<p>This tutorial is divided in 5 steps:</p>
+<ol class="arabic simple">
+<li><p>Create the source point</p></li>
+<li><p>Import data in NoiseModelling</p></li>
+<li><p>Generate the noise map</p></li>
+<li><p>Play with options</p></li>
+<li><p>Take into account directivity</p></li>
+</ol>
+<section id="step-1-create-the-source-point">
+<h2>Step 1: Create the source point<a class="headerlink" href="#step-1-create-the-source-point" title="Permalink to this heading"></a></h2>
+<p>To create the source point, we will use the free and opensource GIS software <a class="reference external" href="http://qgis.org/">QGIS</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For those who are new to GIS and want to get started with QGIS, we advise you to follow <a class="reference external" href="https://docs.qgis.org/3.22/en/docs/training_manual/basic_map/index.html">this tutorial</a> as a start.</p>
+</div>
+<section id="load-data-into-qgis">
+<h3>Load data into QGIS<a class="headerlink" href="#load-data-into-qgis" title="Permalink to this heading"></a></h3>
+<p>Once installed, launch QGIS and load the three <code class="docutils literal notranslate"><span class="pre">buildings.shp</span></code>, <code class="docutils literal notranslate"><span class="pre">roads.shp</span></code> and <code class="docutils literal notranslate"><span class="pre">ground_type.shp</span></code> files (that are in the folder <code class="docutils literal notranslate"><span class="pre">../NoiseModelling_4.0.0/data_dir/data/wpsdata/</span></code>). To do so, you can just drag &amp; drop these files into the <code class="docutils literal notranslate"><span class="pre">Layers</span></code> menu (bottom left of the user interface). Or you can also select them thanks to the dedicated panel opened via the <code class="docutils literal notranslate"><span class="pre">Layer</span> <span class="pre">/</span> <span class="pre">Add</span> <span class="pre">a</span> <span class="pre">layer</span> <span class="pre">/</span> <span class="pre">Add</span> <span class="pre">a</span> <span class="pre">vectorial</span> <span class="pre">layer...</span> <span class="pre">/</span></code> menu (or use <code class="docutils literal notranslate"><span class="pre">Ctrl+Maj+V</span></code> shortcut)</p>
+<p>You should see your input data in the map as below:</p>
+<figure class="align-center">
+<img alt="_images/load_data_qgis.png" src="_images/load_data_qgis.png" />
+</figure>
+</section>
+<section id="initialize-the-source-point-layer">
+<h3>Initialize the source point layer<a class="headerlink" href="#initialize-the-source-point-layer" title="Permalink to this heading"></a></h3>
+<p>In QGIS, we will create a new empty layer called <code class="docutils literal notranslate"><span class="pre">Point_Source</span></code> in which we will add the source point.</p>
+<p>To do so, click on the <code class="docutils literal notranslate"><span class="pre">Layer</span> <span class="pre">/</span> <span class="pre">Create</span> <span class="pre">Layer</span> <span class="pre">/</span> <span class="pre">New</span> <span class="pre">Temporary</span> <span class="pre">Scratch</span> <span class="pre">Layer...</span> <span class="pre">/</span></code> menu. In the opened dialog, fill the detailed information below :</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">Point_Source</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Geometry</span> <span class="pre">type</span></code> : choose <code class="docutils literal notranslate"><span class="pre">Point</span></code> in the dropdown list</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Include</span> <span class="pre">Z</span> <span class="pre">dimension</span></code> : check the box. This way the created point will be defined with X, Y and Z coordinates</p></li>
+<li><p>In the projection system dropdown list, choose a metric system. Here we will choose the one used for the buildings, roads and ground_type layers, that are in metropolitan France : Lambert 93 system = <code class="docutils literal notranslate"><span class="pre">EPSG:2154</span></code> (if the system is not present in the dropdown list, use the <code class="docutils literal notranslate"><span class="pre">Globe</span></code> icon on the right to find it)</p></li>
+</ul>
+<p>In the <code class="docutils literal notranslate"><span class="pre">New</span> <span class="pre">field</span></code> part, fill the information below:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : PK . Unique id (Primary Key)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> : Integer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Length</span></code> : 2</p></li>
+</ul>
+<p>Once done, click on <code class="docutils literal notranslate"><span class="pre">Add</span> <span class="pre">to</span> <span class="pre">Fields</span> <span class="pre">List</span></code>. Then redo this step with the following informations:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : LWD500 . Source noise level (LW) during the day (D) at a frequency of 500 Hz</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> : Decimal number</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Length</span></code> : 5</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Precision</span></code> : 2</p></li>
+</ul>
+<p>You should have something like this</p>
+<figure class="align-center">
+<img alt="_images/create_source_point_layer.png" src="_images/create_source_point_layer.png" />
+</figure>
+<p>Once done, click on <code class="docutils literal notranslate"><span class="pre">OK</span></code> button. The new layer <code class="docutils literal notranslate"><span class="pre">Point_Source</span></code> should appear in your <code class="docutils literal notranslate"><span class="pre">Layers</span></code> panel.</p>
+</section>
+<section id="add-a-new-source-point">
+<h3>Add a new source point<a class="headerlink" href="#add-a-new-source-point" title="Permalink to this heading"></a></h3>
+<p>Now we have an empty layer. It’s time to feed it with a point geometry.</p>
+<p>By default, the new temporary layer is already turned into edtion mode. If not, you can activate it thanks to these two options:</p>
+<ul class="simple">
+<li><p>In the <code class="docutils literal notranslate"><span class="pre">Layers</span></code> panel, select the <code class="docutils literal notranslate"><span class="pre">Point_Source</span></code> layer and make a right-click. Choose <code class="docutils literal notranslate"><span class="pre">Toggle</span> <span class="pre">Editing</span></code></p></li>
+<li><p>or you can click on the “Yellow pencil” icon in the toolbar</p></li>
+</ul>
+<figure class="align-center">
+<img alt="_images/edit_layer_source.png" src="_images/edit_layer_source.png" />
+</figure>
+<p>Now we can add a new point, by clicking on the dedicated icon (see illustration below) and then by clicking somewhere in the map.</p>
+<p>To have an interesting resulting noise map, choose to place your source point next to buildings.</p>
+<figure class="align-center">
+<img alt="_images/place_point_source.png" src="_images/place_point_source.png" />
+</figure>
+<p>Click on the map where you want to create the source point. Once clicked, a new dialog appears and you are invited to fill the following attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PK</span></code>: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LWD500</span></code> : 90</p></li>
+</ul>
+<figure class="align-center">
+<img alt="_images/fill_attributes.png" src="_images/fill_attributes.png" />
+</figure>
+<p>Once done, click on <code class="docutils literal notranslate"><span class="pre">OK</span></code>. The source point is now visible in the map (the blue point in the illustration below).</p>
+<figure class="align-center">
+<img alt="_images/layer_source.png" src="_images/layer_source.png" />
+</figure>
+<p>Now, we have to save this temporary layer into a flat file. To do so, just make a right-click on the layer name and choose the  <code class="docutils literal notranslate"><span class="pre">Make</span> <span class="pre">permanent</span></code> option.</p>
+<figure class="align-center">
+<img alt="_images/convert_point_source_geojson.png" src="_images/convert_point_source_geojson.png" />
+</figure>
+<p>In the new dialog, select <code class="docutils literal notranslate"><span class="pre">GeoJSON</span></code> file format and then define the path and the name of your resulting .geojson file. Press <code class="docutils literal notranslate"><span class="pre">OK</span></code> when ready.</p>
+<figure class="align-center">
+<img alt="_images/save_geojson.png" src="_images/save_geojson.png" />
+</figure>
+<p>Your <code class="docutils literal notranslate"><span class="pre">Point_Source.geojson</span></code> file is now ready to be imported in NoiseModelling.</p>
+<p>For your information, you can open <code class="docutils literal notranslate"><span class="pre">.geojson</span></code> files in most of text editor. If you do so with <code class="docutils literal notranslate"><span class="pre">Point_Source.geojson</span></code>, you will have something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+<span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Point_Source&quot;</span><span class="p">,</span>
+<span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;urn:ogc:def:crs:EPSG::2154&quot;</span> <span class="p">}</span> <span class="p">},</span>
+<span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;PK&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;LWD500&quot;</span><span class="p">:</span> <span class="mf">90.0</span> <span class="p">},</span>
+              <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="s2">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">223771.0727</span><span class="p">,</span> <span class="mf">6757583.2983</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]}</span>
+             <span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="step-2-import-input-data-in-noisemodelling">
+<h2>Step 2: Import input data in NoiseModelling<a class="headerlink" href="#step-2-import-input-data-in-noisemodelling" title="Permalink to this heading"></a></h2>
+<p>Once NoiseModelling is launched (see <code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">2:</span> <span class="pre">Start</span> <span class="pre">NoiseModelling</span> <span class="pre">GUI</span></code> in <a class="reference internal" href="Get_Started_GUI.html"><span class="doc">Get Started - GUI</span></a> page), load the four <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code>, <code class="docutils literal notranslate"><span class="pre">ROADS</span></code> and <code class="docutils literal notranslate"><span class="pre">GROUND_TYPE</span></code>, <code class="docutils literal notranslate"><span class="pre">POINT_SOURCE</span></code> layers (see <code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">4:</span> <span class="pre">Load</span> <span class="pre">input</span> <span class="pre">files</span></code> for more details).</p>
+<p>If you use the <code class="docutils literal notranslate"><span class="pre">Database_Manager:Display_Database</span></code> WPS script, you should see your four tables like below:</p>
+<figure class="align-center">
+<img alt="_images/table_list_NM.png" src="_images/table_list_NM.png" />
+</figure>
+</section>
+<section id="step-3-generate-the-noise-map">
+<h2>Step 3: Generate the noise map<a class="headerlink" href="#step-3-generate-the-noise-map" title="Permalink to this heading"></a></h2>
+<p>We are now ready to generate the noise map, based on a unique source point.</p>
+<section id="create-the-receivers-grid">
+<h3>Create the receivers grid<a class="headerlink" href="#create-the-receivers-grid" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Receivers:Delaunay_Grid</span></code> WPS script. Fill the two following mandatory parameters <em>(in orange)</em> and click on <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">Process</span></code> button:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Source</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">POINT_SOURCE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Buildings</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code></p></li>
+</ul>
+<p>Once done, you should have two new tables : <code class="docutils literal notranslate"><span class="pre">RECEIVERS</span></code> <em>(illustrated below with the purple small points)</em> and <code class="docutils literal notranslate"><span class="pre">TRIANGLES</span></code></p>
+<figure class="align-center">
+<img alt="_images/table_receivers.png" src="_images/table_receivers.png" />
+</figure>
+</section>
+<section id="calculate-noise-levels">
+<h3>Calculate noise levels<a class="headerlink" href="#calculate-noise-levels" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">NoiseModelling:Noise_level_from_source</span></code> WPS script. Fill the three following mandatory parameters <em>(in orange)</em>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Source</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">POINT_SOURCE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Receivers</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">RECEIVERS</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Buildings</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code></p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For this example, since we only added information for noise level during the day (field <code class="docutils literal notranslate"><span class="pre">LWD500</span></code>), we have to skip the noise level calculation for AttenuatedPaths, LNIGHT and LEVENING. To do so, check the boxes for <code class="docutils literal notranslate"><span class="pre">Do</span> <span class="pre">not</span> <span class="pre">compute</span> <span class="pre">LDEN_GEOM</span></code>, <code class="docutils literal notranslate"><span class="pre">Do</span> <span class="pre">not</span> <span class="pre">compute</span> <span class="pre">LEVENING_GEOM</span></code> and <code class="docutils literal notranslate"><span class="pre">Do</span> <span class="pre">not</span> <span class="pre">compute</span> <span class="pre">LNIGHT_GEOM</span></code> options.</p>
+</div>
+<p>Once ready, click on <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">Process</span></code> button.</p>
+<p>You should then have this message: <code class="docutils literal notranslate"><span class="pre">Calculation</span> <span class="pre">Done</span> <span class="pre">!</span> <span class="pre">LDAY_GEOM</span> <span class="pre">table(s)</span> <span class="pre">have</span> <span class="pre">been</span> <span class="pre">created.</span></code></p>
+</section>
+<section id="generate-noise-level-isosurfaces">
+<h3>Generate noise level isosurfaces<a class="headerlink" href="#generate-noise-level-isosurfaces" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Acoustic_Tools:Create_Isosurface</span></code> WPS script. Fill the following mandatory parameter <em>(in orange)</em> and click on <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">Process</span></code> button:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Sound</span> <span class="pre">levels</span> <span class="pre">table</span></code> : <code class="docutils literal notranslate"><span class="pre">LDAY_GEOM</span></code></p></li>
+</ul>
+<p>You should have this message: <code class="docutils literal notranslate"><span class="pre">Table</span> <span class="pre">CONTOURING_NOISE_MAP</span> <span class="pre">created</span></code></p>
+<p>Now, you can export this table into a .shapefile, using the <code class="docutils literal notranslate"><span class="pre">Import_and_Export:Export_Table</span></code> WPS script.</p>
+<p>You can then visualize this file into QGIS <em>(just load the file as seen before)</em>. The resulting table <em>(in grey)</em> is illustred below</p>
+<figure class="align-center">
+<img alt="_images/table_contouring.png" src="_images/table_contouring.png" />
+</figure>
+</section>
+<section id="apply-a-color-palette-adapted-to-acoustics">
+<h3>Apply a color palette adapted to acoustics<a class="headerlink" href="#apply-a-color-palette-adapted-to-acoustics" title="Permalink to this heading"></a></h3>
+<p>In QGIS, since the isosurface table is not easy to read <em>(everything is grey in our example)</em>, we will change the color palette to have colors depending on the noise levels. This information is present in the field <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code> in the attributes table. To open it, just select the layer <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP</span></code> and press <code class="docutils literal notranslate"><span class="pre">F6</span></code>.</p>
+<figure class="align-center">
+<img alt="_images/contouring.png" src="_images/contouring.png" />
+</figure>
+<p>To adapt the colors, we will apply a cartographic style. This style:</p>
+<ul class="simple">
+<li><p>has been proposed by B. Tomio (Weninger) in <em>“A Color Scheme for the Presentation of Sound Immission in Maps : Requirements and Principles for Design”</em> (see <a class="reference external" href="https://www.semanticscholar.org/paper/A-Color-Scheme-for-the-Presentation-of-Sound-in-%3A-Weninger/a72d13fcc53488567b45a08a78f969c7b3552ac0">publication</a> and <a class="reference external" href="https://www.coloringnoise.com/theoretical_background/new-color-scheme/">website</a>)</p></li>
+<li><p>is provided <em>(by NoiseModelling team)</em> as a <code class="docutils literal notranslate"><span class="pre">.sld</span></code> <em>(Style Layer Descriptor)</em> file and can be downloaded <a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/v4.0.2/Docs/styles/style_beate_tomio.sld">here</a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to know more about noise map styles, you should read the “<a class="reference internal" href="Noise_Map_Color_Scheme.html"><span class="doc">Noise Map Color Scheme</span></a>” page.</p>
+</div>
+<p>Once downloaded, make a double click on the layer <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP</span></code>. It will opens the property panel. Here, click on the <code class="docutils literal notranslate"><span class="pre">Symbology</span></code> tab.
+In the <code class="docutils literal notranslate"><span class="pre">Style</span></code> menu <em>(at the bottom)</em>, choose <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">style</span></code>. Then in the opened dialog, click on the <code class="docutils literal notranslate"><span class="pre">...</span></code> icon to search the <code class="docutils literal notranslate"><span class="pre">style_beate_tomio.sld</span></code> file. Once selected, click on <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">style</span></code>.</p>
+<figure class="align-center">
+<img alt="_images/style_sld.png" src="_images/style_sld.png" />
+</figure>
+<p>The style with its different colors is now displayed.</p>
+<figure class="align-center">
+<img alt="_images/style_scale.png" src="_images/style_scale.png" />
+</figure>
+<p>Press <code class="docutils literal notranslate"><span class="pre">OK</span></code> to apply and close the dialog. Your noise map is now well colorized and you can navigate into it to see the influence of buildings on noise levels.</p>
+<figure class="align-center">
+<img alt="_images/style_map.png" src="_images/style_map.png" />
+</figure>
+</section>
+</section>
+<section id="step-4-change-the-default-parameters">
+<h2>Step 4: Change the default parameters<a class="headerlink" href="#step-4-change-the-default-parameters" title="Permalink to this heading"></a></h2>
+<p>To produce this noise map, we used, in most of WPS scripts, default parameters (<em>e.g</em> the height of the source, the number of reflections, the air temperature, …). You are prompted to redo some of the previous steps by changing some of the settings. You will then be able to visually see what impact they have on the final noise map.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To change optionnal parameters <em>(the yellow boxes)</em> just select them and fill the needed informations in the right-side menu.</p>
+</div>
+<figure class="align-center">
+<img alt="_images/change_parameters.png" src="_images/change_parameters.png" />
+</figure>
+</section>
+<section id="step-5-bonus-change-the-directivity">
+<h2>Step 5 (bonus): Change the directivity<a class="headerlink" href="#step-5-bonus-change-the-directivity" title="Permalink to this heading"></a></h2>
+<p>In this bonus step, we will manage with the directivity. To do so, we will apply the following method:</p>
+<ol class="arabic simple">
+<li><p>Get directivity</p></li>
+<li><p>Update the <code class="docutils literal notranslate"><span class="pre">Source_Point</span></code> table</p></li>
+<li><p>Import needed data into NoiseModelling</p></li>
+<li><p>Produce the noise map, taking into acount directivity parameters</p></li>
+</ol>
+<section id="directivity">
+<h3>Directivity<a class="headerlink" href="#directivity" title="Permalink to this heading"></a></h3>
+<p>The directivity table aims at modeling a realistic directional noise source. To do so, we associate to each “Theta-Phi” pair an attenuation in dB.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DIR_ID</span></code> : identifier of the directivity sphere</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">THETA</span></code> : vertical angle in degrees, 0 (front), -90 (bottom), 90 (top), from -90 to 90</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PHI</span></code>: horizontal angle in degrees, 0 (front) / 90 (right), from 0 to 360</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LW500</span></code> : attenuation levels in dB for 500 Hz</p></li>
+</ul>
+<p>Each of the sound sources has its own directivity. For the exercise we will use the directivity of a train, which is provided in the file <a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/v4.0.1/Docs/data/Directivity.csv">Directivity.csv</a> and which you are invited to download.</p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Extract from the directivity table (Directivity.csv)</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>DIR_ID</p></th>
+<th class="head"><p>THETA</p></th>
+<th class="head"><p>PHI</p></th>
+<th class="head"><p>LW500</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>-90</p></td>
+<td><p>0</p></td>
+<td><p>-20</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>-85</p></td>
+<td><p>0</p></td>
+<td><p>-20</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>-80</p></td>
+<td><p>0</p></td>
+<td><p>-20</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>-75</p></td>
+<td><p>0</p></td>
+<td><p>-20</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>-70</p></td>
+<td><p>0</p></td>
+<td><p>-20</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>-65</p></td>
+<td><p>0</p></td>
+<td><p>-20</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+<p>Below is an illustration generated from train directivity formula.</p>
+<figure class="align-center">
+<img alt="_images/directivity_rail.png" src="_images/directivity_rail.png" />
+</figure>
+</section>
+<section id="update-source-point-table">
+<h3>Update source point table<a class="headerlink" href="#update-source-point-table" title="Permalink to this heading"></a></h3>
+<p>To play with directivity, we need to add 4 fields in the source point table:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Yaw</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : YAW</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Description</span></code> : Source horizontal orientation in degrees. For points 0° North, 90° East. For lines 0° line direction, 90° right of the line direction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> : Decimal number</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Length</span></code> : 4</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Pitch</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : PITCH</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Description</span></code> : Source vertical orientation in degrees. 0° front, 90° top, -90° bottom. (FLOAT).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> : Decimal number</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Length</span></code> : 4</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Roll</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : ROLL</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Description</span></code> : Source roll in degrees</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> : Decimal number</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Length</span></code> : 4</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Direction identififier</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : DIR_ID</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Description</span></code> : Identifier of the directivity sphere from tableSourceDirectivity parameter or train directivity if not provided -&gt; OMNIDIRECTIONAL(0), ROLLING(1), TRACTIONA(2), TRACTIONB(3), AERODYNAMICA(4), AERODYNAMICB(5), BRIDGE(6)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> : Integer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Length</span></code> : 2</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<figure class="align-center">
+<img alt="_images/yaw_pitch_roll.png" src="_images/yaw_pitch_roll.png" />
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Source image: GregorDS, <a class="reference external" href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via <a class="reference external" href="https://commons.wikimedia.org/wiki/File:6DOF.svg">Wikimedia Commons</a></p>
+</div>
+<p>In our example, we will update the <code class="docutils literal notranslate"><span class="pre">Point_Source.geojson</span></code> file to add these columns and to fill them with new information. To do so, just edit the file into a text editor and replace the following lines. Save it once done.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span> <span class="s2">&quot;PK&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;LWD500&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span> <span class="s2">&quot;PK&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;LWD500&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;YAW&quot;</span><span class="p">:</span> <span class="mi">45</span><span class="p">,</span> <span class="s2">&quot;PITCH&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;ROLL&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;DIR_ID&quot;</span> <span class="p">:</span> <span class="mi">1</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Here we can see that the Yaw is setted to 45°. Pitch and Roll are equal to 0, and the directivity is defined as <code class="docutils literal notranslate"><span class="pre">1</span></code>  and will refer to the directivy table (see below).</p>
+<p>So your final .geojson file should look like this</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+<span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Point_Source&quot;</span><span class="p">,</span>
+<span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;urn:ogc:def:crs:EPSG::2154&quot;</span> <span class="p">}</span> <span class="p">},</span>
+<span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;PK&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;LWD500&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;YAW&quot;</span><span class="p">:</span> <span class="mi">45</span><span class="p">,</span> <span class="s2">&quot;PITCH&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;ROLL&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;DIR_ID&quot;</span> <span class="p">:</span> <span class="mi">1</span> <span class="p">},</span>
+              <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="s2">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">223771.0727</span><span class="p">,</span> <span class="mf">6757583.2983</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]}</span>
+             <span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="import-data">
+<h3>Import data<a class="headerlink" href="#import-data" title="Permalink to this heading"></a></h3>
+<p>Now, in NoiseModelling we have to:</p>
+<ul class="simple">
+<li><p>Import the <code class="docutils literal notranslate"><span class="pre">Directivy.csv</span></code> file</p></li>
+<li><p>Reimport the <code class="docutils literal notranslate"><span class="pre">Point_Source.geojson</span></code> file in order to take into account the changes</p></li>
+<li><p>Import the <code class="docutils literal notranslate"><span class="pre">dem.geojson</span></code> file, which is placed here <code class="docutils literal notranslate"><span class="pre">./NoiseModelling_4.0.0/data_dir/data/wpsdata/dem.geojson</span></code>. By taking into account the ground elevation, this file will help us to get better results.</p></li>
+</ul>
+<p>To do so, just use the <code class="docutils literal notranslate"><span class="pre">Import_and_Export:Import_Table</span></code> WPS script.</p>
+</section>
+<section id="generate-the-delaunay-triangulation">
+<h3>Generate the Delaunay triangulation<a class="headerlink" href="#generate-the-delaunay-triangulation" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Receivers:Delaunay_Grid</span></code> WPS script. Fill the following parameters and click on <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">Process</span></code> button:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Sources</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">POINT_SOURCE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Maximum</span> <span class="pre">Area</span></code> : <code class="docutils literal notranslate"><span class="pre">60</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Buildings</span> <span class="pre">table</span> <span class="pre">name</span></code>: <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Height</span></code> : <code class="docutils literal notranslate"><span class="pre">1.6</span></code></p></li>
+</ul>
+</section>
+<section id="compute-noise-level-from-source">
+<h3>Compute noise level from source<a class="headerlink" href="#compute-noise-level-from-source" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">NoiseModelling:Noise_level_from_source</span></code> WPS script. Fill the following parameters and click on <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">Process</span></code> button:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Sources</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">POINT_SOURCE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Buildings</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Receivers</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">RECEIVERS</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ground</span> <span class="pre">absorption</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">GROUND_TYPE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Source</span> <span class="pre">directivity</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">DIRECTIVITY</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Maximum</span> <span class="pre">source-receiver</span> <span class="pre">distance</span></code> : <code class="docutils literal notranslate"><span class="pre">800</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Do</span> <span class="pre">not</span> <span class="pre">compute</span> <span class="pre">LDEN_GEOM</span> <span class="pre">table</span></code> : <code class="docutils literal notranslate"><span class="pre">true</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Do</span> <span class="pre">not</span> <span class="pre">compute</span> <span class="pre">LNIGHT_GEOM</span> <span class="pre">table</span></code> : <code class="docutils literal notranslate"><span class="pre">true</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Do</span> <span class="pre">not</span> <span class="pre">compute</span> <span class="pre">LEVENING_GEOM</span> <span class="pre">table</span></code> : <code class="docutils literal notranslate"><span class="pre">true</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DEM</span> <span class="pre">table</span> <span class="pre">name</span></code> : <code class="docutils literal notranslate"><span class="pre">DEM</span></code></p></li>
+</ul>
+</section>
+<section id="create-isosurface">
+<h3>Create isosurface<a class="headerlink" href="#create-isosurface" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Acoustic_Tools:Create_Isosurface</span></code> WPS script. Fill the following parameters and click on <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">Process</span></code> button:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Sound</span> <span class="pre">levels</span> <span class="pre">table</span></code> : <code class="docutils literal notranslate"><span class="pre">LDAY_GEOM</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Polygon</span> <span class="pre">smoothing</span> <span class="pre">coefficient</span></code> : 0.4</p></li>
+</ul>
+</section>
+<section id="export-and-visualize-resulting-tables">
+<h3>Export and visualize resulting tables<a class="headerlink" href="#export-and-visualize-resulting-tables" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Import_and_Export:Export_Table</span></code> WPS script to export the <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP</span></code> table into a shapefile called <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP_DIRECTIVITY</span></code>.</p>
+<p>Then, load <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP_DIRECTIVITY.shp</span></code> into QGIS. Apply the <code class="docutils literal notranslate"><span class="pre">noisemap_style.sld</span></code> style, and compare with <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP.shp</span></code> produced in Step 3.</p>
+<figure class="align-center">
+<img alt="_images/contouring_directivity_compare.png" src="_images/contouring_directivity_compare.png" />
+</figure>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Noise_Map_From_OSM_Tutorial.html" class="btn btn-neutral float-left" title="Noise Map from OSM - GUI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Matsim_Tutorial.html" class="btn btn-neutral float-right" title="MATSim - GUI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

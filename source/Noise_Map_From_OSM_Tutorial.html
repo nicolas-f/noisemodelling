@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noise Map from OSM - GUI &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Noise Map from Point Source - GUI" href="Noise_Map_From_Point_Source.html" />
+    <link rel="prev" title="Get Started - GUI" href="Get_Started_GUI.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Noise Map from OSM - GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-get-osm-data">Step 1:  Get OSM data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#download-osm-data">Download OSM data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#import-to-the-database">Import to the database</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-visualize-osm-data">Step 2: Visualize OSM data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#with-noisemodelling-gui">With NoiseModelling GUI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#with-h2-or-dbeaver-client">With H2 or DBeaver client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-tables-into-files">Export tables into files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-generate-a-receiver-table">Step 3: Generate a Receiver table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-associate-emission-noise-level-with-roads">Step 4: Associate emission noise level with roads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-5-source-to-receiver-propagation">Step 5: Source to Receiver Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-6-create-isosurfaces-map">Step 6: Create Isosurfaces map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-7-view-the-result">Step 7: View the result</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#export">Export</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#view">View</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Noise Map from OSM - GUI</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Noise_Map_From_OSM_Tutorial.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="noise-map-from-osm-gui">
+<h1>Noise Map from OSM - GUI<a class="headerlink" href="#noise-map-from-osm-gui" title="Permalink to this heading"></a></h1>
+<p>In this tutorial, we are going to produce a noise map, using <a class="reference external" href="https://www.openstreetmap.org/">OpenStreetMap</a> (OSM) data. The exercice will be made through NoiseModelling with Graphic User Interface (GUI).</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>You need at least NoiseModelling v.3.0.6; the best is always to use last release</p></li>
+<li><p>We assume you already installed/configured Java and installed NoiseModelling. If not, follow Step 1 in “<a class="reference internal" href="Get_Started_GUI.html"><span class="doc">Get Started - GUI</span></a>” page</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you have just finished the “<a class="reference internal" href="Get_Started_GUI.html"><span class="doc">Get Started - GUI</span></a>” tutorial, please clean your database with the WPS block <code class="docutils literal notranslate"><span class="pre">Clean_Database</span></code>. Don’t forget to check the <code class="docutils literal notranslate"><span class="pre">Are</span> <span class="pre">you</span> <span class="pre">sure</span></code> check box before running the process.</p>
+</div>
+</section>
+<section id="step-1-get-osm-data">
+<h2>Step 1:  Get OSM data<a class="headerlink" href="#step-1-get-osm-data" title="Permalink to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>OpenStreetMap data can be downloaded in various formats. The main ones are <cite>.osm</cite>, <cite>.osm.gz</cite> and <cite>.osm.pbf</cite> (<a class="reference external" href="https://wiki.openstreetmap.org/wiki/OSM_file_formats">read more</a>). For this example, we will use <cite>.osm.pbf</cite> file, which is a compressed version of <cite>.osm</cite>.</p>
+</div>
+<section id="download-osm-data">
+<h3>Download OSM data<a class="headerlink" href="#download-osm-data" title="Permalink to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Go to <a class="reference external" href="https://extract.bbbike.org/">https://extract.bbbike.org/</a> website. This platform is built on top of OpenStreetMap database and allows you to extract data in a very simple way.</p></li>
+<li><p>In the “Format” drop-down list, choose <code class="docutils literal notranslate"><span class="pre">Protocolbuffer</span> <span class="pre">(PBF)</span></code></p></li>
+<li><p>Give a name to the area you will download <em>(this information is used to name your extraction request)</em></p></li>
+<li><p>Enter your email, so that BBBike will be able to send you the download link once your data are ready <em>(no data collection for commercial purpose)</em>.</p></li>
+<li><p>Zoom in on the area you want to download <em>(be careful, depending on the zoom level, the file you will get may be very heavy)</em></p></li>
+<li><p>Click on the <code class="docutils literal notranslate"><span class="pre">here</span></code> icon to create the bounding box. If you click on the bbox, you can then make modification.</p></li>
+<li><p>When ready, click on <code class="docutils literal notranslate"><span class="pre">extract</span></code> button.</p></li>
+</ol>
+<p>In the email you will receive from BBBike, use the link to download your data. You will get a file called <code class="docutils literal notranslate"><span class="pre">planet_xx.xx,xx.xx.osm.pbf</span></code></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>To avoid potential upcoming errors rename the file <code class="docutils literal notranslate"><span class="pre">planet_xx.xx,xx.xx.osm.pbf</span></code> to something simpler (<em>e.g.</em> <code class="docutils literal notranslate"><span class="pre">my_area.osm.pbf</span></code>).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Developped by <a class="reference external" href="https://wolfram.schneider.org/">Wolfram Schneider</a>, BBBike is a free of charge service (for non-professional purpose). If you like Wolfram’s job and wants to help him support the server costs, you are invited to <a class="reference external" href="https://extract.bbbike.org/community.html#donate">donate</a>.</p>
+</div>
+</section>
+<section id="import-to-the-database">
+<h3>Import to the database<a class="headerlink" href="#import-to-the-database" title="Permalink to this heading"></a></h3>
+<p>To import the <code class="docutils literal notranslate"><span class="pre">.pbf</span></code> file into the NoiseModelling database, we use the <code class="docutils literal notranslate"><span class="pre">Import_OSM</span></code> WPS block (note that this block also allows to load <code class="docutils literal notranslate"><span class="pre">.osm</span></code> or <code class="docutils literal notranslate"><span class="pre">.osm.gz</span></code> files).</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Target</span> <span class="pre">projection</span> <span class="pre">identifier</span></code>: enter the corresponding SRID <em>(see note below)</em> (<em>e.g.</em> <code class="docutils literal notranslate"><span class="pre">2154</span></code> for french Lambert 93)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Path</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">OSM</span> <span class="pre">file</span></code>: enter the adress of your <code class="docutils literal notranslate"><span class="pre">my_area.osm.pbf</span></code> file (<em>e.g.</em> <code class="docutils literal notranslate"><span class="pre">/home/noisemodelling/my_area.osm.pbf</span></code>)</p></li>
+<li><p>If needeed, check the 4 other optionnal options</p></li>
+<li><p>When ready, click on the green <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">Process</span></code> button</p></li>
+</ol>
+<p>Once done, three tables must be created: <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code>, <code class="docutils literal notranslate"><span class="pre">GROUND</span></code> and <code class="docutils literal notranslate"><span class="pre">ROADS</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>About the Coordinate System (EPSG code)</p>
+<p>In several input files, you need to specify coordinates, <em>e.g</em> road network. You can’t use the WGS84 coordinates (i.e. GPS coordinates). Acoustic propagation formulas make the assumption that coordinates are metric. Many countries and regions have custom coordinate system defined, optimized for usages in their appropriate areas. It might be best to ask some GIS specialists in your region of interest what the most commonly used local coordinate system is and use that as well for your data. If you don’t have any clue about what coordinate system is used in your region, it might be best to use the Universal Transverse Mercator coordinate system. This coordinate system divides the world into multiple bands, each six degrees width and separated into a northern and southern part, which is called UTM zones (see <a class="reference external" href="http://en.wikipedia.org/wiki/UTM_zones#UTM_zone">http://en.wikipedia.org/wiki/UTM_zones#UTM_zone</a> for more details). For each zone, an optimized coordinate system is defined. Choose the UTM zone which covers your region (Wikipedia has a nice map showing the zones) and use its coordinate system.</p>
+<p>Here is the map : <a class="reference external" href="https://upload.wikimedia.org/wikipedia/commons/e/ed/Utm-zones.jpg">https://upload.wikimedia.org/wikipedia/commons/e/ed/Utm-zones.jpg</a></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<ul class="simple">
+<li><p>The current import script from OpenStreetMap may (in few specific cases) produce geometries incompatible with NoiseModelling. If an area has a problem, try to reduce the area. A much more robust version of this script will be available soon.</p></li>
+<li><p>As OSM does not include data on road traffic flows, default values are assigned according to the “<a class="reference external" href="https://sicaweb.cedex.es/docs/documentacion/Good-Practice-Guide-for-Strategic-Noise-Mapping.pdf">Good Practice Guide for Strategic Noise Mapping and the Production of Associated Data on Noise Exposure</a> - Version 2”.</p></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="step-2-visualize-osm-data">
+<h2>Step 2: Visualize OSM data<a class="headerlink" href="#step-2-visualize-osm-data" title="Permalink to this heading"></a></h2>
+<p>Now, to be sure that OSM data are corresponding to our need, we can take time to visualize them. To do so, we have various possibilities:</p>
+<section id="with-noisemodelling-gui">
+<h3>With NoiseModelling GUI<a class="headerlink" href="#with-noisemodelling-gui" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>The contents of the database can be viewed using <code class="docutils literal notranslate"><span class="pre">Display_Database</span></code> WPS script.</p></li>
+<li><p>A spatial layer can be visualized using <code class="docutils literal notranslate"><span class="pre">Table_Visualization_Map</span></code> WPS script.</p></li>
+<li><p>A data table can be visualized using <code class="docutils literal notranslate"><span class="pre">Table_Visualization_Data</span></code> WPS script.</p></li>
+</ul>
+</section>
+<section id="with-h2-or-dbeaver-client">
+<h3>With H2 or DBeaver client<a class="headerlink" href="#with-h2-or-dbeaver-client" title="Permalink to this heading"></a></h3>
+<p>While NoiseModelling is open, if you are working with the default H2/H2GIS database, you can display your database in both the H2 / H2GIS web interface and DBeaver. To do so, just follow the <a class="reference internal" href="NoiseModelling_db.html"><span class="doc">Access NoiseModelling database</span></a> page.</p>
+</section>
+<section id="export-tables-into-files">
+<h3>Export tables into files<a class="headerlink" href="#export-tables-into-files" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Export a table: It is also possible to export the tables via <code class="docutils literal notranslate"><span class="pre">Export_Table</span></code> WPS script, in Shapefile, CSV or GeoJSON format.</p></li>
+<li><p>View the files: Then open these files into your preferred Geographic Information System (<em>e.g</em> <a class="reference external" href="http://qgis.org/">QGIS</a>, <a class="reference external" href="http://orbisgis.org/">OrbisGIS</a>, …). You can then graphically visualize your geometries layer, but also the data contained in it. Take the time to familiarize yourself with your chosen GIS.</p></li>
+<li><p>Add a background map: Most of the GIS allow you to add an <a class="reference external" href="https://www.ogc.org/standards/wms">WMS</a> OSM <a class="reference external" href="https://wiki.openstreetmap.org/wiki/Tile_servers">background map</a>: (see an <a class="reference external" href="https://wiki.openstreetmap.org/wiki/QGIS">example with QGIS</a>)</p></li>
+<li><p>Change colors: Most of the GIS allow you to change layer colors (<em>e.g.</em> <code class="docutils literal notranslate"><span class="pre">GROUND</span></code> layer in green, <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code> in gray, <code class="docutils literal notranslate"><span class="pre">ROADS</span></code> in red).</p></li>
+</ul>
+</section>
+</section>
+<section id="step-3-generate-a-receiver-table">
+<h2>Step 3: Generate a Receiver table<a class="headerlink" href="#step-3-generate-a-receiver-table" title="Permalink to this heading"></a></h2>
+<p>The locations of noise level evaluation points needs to be defined.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">Delaunay_Grid</span></code> with the previously generated BUILDINGS table as the buildings table and ROADS as <em>Sources table name</em>.
+Other parameters are optional.</p>
+<p>Don’t forget to view your resulting layer in <code class="docutils literal notranslate"><span class="pre">WPSBuilder</span></code> or in your GIS to check that it meets your expectations.</p>
+<p>This processing block will give the possibility to generate a noise map later.</p>
+</section>
+<section id="step-4-associate-emission-noise-level-with-roads">
+<h2>Step 4: Associate emission noise level with roads<a class="headerlink" href="#step-4-associate-emission-noise-level-with-roads" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Road_Emission_from_Traffic</span></code> block is used to generate a road layer, called <code class="docutils literal notranslate"><span class="pre">LW_ROADS</span></code>, containing LW emission noise level values in accordance with the emission laws of the CNOSSOS model. The format of the input road layer can be found in the description of the WPS Block.</p>
+<p>Don’t forget to view your resulting layers <em>(see Step 2)</em> to check that it meets your expectations.</p>
+</section>
+<section id="step-5-source-to-receiver-propagation">
+<h2>Step 5: Source to Receiver Propagation<a class="headerlink" href="#step-5-source-to-receiver-propagation" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Noise_level_from_source</span></code> block allows to generate a layer of receiver points with associated sound levels corresponding to the sound level emitted by the sources (created table <code class="docutils literal notranslate"><span class="pre">LW_ROADS</span></code>) propagated to the receivers according to the CNOSSOS-EU. propagation laws.</p>
+</section>
+<section id="step-6-create-isosurfaces-map">
+<h2>Step 6: Create Isosurfaces map<a class="headerlink" href="#step-6-create-isosurfaces-map" title="Permalink to this heading"></a></h2>
+<p>Create an interpolation of levels between receivers points using the block <code class="docutils literal notranslate"><span class="pre">Create_Isosurface</span></code>.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">LDEN_GEOM</span></code> as <code class="docutils literal notranslate"><span class="pre">Name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">noise</span> <span class="pre">table</span></code>.</p>
+</section>
+<section id="step-7-view-the-result">
+<h2>Step 7: View the result<a class="headerlink" href="#step-7-view-the-result" title="Permalink to this heading"></a></h2>
+<section id="export">
+<h3>Export<a class="headerlink" href="#export" title="Permalink to this heading"></a></h3>
+<p>You can then export the output table <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP</span></code> via <code class="docutils literal notranslate"><span class="pre">Export_Table</span></code> in Shapefile or GeoJSON format.</p>
+</section>
+<section id="view">
+<h3>View<a class="headerlink" href="#view" title="Permalink to this heading"></a></h3>
+<p>You can view this layer in your favorite GIS. You can then apply a color gradient on <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code> field; the noise level intervals are in <code class="docutils literal notranslate"><span class="pre">ISOLABEL</span></code> field.</p>
+<figure class="align-center">
+<img alt="_images/Tutorial2_ContouringNoiseMap.png" src="_images/Tutorial2_ContouringNoiseMap.png" />
+</figure>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Get_Started_GUI.html" class="btn btn-neutral float-left" title="Get Started - GUI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Noise_Map_From_Point_Source.html" class="btn btn-neutral float-right" title="Noise Map from Point Source - GUI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scientific production &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Buildings" href="Input_buildings.html" />
+    <link rel="prev" title="Validation" href="Validation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scientific production</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#standard-noise-maps">Standard Noise maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-noise-maps">Dynamic Noise maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#probabilistic-multi-sources-noise-maps">Probabilistic &amp; Multi-sources Noise maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sensitivity-analysis-data-assimilation">Sensitivity Analysis &amp; data assimilation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#auralisation">Auralisation</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Scientific production</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Scientific_production.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scientific-production">
+<span id="my-target"></span><h1>Scientific production<a class="headerlink" href="#scientific-production" title="Permalink to this heading"></a></h1>
+<p>Below is a non-exhaustive list of articles or presentations in which NoiseModelling is used.</p>
+<section id="standard-noise-maps">
+<h2>Standard Noise maps<a class="headerlink" href="#standard-noise-maps" title="Permalink to this heading"></a></h2>
+<p>BACLET S., VENKATARAMAN S., RUMPLER R., BILLSJÖ R., HORVATH J., ÖSTERLUND P. E., , <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S1361920921004089">From strategic noise maps to receiver-centric noise exposure sensitivity mapping</a>, Transportation Research Part D: Transport and Environment, 2022, vol. 102 <em>(Noise mapping, Road traffic noise, Population exposure, Road network sensitivity)</em></p>
+<p>GRAZIUSO G., FRANCAVILLA A. B., MANCINI S., GUARNACCIA C., <a class="reference external" href="https://iopscience.iop.org/article/10.1088/1742-6596/2162/1/012014">Open-source software tools for strategic noise mapping: a case study</a>, Journal of Physics: Conference Series, 2022, vol. 2162, 012014</p>
+<p>AUMOND P., BOCHER E., ECOTIERE D., FORTIN N., GAUVREAU B., GUILLAUME G., PETIT G., <a class="reference external" href="http://www.sea-acustica.es/fileadmin/Madeira21/ID122.pdf">Improvement of city noise map production processes and sensitivity analysis to noise models inputs</a>, Euronoise Conference Proceedings, 2021, p. 1128</p>
+<p>BACLET S., VENKATARAMAN S., RUMPLER R., <a class="reference external" href="http://axaco.s3.amazonaws.com/uploads/2021/06/07/MIHmJYsH/rev2021-032.pdf">A methodology to assess the impact of driving noise from individual vehicles in an urban environment</a>, Resource Efficient Vehicles Conference, 2021.</p>
+<p>NOURMOHAMMADI Z., LILASATHAPORNKIT T., ASHFAQ M., et al., <a class="reference external" href="https://www.mdpi.com/2071-1050/13/2/605">Mapping Urban Environmental Performance with Emerging Data Sources: A Case of Urban Greenery and Traffic Noise in Sydney, Australia</a>, Sustainability, 2021, vol. 13, n° 2, p. 605</p>
+<p>BAEZA J. L., SIEVERT J. L., LANDWEHR A., et al., <a class="reference external" href="https://www.igi-global.com/article/cityscope-platform-for-real-time-analysis-and-decision-support-in-urban-design-competitions/278826">CityScope Platform for Real-Time Analysis and Decision-Support in Urban Design Competitions</a>, International Journal of E-Planning Research (IJEPR), 2021, vol. 10, n° 4, p. 1-17</p>
+<p>WANG Z., NOVACK T., YAN Y., ZIPF A., <a class="reference external" href="https://ieeexplore.ieee.org/document/9139350/">Quiet Route Planning for Pedestrians in Traffic Noise Polluted Environments</a>, IEEE Transactions on Intelligent Transportation Systems, 2020</p>
+<p>AUMOND P., FORTIN N., CAN A., <a class="reference external" href="https://www.ingentaconnect.com/contentone/ince/incecp/2020/00000261/00000004/art00003">Overview of the NoiseModelling open-source software version 3 and its applications</a>, INTER-NOISE and NOISE-CON Congress and Conference Proceedings, 2020, vol. 261, n°4, p. 2005-2011</p>
+</section>
+<section id="dynamic-noise-maps">
+<h2>Dynamic Noise maps<a class="headerlink" href="#dynamic-noise-maps" title="Permalink to this heading"></a></h2>
+<p>LE BESCOND V., CAN A., AUMOND P., GASTINEAU P., <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S1361920921000973">Open-source modeling chain for the dynamic assessment of road traffic noise exposure</a>, Transportation Research Part D: Transport and Environment, 2021, vol. 94, 102793 (Watch a <a class="reference external" href="https://youtu.be/jNCG0qQrsrE">short presentation</a> on Youtube)</p>
+<p>CAN A., AUMOND P., BECARIE, C., LECLERCQ, L., <a class="reference external" href="https://pub.dega-akustik.de/ICA2019/data/articles/000646.pdf">Dynamic approach for the study of the spatial impact of road traffic noise at peak hours</a>, Proceedings of the 23rd International Congress on Acoustics, Aachen, Allemagne, 09-13 September, 2019</p>
+<p>QUINTERO G., AUMOND P., CAN A., BALASTEGUI A., ROMEU J., <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S0003682X19302087">Statistical requirements for noise mapping based on mobile measurements using bikes</a>, Applied Acoustics, 156, 271-278, 2019</p>
+<figure class="align-center">
+<a class="reference external image-reference" href="https://www.youtube.com/watch?v=jl8tASDr-uQ&amp;t=133s"><img alt="_images/Exposure.PNG" src="_images/Exposure.PNG" style="width: 75%;" /></a>
+</figure>
+<p class="centered">
+<strong><a class="reference external" href="https://www.youtube.com/watch?v=jl8tASDr-uQ&amp;t=133s">https://www.youtube.com/watch?v=jl8tASDr-uQ&amp;t=133s</a></strong></p><p>CAN A., AUMOND P., BECARIE C., LECLERCQ L., <a class="reference external" href="https://hal.archives-ouvertes.fr/hal-02482315">Approche dynamique pour l’étude de l’emprise spatiale du bruit de trafic routier aux heures de pointe</a>, Recherche en Transport Sécurité, 2018</p>
+</section>
+<section id="probabilistic-multi-sources-noise-maps">
+<h2>Probabilistic &amp; Multi-sources Noise maps<a class="headerlink" href="#probabilistic-multi-sources-noise-maps" title="Permalink to this heading"></a></h2>
+<p>ALIONTE C-G., COMEAGA D-C., <a class="reference external" href="https://doi.org/10.1051/e3sconf/201911202011">Noise assessment of the small-scale wind farm</a>, In : E3S Web of Conferences. EDP Sciences, 2019</p>
+<p>AUMOND P., CAN A., <a class="reference external" href="https://www.euronoise2018.eu/docs/papers/86_Euronoise2018.pdf">Probabilistic modeling framework to predict traffic sound distribution</a>, Proceedings of Euronoise, Hersonissos, Crete, 27-31 May 2018</p>
+<p>AUMOND P., JACQUESSON L., CAN A., <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0003682X17311283">Probabilistic modeling framework for multisource sound mapping</a>, Applied Acoustics, 139, 34-43, 2018</p>
+</section>
+<section id="sensitivity-analysis-data-assimilation">
+<h2>Sensitivity Analysis &amp; data assimilation<a class="headerlink" href="#sensitivity-analysis-data-assimilation" title="Permalink to this heading"></a></h2>
+<p>LESIEUR A., MALLET V., AUMOND P., CAN A., <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0003682X21000311">Data assimilation for urban noise mapping with a meta-model</a>, Applied Acoustics, 2021, vol. 176, 107938,</p>
+<p>AUMOND P., CAN A., MALLET V., GAUVREAU B., GUILLAUME G., <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S0003682X20310021">Global sensitivity analysis of a noise mapping model based on open-source software</a>, Applied Acoustics, 2021, vol. 176, 107899</p>
+<p>LESIEUR A., AUMOND P., MALLET V., et al., <a class="reference external" href="https://asa.scitation.org/doi/10.1121/10.0002866">Meta-modeling for urban noise mapping</a>. The Journal of the Acoustical Society of America, 2020, vol. 148, no 6, p. 3671-3681</p>
+<figure class="align-center">
+<a class="reference external image-reference" href="https://www.youtube.com/watch?v=orc5ZbN2dlY"><img alt="_images/Metamodeling.PNG" src="_images/Metamodeling.PNG" style="width: 75%;" /></a>
+</figure>
+<p class="centered">
+<strong><a class="reference external" href="https://www.youtube.com/watch?v=orc5ZbN2dlY">https://www.youtube.com/watch?v=orc5ZbN2dlY</a></strong></p><p>AUMOND P., CAN A., MALLET V., GAUVREAU B., GUILLAUME G., <a class="reference external" href="https://pub.dega-akustik.de/ICA2019/data/articles/000637.pdf">Global sensitivity analysis for urban noise modelling</a>, Proceedings of the 23rd International Congress on Acoustics, Aachen, Allemagne, 09-13 September, 2019</p>
+</section>
+<section id="auralisation">
+<h2>Auralisation<a class="headerlink" href="#auralisation" title="Permalink to this heading"></a></h2>
+<p>ROHRLICH F. , VERRON C. (Noise Makers), <em>Captation et Simulation d’Ambiances Urbaines Spatialisées</em>, 2018-2019</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/Rohrlich.PNG"><img alt="_images/Rohrlich.PNG" src="_images/Rohrlich.PNG" style="width: 75%;" /></a>
+</figure>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Validation.html" class="btn btn-neutral float-left" title="Validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Input_buildings.html" class="btn btn-neutral float-right" title="Buildings" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

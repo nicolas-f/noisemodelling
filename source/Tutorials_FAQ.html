@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorials - FAQ &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="WPS Blocks" href="WPS_Blocks.html" />
+    <link rel="prev" title="Pilot NoiseModelling with scripts" href="Get_Started_Script.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials - FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#shapefiles-or-geojson">Shapefiles or GeoJSON?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#postgresql-or-h2">PostGreSQL or H2?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#osm">OSM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#metric-srid">Metric SRID</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#primary-key">Primary Key</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorials - FAQ</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Tutorials_FAQ.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorials-faq">
+<h1>Tutorials - FAQ<a class="headerlink" href="#tutorials-faq" title="Permalink to this heading"></a></h1>
+<section id="shapefiles-or-geojson">
+<h2>Shapefiles or GeoJSON?<a class="headerlink" href="#shapefiles-or-geojson" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://doc.arcgis.com/en/arcgis-online/reference/shapefiles.htm">Shapefile</a> is a file format for geographic information systems (GIS).</p>
+<p>Its extension is classically <code class="docutils literal notranslate"><span class="pre">.shp</span></code>, and it is always accompanied by (at least) two other files with the same name:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.dbf</span></code>, a file that contains attribute data relating to the objects contained in the shapefile,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.shx</span></code>, file that stores the index of the geometry.</p></li>
+</ul>
+<p>Other files can also be provided :</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.prj</span></code> - coordinate system information, using the WKT (Well Known Text) format;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.sbn</span></code> and <code class="docutils literal notranslate"><span class="pre">.sbx</span></code> - spatial shape index;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.fbn</span></code> and <code class="docutils literal notranslate"><span class="pre">.fbx</span></code> - spatial shape index for read-only shapefiles;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.ain</span></code> and <code class="docutils literal notranslate"><span class="pre">.aih</span></code> - attribute index for active fields in a table or in a theme attribute table;</p></li>
+<li><p>etc.</p></li>
+</ul>
+<p><a class="reference external" href="https://fr.wikipedia.org/wiki/GeoJSON">GeoJSON</a> (Geographic JSON) is an open format for encoding simple geospatial data sets using the JSON (JavaScript Object Notation) standard.
+It is an alternative to the Shapefile format. It has the advantage of being readable directly in a text editor.</p>
+</section>
+<section id="postgresql-or-h2">
+<h2>PostGreSQL or H2?<a class="headerlink" href="#postgresql-or-h2" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://www.postgresql.org/">PostgreSQL</a> &amp; <a class="reference external" href="https://www.h2database.com/">H2 Database</a> are two DataBase Management Systems (DBMS). They are used to store, manipulate or manage, and share information in a database, ensuring the quality, permanence and confidentiality of the information, while hiding the complexity of the operations.
+NoiseModelling can connect to DBMS in H2 - H2GIS or PostGreSQL - PostGIS format.</p>
+</section>
+<section id="osm">
+<h2>OSM<a class="headerlink" href="#osm" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://www.openstreetmap.org/">OpenStreetMap</a> (OSM) is a collaborative project to create a free (and open-access) editable map of the world.
+The geodata underlying the map is considered the primary output of the project.
+The creation and growth of OSM has been motivated by restrictions on use or availability of map data across much of the world, and the advent of inexpensive portable satellite navigation devices.
+OSM is considered a prominent example of Volunteered Geographic Information (VGI).</p>
+</section>
+<section id="metric-srid">
+<h2>Metric SRID<a class="headerlink" href="#metric-srid" title="Permalink to this heading"></a></h2>
+<p>Spatial reference systems can be referred to using a <strong>SRID integer</strong>, including EPSG codes.</p>
+<p>In several input files, you need to specify coordinates, <em>e.g</em> road network. It is strongly suggested not to use WGS84 coordinates (i.e. GPS coordinates - <code class="docutils literal notranslate"><span class="pre">EPSG:4326</span></code>). Acoustic propagation formulas make the assumption that coordinates are metric.
+Many countries and regions have custom coordinate system defined, optimized for usages in their appropriate areas. It might be best to ask some GIS specialists in your region of interest what the most commonly used local coordinate system is and use that as well for your data.
+If you don’t have any clue about what coordinate system is used in your region, it might be best to use the Universal Transverse Mercator coordinate system. This coordinate system divides the world into multiple bands, each six degrees width and separated into a northern and southern part, which is called UTM zones (see <a class="reference external" href="http://en.wikipedia.org/wiki/UTM_zones#UTM_zone">http://en.wikipedia.org/wiki/UTM_zones#UTM_zone</a> for more details). For each zone, an optimized coordinate system is defined. Choose the UTM zone which covers your region (Wikipedia has a nice map showing the zones) and use its coordinate system.</p>
+<p>Here is the map : <a class="reference external" href="https://upload.wikimedia.org/wikipedia/commons/e/ed/Utm-zones.jpg">https://upload.wikimedia.org/wikipedia/commons/e/ed/Utm-zones.jpg</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We recommand using the website <a class="reference external" href="https://epsg.io/">https://epsg.io/</a> to find the appropriate <strong>SRID</strong> code for your location.</p>
+</div>
+</section>
+<section id="primary-key">
+<h2>Primary Key<a class="headerlink" href="#primary-key" title="Permalink to this heading"></a></h2>
+<p><em>“In the design of a database table, the Primary Key (abbreviated PK) is selected among the non-empty set of candidate keys. The PK is a column (or an irreducible group of columns) able to identify every row of the table.”</em> (<a class="reference external" href="https://en.wiktionary.org/wiki/primary_key">Source</a>)</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Get_Started_Script.html" class="btn btn-neutral float-left" title="Pilot NoiseModelling with scripts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="WPS_Blocks.html" class="btn btn-neutral float-right" title="WPS Blocks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

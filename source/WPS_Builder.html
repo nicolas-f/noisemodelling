@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WPS Builder &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Create your own WPS block" href="Own_Wps.html" />
+    <link rel="prev" title="WPS Blocks" href="WPS_Blocks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">WPS Builder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-wps-builder">What is WPS Builder ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#frequently-asked-question">Frequently Asked Question</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-do-the-colors-correspond-to">What do the colors correspond to?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#can-i-save-my-wps-builder-project">Can I save my WPS Builder project?</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#local-browser">1. Local browser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#export-into-json">2. Export into JSON</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#why-everything-is-wrong-when-i-use-enter">Why everything is wrong when I use “Enter”?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#i-can-t-link-process-block-between-them">I can’t link process block between them?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">WPS Builder</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/WPS_Builder.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="wps-builder">
+<h1>WPS Builder<a class="headerlink" href="#wps-builder" title="Permalink to this heading"></a></h1>
+<section id="what-is-wps-builder">
+<h2>What is WPS Builder ?<a class="headerlink" href="#what-is-wps-builder" title="Permalink to this heading"></a></h2>
+<p>WPS Builder allows to creates graphical process workflows that can be easily executed and reproduced. It allows Web Processing Services to operate through a user interface.</p>
+<p>We have developed a version of WPS Builder adapted to the needs of NoiseModelling. This version being very close to the original version initially developped by former Boundlessgeo company.</p>
+</section>
+<section id="frequently-asked-question">
+<h2>Frequently Asked Question<a class="headerlink" href="#frequently-asked-question" title="Permalink to this heading"></a></h2>
+<section id="what-do-the-colors-correspond-to">
+<h3>What do the colors correspond to?<a class="headerlink" href="#what-do-the-colors-correspond-to" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Orange block are mandatory</p></li>
+<li><p>Beige blocks are optional</p></li>
+<li><p>Green block are unfortunately useless <em>(not due to NoiseModelling)</em></p></li>
+<li><p>Blocks get solid border when they are ready</p></li>
+</ul>
+</section>
+<section id="can-i-save-my-wps-builder-project">
+<h3>Can I save my WPS Builder project?<a class="headerlink" href="#can-i-save-my-wps-builder-project" title="Permalink to this heading"></a></h3>
+<p>Yes. To save your WPS Builder project you two possibilities:</p>
+<ol class="arabic simple">
+<li><p>Save in the local browser storage</p></li>
+<li><p>Export into a JSON file</p></li>
+</ol>
+<section id="local-browser">
+<h4>1. Local browser<a class="headerlink" href="#local-browser" title="Permalink to this heading"></a></h4>
+<p>Click on the <code class="docutils literal notranslate"><span class="pre">File</span></code> icon and then choose <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">to</span> <span class="pre">local</span> <span class="pre">browser</span> <span class="pre">storage</span></code>. This way, your working environment will saved in the memory of your web browser.</p>
+<p>Once you restart NoiseModelling, you can reload this environment by clicking on <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">/</span> <span class="pre">Open</span> <span class="pre">from</span> <span class="pre">local</span> <span class="pre">browser</span> <span class="pre">storage</span></code></p>
+</section>
+<section id="export-into-json">
+<h4>2. Export into JSON<a class="headerlink" href="#export-into-json" title="Permalink to this heading"></a></h4>
+<p>Click on the <code class="docutils literal notranslate"><span class="pre">File</span></code> icon and then choose <code class="docutils literal notranslate"><span class="pre">Export</span> <span class="pre">to</span> <span class="pre">clipboard</span></code>. In the opening panel, you have a JSON text that you can copy / paste and save into a <code class="docutils literal notranslate"><span class="pre">`.txt</span></code> or <code class="docutils literal notranslate"><span class="pre">json</span></code> file.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/export_clipboard.png"><img alt="_images/export_clipboard.png" src="_images/export_clipboard.png" style="width: 75%;" /></a>
+</figure>
+<p>Once you restart NoiseModelling, you can reload this environment by clicking on <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">/</span> <span class="pre">Import</span> <span class="pre">clipboard</span></code>. In the opening panel, paste your JSON text and click <code class="docutils literal notranslate"><span class="pre">Ok</span></code>.</p>
+</section>
+</section>
+<section id="why-everything-is-wrong-when-i-use-enter">
+<h3>Why everything is wrong when I use “Enter”?<a class="headerlink" href="#why-everything-is-wrong-when-i-use-enter" title="Permalink to this heading"></a></h3>
+<p>Don’t click on your <code class="docutils literal notranslate"><span class="pre">Enter</span></code> keyboard key, it refreshes web page.</p>
+</section>
+<section id="i-can-t-link-process-block-between-them">
+<h3>I can’t link process block between them?<a class="headerlink" href="#i-can-t-link-process-block-between-them" title="Permalink to this heading"></a></h3>
+<p>It is normal… this feature has not yet been implemented!</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="WPS_Blocks.html" class="btn btn-neutral float-left" title="WPS Blocks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Own_Wps.html" class="btn btn-neutral float-right" title="Create your own WPS block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

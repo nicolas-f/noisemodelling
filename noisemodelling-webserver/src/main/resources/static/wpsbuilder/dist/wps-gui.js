@@ -60954,7 +60954,7 @@ wps.process = function(options) {
   this.server = null;
   this.identifier = null;
   this.description = null;
-  this.localWPS = 'http://geoserver/wps';
+  this.localWPS = 'http://localhost:8000/wps';
   this.localWFS = 'http://geoserver/wfs';
   this.localWCS = 'http://geoserver/wcs';
   this.WKT = new ol.format.WKT();
@@ -60982,7 +60982,9 @@ wps.process.prototype.describe = function(options) {
   if (!this.description) {
     this.client.describeProcess(this.server, this.identifier, function(description, error, statusText) {
       if (!error && !this.description) {
+        console.log(description);
         this.parseDescription(description);
+        console.log(this.description);
       }
       if (options.callback) {
         options.callback.call(options.scope || this, this.description, error, statusText);
@@ -61197,8 +61199,11 @@ wps.process.prototype.output = function(identifier) {
 
 wps.process.prototype.parseDescription = function(description) {
   var server = this.client.servers[this.server];
+  console.log(this.client.unmarshaller.unmarshalString(
+                  server.processDescription[this.identifier]).value.processDescription[0]);
   this.description = this.client.unmarshaller.unmarshalString(
     server.processDescription[this.identifier]).value.processDescription[0];
+  console.log(this.description);
 };
 
 wps.process.prototype.setInputData = function(input, data) {
@@ -61553,6 +61558,8 @@ wps.client.prototype.getProcess = function(serverID, processID, options) {
   if (!this.lazy) {
     process.describe(options);
   }
+  console.log(process);
+  console.log(options)
   return process;
 };
 

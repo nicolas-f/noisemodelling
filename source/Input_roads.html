@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roads &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Railways" href="Input_railways.html" />
+    <link rel="prev" title="Buildings" href="Input_buildings.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Roads</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#table-definition">Table definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#geometry-modelling">Geometry modelling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#emission">Emission</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#propagation">Propagation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Roads</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Input_roads.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="roads">
+<h1>Roads<a class="headerlink" href="#roads" title="Permalink to this heading"></a></h1>
+<p>NoiseModelling is a tool for producing noise maps. To do so, at different stages of the process, the application needs input data, respecting a strict formalism.</p>
+<p>Below we describe the table <code class="docutils literal notranslate"><span class="pre">ROADS</span></code>, dealing with the roads network.</p>
+<p>The other tables are accessible via the left menu in the <code class="docutils literal notranslate"><span class="pre">Input</span> <span class="pre">tables</span> <span class="pre">&amp;</span> <span class="pre">parameters</span></code> section.</p>
+<figure class="align-center">
+<img alt="_images/roads_banner.png" src="_images/roads_banner.png" />
+</figure>
+<section id="table-definition">
+<h2>Table definition<a class="headerlink" href="#table-definition" title="Permalink to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<ul class="simple">
+<li><p>In the list below, the columns noted with <code class="docutils literal notranslate"><span class="pre">*</span></code> are mandatory</p></li>
+<li><p>This description is only valid for <code class="docutils literal notranslate"><span class="pre">Noise_level_from_traffic</span></code> and <code class="docutils literal notranslate"><span class="pre">Road_Emission_from_Traffic</span></code> WPS scripts. For the other WPS scripts, it is necessary to refer to the description of their input data</p></li>
+</ul>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the list below, some columns are suffixed with the letters <code class="docutils literal notranslate"><span class="pre">D</span></code>, <code class="docutils literal notranslate"><span class="pre">E</span></code> and <code class="docutils literal notranslate"><span class="pre">N</span></code>. This correspond to <code class="docutils literal notranslate"><span class="pre">Day</span></code> (6-18h), <code class="docutils literal notranslate"><span class="pre">Evening</span></code> (18-22h) and <code class="docutils literal notranslate"><span class="pre">Night</span></code> (22-6h) periods. A column is expected for each of them.</p>
+</div>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">THE_GEOM</span></code> *</dt><dd><ul>
+<li><p>Description: Geometry of the roads (<code class="docutils literal notranslate"><span class="pre">LINESTRING</span></code> or <code class="docutils literal notranslate"><span class="pre">MULTILINESTRING</span></code>)</p></li>
+<li><p>Type: Geometry</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">PK</span></code> *</dt><dd><ul>
+<li><p>Description: An identifier (PRIMARY KEY)</p></li>
+<li><p>Type:  Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">LV_D</span></code>, <code class="docutils literal notranslate"><span class="pre">LV_E</span></code>, <code class="docutils literal notranslate"><span class="pre">LV_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average light vehicle count</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">MV_D</span></code>, <code class="docutils literal notranslate"><span class="pre">MV_E</span></code>, <code class="docutils literal notranslate"><span class="pre">MV_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average medium heavy vehicles, delivery vans &gt; 3.5 tons, buses, touring cars, <em>etc.</em> with two axles and twin tyre mounting on rear axle count</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">HGV_D</span></code>, <code class="docutils literal notranslate"><span class="pre">HGV_E</span></code>, <code class="docutils literal notranslate"><span class="pre">HGV_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average heavy duty vehicles, touring cars, buses, with three or more axles count</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">WAV_D</span></code>, <code class="docutils literal notranslate"><span class="pre">WAV_E</span></code>, <code class="docutils literal notranslate"><span class="pre">WAV_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average mopeds, tricycles or quads ≤ 50 cc count</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">WBV_D</span></code>, <code class="docutils literal notranslate"><span class="pre">WBV_E</span></code>, <code class="docutils literal notranslate"><span class="pre">WBV_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average motorcycles, tricycles or quads &gt; 50 cc count</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">LV_SPD_D</span></code>, <code class="docutils literal notranslate"><span class="pre">LV_SPD_E</span></code>, <code class="docutils literal notranslate"><span class="pre">LV_SPD_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average light vehicle speed <em>(km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">MV_SPD_D</span></code>, <code class="docutils literal notranslate"><span class="pre">MV_SPD_E</span></code>, <code class="docutils literal notranslate"><span class="pre">MV_SPD_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average medium heavy vehicles speed <em>(km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">HGV_SPD_D</span></code>, <code class="docutils literal notranslate"><span class="pre">HGV_SPD_E</span></code>, <code class="docutils literal notranslate"><span class="pre">HGV_SPD_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average heavy duty vehicles speed <em>(km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">WAV_SPD_D</span></code>, <code class="docutils literal notranslate"><span class="pre">WAV_SPD_E</span></code>, <code class="docutils literal notranslate"><span class="pre">WAV_SPD_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average mopeds, tricycles or quads ≤ 50 cc speed <em>(km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">WBV_SPD_D</span></code>, <code class="docutils literal notranslate"><span class="pre">WBV_SPD_E</span></code>, <code class="docutils literal notranslate"><span class="pre">WBV_SPD_N</span></code></dt><dd><ul>
+<li><p>Description: Hourly average motorcycles, tricycles or quads &gt; 50 cc speed <em>(km/h)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">PVMT</span></code></dt><dd><ul>
+<li><p>Description: <a class="reference external" href="https://circabc.europa.eu/sd/a/00a6a620-b570-4f57-9dbb-76f66a48b325/CNOSSOS-">CNOSSOS road pavement identifier</a> <em>(Default</em> <code class="docutils literal notranslate"><span class="pre">DEF</span></code> <em>)</em> (<a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/4.X/noisemodelling-emission/src/main/resources/org/noise_planet/noisemodelling/emission/coefficients_Road_Cnossos_2020.json">See NM possible values</a>)</p></li>
+<li><p>Type: Varchar</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TEMP_D</span></code>, <code class="docutils literal notranslate"><span class="pre">TEMP_E</span></code>, <code class="docutils literal notranslate"><span class="pre">TEMP_N</span></code></dt><dd><ul>
+<li><p>Description: Average Day, Evening and Night Celsius temperature (°C) <em>(Default 20)</em></p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">TS_STUD</span></code></dt><dd><ul>
+<li><p>Description: A limited period (<code class="docutils literal notranslate"><span class="pre">Ts</span></code>) (in months) over the year where a average proportion (<code class="docutils literal notranslate"><span class="pre">pm</span></code>) of light vehicles are equipped with studded tyres [0-12]</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">PM_STUD</span></code></dt><dd><ul>
+<li><p>Description: Average proportion of vehicles equipped with studded tyres during <code class="docutils literal notranslate"><span class="pre">TS_STUD</span></code> period [0-1]</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">JUNC_DIST</span></code></dt><dd><ul>
+<li><p>Description: Distance to the junction <em>(in meters)</em>. When approaching less than 100m from a junction, it is advisable to subdivide the section into 10m pieces and calculate the distance from the centroid of this sub-section to the junction. This allows for a finer calculation.</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">JUNC_TYPE</span></code></dt><dd><ul>
+<li><dl class="simple">
+<dt>Description: Integer defining the type of junction</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code> : None</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> : A crossing with traffic lights</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> : A roundabout</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">SLOPE</span></code></dt><dd><ul>
+<li><p>Description: Slope (in %) of the road section. If the column is not filled in, the <code class="docutils literal notranslate"><span class="pre">LINESTRING</span></code> Z-values will be used to calculate the slope and the traffic direction (<code class="docutils literal notranslate"><span class="pre">WAY</span></code> column) will be force to <code class="docutils literal notranslate"><span class="pre">3</span></code> (bi-directional)</p></li>
+<li><p>Type: Double</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">WAY</span></code></dt><dd><ul>
+<li><dl class="simple">
+<dt>Description: Integer defining the way of the road section.</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> = One way road section and the traffic goes in the same way that the slope definition you have used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> = One way road section and the traffic goes in the opposite way that the slope definition you have used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">3</span></code> = Bi-directional traffic flow, the flow is split into two components and correct half for uphill and half for downhill</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Type: Integer</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="geometry-modelling">
+<h2>Geometry modelling<a class="headerlink" href="#geometry-modelling" title="Permalink to this heading"></a></h2>
+<p>In NoiseModelling, road geometries are used as a medium for road noise emission and propagation.</p>
+<section id="emission">
+<h3>Emission<a class="headerlink" href="#emission" title="Permalink to this heading"></a></h3>
+<p>According to CNOSSOS-EU, emissions from road traffic should be 5cm above the ground.</p>
+<p>You can create your own emmission layer or use the dedicated NoiseModelling block called <code class="docutils literal notranslate"><span class="pre">Road_Emission_from_Traffic.groovy</span></code>. In this script, the table <code class="docutils literal notranslate"><span class="pre">ROADS</span></code> is used to create the emission table <code class="docutils literal notranslate"><span class="pre">LW_ROADS</span></code>. As a consequence, whether or not your roads have a Z value in <code class="docutils literal notranslate"><span class="pre">ROADS</span></code>, NoiseModelling forces a <code class="docutils literal notranslate"><span class="pre">Zsource</span></code> value of 5cm in <code class="docutils literal notranslate"><span class="pre">LW_ROADS</span></code>.</p>
+<figure class="align-center">
+<img alt="_images/roads_emission.png" src="_images/roads_emission.png" />
+</figure>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Whether you have Z values, the emission layer must be at an altitude of 5cm (above sea level) : <code class="docutils literal notranslate"><span class="pre">Zsource</span></code> = 0.05</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Z values in the input layer are only used to calculate the slope</p>
+</div>
+</section>
+<section id="propagation">
+<h3>Propagation<a class="headerlink" href="#propagation" title="Permalink to this heading"></a></h3>
+<p>Whether you use your own sources or those calculated by NoiseModelling, the propagation step will consist of deducing the altitude from the DEM and adding the emission height (5cm).</p>
+<figure class="align-center">
+<img alt="_images/roads_propagation.png" src="_images/roads_propagation.png" />
+</figure>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Zobject</span></code> = <code class="docutils literal notranslate"><span class="pre">Zdem</span> <span class="pre">+</span> <span class="pre">Zsource</span></code> = <code class="docutils literal notranslate"><span class="pre">Zdem</span> <span class="pre">+</span> <span class="pre">0.05</span></code></p></li>
+<li><p>If there is no DEM, the altitude will be equal to 5cm (<code class="docutils literal notranslate"><span class="pre">Zobject</span></code> = <code class="docutils literal notranslate"><span class="pre">0.05</span></code>)</p></li>
+<li><p>If your <code class="docutils literal notranslate"><span class="pre">ROADS</span></code> table has accurate Z values, you are invited to enrich your DEM with this information before doing the propagation step. See <a class="reference internal" href="Input_dem.html#dem"><span class="std std-ref">DEM</span></a> section for more information.</p></li>
+</ul>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Z values in the input layer are only used to calculate the slope. They are not used to force the DEM</p>
+</div>
+<p>In this context, the roads geometry can be in 2D or in 3D. In both cases, Z information is not taken into account during emission or propagation steps.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Input_buildings.html" class="btn btn-neutral float-left" title="Buildings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Input_railways.html" class="btn btn-neutral float-right" title="Railways" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

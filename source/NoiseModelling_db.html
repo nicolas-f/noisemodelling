@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access NoiseModelling database &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Use NoiseModelling with a PostGIS database" href="NoiseModellingOnPostGIS.html" />
+    <link rel="prev" title="Create your own WPS block" href="Own_Wps.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Access NoiseModelling database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-wps-blocks">1. Use WPS blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-h2-h2gis-web-client">2. Use H2/H2GIS web client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-dbeaver-client">3. Use DBeaver client</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#connect-dbeaver-to-your-database">Connect DBeaver to your database</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_Color_Scheme.html">Noise Map Color Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Access NoiseModelling database</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/NoiseModelling_db.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="access-noisemodelling-database">
+<h1>Access NoiseModelling database<a class="headerlink" href="#access-noisemodelling-database" title="Permalink to this heading"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
+<p>NoiseModelling has been preconfigured to use <a class="reference external" href="https://www.h2database.com">H2</a> / <a class="reference external" href="http://h2gis.org/">H2GIS</a> as the default database (to store and manage all the needed data).</p>
+<p>This database does not need to be configured or installed on the system. It’s transparent to users.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Many spatial processing are possible with H2GIS. Please have a look to the numerous functions on the <a class="reference external" href="http://www.h2gis.org/docs/dev/functions/">H2GIS website</a>.</p>
+</div>
+<p>To visualize and manage NoiseModelling data (<em>e.g</em> roads, buildings or landcover layers) you have the choice between the three following approaches <em>(listed from simple to advanced)</em>:</p>
+<ol class="arabic simple">
+<li><p>Use WPS blocks (inside)</p></li>
+<li><p>Use H2/H2GIS web client</p></li>
+<li><p>Use DBeaver client</p></li>
+</ol>
+</section>
+<section id="use-wps-blocks">
+<h2>1. Use WPS blocks<a class="headerlink" href="#use-wps-blocks" title="Permalink to this heading"></a></h2>
+<p>Once NoiseModelling UI is launched (open <a class="reference external" href="http://localhost:9580/">http://localhost:9580/</a> in your web browser), you can manage your data thanks to the <code class="docutils literal notranslate"><span class="pre">Database_Manager</span></code> WPS blocks folder <em>(on the left side)</em>. In particular, you can do these actions:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Add_Primary_Key</span></code>: allows to add a primary key on a column of a specific layer (table)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Clean_Database</span></code>: remove all the layers (tables) from NoiseModelling <em>(can be useful when starting a new project)</em></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Display_Database</span></code>: list all the layers (tables) and the columns inside</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Drop_a_Table</span></code>: remove the selected layer (table) from NoiseModelling</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Table_Visualization_Data</span></code>: display the layer (table) as an array of values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Table_Visualization_Map</span></code>: if the layer (table) is geographic (contains geometry(ies)), display the data in a map</p></li>
+</ul>
+<p>Below is an illustration with the <code class="docutils literal notranslate"><span class="pre">Display_Database</span></code> WPS block</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/nm_db_view.png"><img alt="_images/nm_db_view.png" src="_images/nm_db_view.png" style="width: 100%;" /></a>
+</figure>
+</section>
+<section id="use-h2-h2gis-web-client">
+<h2>2. Use H2/H2GIS web client<a class="headerlink" href="#use-h2-h2gis-web-client" title="Permalink to this heading"></a></h2>
+<p>If you want to have full capabilities on visualization, edition and processing on data, you may need to connect to the database thanks to the H2/H2GIS web interface.</p>
+<p>To do so, follow these steps:</p>
+<ol class="arabic simple">
+<li><p>download the <a class="reference external" href="https://github.com/orbisgis/h2gis/releases/download/v2.0.0/h2gis-dist-2.0.0-bin.zip">H2/H2GIS v.2.0</a> database client (which is used with NoiseModelling 4.0)</p></li>
+<li><p>unzip the <code class="docutils literal notranslate"><span class="pre">h2gis-dist-2.0.0-bin.zip</span></code> file</p></li>
+<li><p>in the <code class="docutils literal notranslate"><span class="pre">/h2gis-standalone/</span></code> folder, double-click on the <code class="docutils literal notranslate"><span class="pre">h2gis-dist-2.0.0-SNAPSHOT`.jar</span></code> file to launch the web client <em>(depending on your Operating System, you may need to allow the execution of this file)</em></p></li>
+<li><p>the H2/H2GIS web client should be opened in your default web browser (the URL looks like this <code class="docutils literal notranslate"><span class="pre">http://127.0.1.1:8082/login.jsp?jsessionid=08ef3ad5d6838b614cf91b42e10bca8f</span></code>)</p></li>
+</ol>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/h2_opening.png"><img alt="_images/h2_opening.png" src="_images/h2_opening.png" style="width: 50%;" /></a>
+</figure>
+<p>In the connexion panel, you have to specify the following informations:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Driver</span> <span class="pre">Class</span></code>: the driver that allows to connect to a specific database. Here we want to connect to a H2 db, so let the default value <code class="docutils literal notranslate"><span class="pre">org.h2.Driver</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">JDBC</span> <span class="pre">URL</span></code>: the JDBC address of the NoiseModelling database. By default, this database is placed in here <code class="docutils literal notranslate"><span class="pre">/.../data_dir/h2gisdb.mv.db</span></code>. So, fill this text area with <code class="docutils literal notranslate"><span class="pre">jdbc:h2:/.../data_dir/h2gisdb.mv.db</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">User</span> <span class="pre">name</span></code>: the db user name. By default, keep the empty value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Password</span></code>: the db password. By default, keep the empty value</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you want to open the database while NoiseModelling is running, you have to add <code class="docutils literal notranslate"><span class="pre">;AUTO_SERVER=TRUE</span></code> after the <code class="docutils literal notranslate"><span class="pre">JDBC</span> <span class="pre">URL</span></code>. If not, you will only be able to open the database once NoiseModelling is closed.</p>
+</div>
+<p>Below is an example, with a database located on the computer here: <code class="docutils literal notranslate"><span class="pre">/home/nm_user/NoiseModelling/NoiseModelling_4.0/data_dir/h2gisdb.mv.db</span></code>. We want to open the db while NoiseModelling is running.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">JDBC</span> <span class="pre">URL</span></code>: <code class="docutils literal notranslate"><span class="pre">jdbc:h2:/home/nm_user/NoiseModelling/NoiseModelling_4.0/data_dir/h2gisdb.mv.db;AUTO_SERVER=TRUE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">User</span> <span class="pre">name</span></code>: <em>empty</em></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Password</span></code>: <em>empty</em></p></li>
+</ul>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/h2_connexion_panel.png"><img alt="_images/h2_connexion_panel.png" src="_images/h2_connexion_panel.png" style="width: 50%;" /></a>
+</figure>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The URL is here adapted to Linux or Mac users. Windows user may adapt the address by replacing <code class="docutils literal notranslate"><span class="pre">/</span></code> by <code class="docutils literal notranslate"><span class="pre">\</span></code> and the drive name.</p>
+</div>
+<p>Once done, click on <code class="docutils literal notranslate"><span class="pre">Connect</span></code></p>
+<p>In the new interface, you discover a full database manager, with the list of tables on the left side, a SQL console (where you can execute all the instructions you want, independently of NoiseModelling) and a result panel.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/h2_db_view.png"><img alt="_images/h2_db_view.png" src="_images/h2_db_view.png" style="width: 100%;" /></a>
+</figure>
+</section>
+<section id="use-dbeaver-client">
+<h2>3. Use DBeaver client<a class="headerlink" href="#use-dbeaver-client" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://dbeaver.io/">DBeaver</a> is a free and open-source universal SQL / database client for developers and database administrators. DBeaver is able (among others) to connect to <a class="reference external" href="https://www.h2database.com">H2</a>/<a class="reference external" href="http://h2gis.org/">H2GIS</a> database or to <a class="reference external" href="https://www.postgresql.org/">PostgreSQL</a>/<a class="reference external" href="https://postgis.net/">PostGIS</a>.</p>
+<p>You can download DBeaver on this <a class="reference external" href="https://dbeaver.io/download/">webpage</a>.</p>
+<section id="connect-dbeaver-to-your-database">
+<h3>Connect DBeaver to your database<a class="headerlink" href="#connect-dbeaver-to-your-database" title="Permalink to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Run DBeaver</p></li>
+<li><p>Add a new connection</p></li>
+<li><p>If you use a H2GIS type databse, please select <code class="docutils literal notranslate"><span class="pre">H2GIS</span> <span class="pre">embedded</span></code> <em>(use the search engine to filter)</em></p></li>
+<li><p>Point the database path by clicking on <code class="docutils literal notranslate"><span class="pre">Browse</span> <span class="pre">...</span></code>. By default the database is placed in the <code class="docutils literal notranslate"><span class="pre">NoiseModelling/data_dir</span></code> directory and is named <code class="docutils literal notranslate"><span class="pre">h2gisdb.mv.db</span></code>.</p></li>
+<li><p>In the <code class="docutils literal notranslate"><span class="pre">Path</span></code> text area, remove <code class="docutils literal notranslate"><span class="pre">.mv.db</span></code> at the end of the address</p></li>
+<li><p>If you want to open the database while NoiseModelling is running, add <code class="docutils literal notranslate"><span class="pre">;AUTO_SERVER=TRUE</span></code> at the end of the path (you should have something like this <code class="docutils literal notranslate"><span class="pre">/home/nm_user/NoiseModelling/NoiseModelling_4.0/data_dir/h2gisdb;AUTO_SERVER=TRUE</span></code>)</p></li>
+<li><p>Click on <code class="docutils literal notranslate"><span class="pre">Terminate</span></code> to open your dabatase!</p></li>
+</ol>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/dbeaver_new_connection.png"><img alt="_images/dbeaver_new_connection.png" src="_images/dbeaver_new_connection.png" style="width: 70%;" /></a>
+</figure>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you are using a version of DBeaver prior to 22.0.4, the interface may ask you to <code class="docutils literal notranslate"><span class="pre">Save</span></code> instead of <code class="docutils literal notranslate"><span class="pre">Opening</span></code> the existing db. Once you click on <code class="docutils literal notranslate"><span class="pre">Save</span></code>, a panel will warns you that <code class="docutils literal notranslate"><span class="pre">h2gisdb.mv.db</span></code> already exists and will ask you if you want to <code class="docutils literal notranslate"><span class="pre">Cancel</span></code> or <code class="docutils literal notranslate"><span class="pre">Replace</span></code> : click on <code class="docutils literal notranslate"><span class="pre">Replace</span></code>.</p>
+</div>
+<p>Now you can use the full potential of DBeaver and the H2GIS database. You can explore, display and manage your database.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/dbeaver_buildings.png"><img alt="_images/dbeaver_buildings.png" src="_images/dbeaver_buildings.png" style="width: 100%;" /></a>
+</figure>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Own_Wps.html" class="btn btn-neutral float-left" title="Create your own WPS block" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="NoiseModellingOnPostGIS.html" class="btn btn-neutral float-right" title="Use NoiseModelling with a PostGIS database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

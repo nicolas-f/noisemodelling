@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noise Map Color Scheme &mdash; NoiseModelling 4.0.6-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2901adce"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Support" href="Support.html" />
+    <link rel="prev" title="Rapport de Tests" href="Rapport.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoiseModelling
+          </a>
+              <div class="version">
+                4.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">NoiseModelling presentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Numerical_Model.html">Numerical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scientific_production.html">Scientific production</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Input tables &amp; parameters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Input_buildings.html">Buildings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_roads.html">Roads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_railways.html">Railways</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_ground.html">Ground surfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_dem.html">DEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_directivity.html">Directivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Input_acoustics.html">Acoustic parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_GUI.html">Get Started - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_OSM_Tutorial.html">Noise Map from OSM - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Noise_Map_From_Point_Source.html">Noise Map from Point Source - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matsim_Tutorial.html">MATSim - GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Script.html">Pilot NoiseModelling with scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials_FAQ.html">Tutorials - FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Interface</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Blocks.html">WPS Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WPS_Builder.html">WPS Builder</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Advanced Users</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Own_Wps.html">Create your own WPS block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModelling_db.html">Access NoiseModelling database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoiseModellingOnPostGIS.html">Use NoiseModelling with a PostGIS database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Get_Started_Dev.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rapport.html">Rapport de Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Noise Map Color Scheme</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creation-of-the-isosurfaces">Creation of the Isosurfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sld-file">SLD file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#french-nf-s31-130">French NF S31-130</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#color-scheme">Color scheme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">SLD file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#german-din-18005-2-1991">German DIN 18005-2:1991</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Color scheme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">SLD file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#italian-normativa-tecnica-uni-9884">Italian Normativa tecnica UNI 9884</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Color scheme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">SLD file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#coloring-noise">Coloring Noise</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Color scheme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">SLD file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#create-your-own-sld-file">Create your own .SLD file</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sld-structure">SLD structure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#filter">Filter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#symbol">Symbol</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="License.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoiseModelling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Noise Map Color Scheme</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Noise_Map_Color_Scheme.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="noise-map-color-scheme">
+<h1>Noise Map Color Scheme<a class="headerlink" href="#noise-map-color-scheme" title="Permalink to this heading"></a></h1>
+<p>Below are presented some color schemes used to colorize noise isophones, produced in the <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP</span></code> layer.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/illustration_banner.png"><img alt="_images/illustration_banner.png" src="_images/illustration_banner.png" style="width: 100%;" /></a>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to feed this list with other schemes, please contact us (see <a class="reference internal" href="Support.html"><span class="doc">Support</span></a> page).</p>
+</div>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
+<section id="creation-of-the-isosurfaces">
+<h3>Creation of the Isosurfaces<a class="headerlink" href="#creation-of-the-isosurfaces" title="Permalink to this heading"></a></h3>
+<p>NoiseModelling can produce isophones (also called isosurfaces) thanks to the <code class="docutils literal notranslate"><span class="pre">Acoustic_Tools:Create_Isosurface</span></code> script. In this script, an optionnal parameter called <code class="docutils literal notranslate"><span class="pre">Iso</span> <span class="pre">levels</span> <span class="pre">in</span> <span class="pre">dB</span></code> allows the user to specify the thresholds used to generate the surfaces.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/contouring_noise_map.png"><img alt="_images/contouring_noise_map.png" src="_images/contouring_noise_map.png" style="width: 100%;" /></a>
+</figure>
+<p>By default, the thresholds are 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 200. In the resulting <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP</span></code> layer, these values are then converted into integer and stored in the <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code> column. The first threshold is equal to <code class="docutils literal notranslate"><span class="pre">0</span></code>. The second one is equal to <code class="docutils literal notranslate"><span class="pre">1</span></code> … <em>(See table below)</em>.</p>
+<table class="docutils align-default" id="id10">
+<caption><span class="caption-text">Correspondence between default thresholds and <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code> values</span><a class="headerlink" href="#id10" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 35.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Threshold</p></th>
+<th class="head"><p>ISOLVL</p></th>
+<th class="head"><p>ISOLABEL</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>35</p></td>
+<td><p>0</p></td>
+<td><p>&lt;35</p></td>
+</tr>
+<tr class="row-odd"><td><p>40</p></td>
+<td><p>1</p></td>
+<td><p>35-40</p></td>
+</tr>
+<tr class="row-even"><td><p>45</p></td>
+<td><p>2</p></td>
+<td><p>40-45</p></td>
+</tr>
+<tr class="row-odd"><td><p>50</p></td>
+<td><p>3</p></td>
+<td><p>45-50</p></td>
+</tr>
+<tr class="row-even"><td><p>55</p></td>
+<td><p>4</p></td>
+<td><p>50-55</p></td>
+</tr>
+<tr class="row-odd"><td><p>60</p></td>
+<td><p>5</p></td>
+<td><p>55-60</p></td>
+</tr>
+<tr class="row-even"><td><p>65</p></td>
+<td><p>6</p></td>
+<td><p>60-65</p></td>
+</tr>
+<tr class="row-odd"><td><p>70</p></td>
+<td><p>7</p></td>
+<td><p>65-70</p></td>
+</tr>
+<tr class="row-even"><td><p>75</p></td>
+<td><p>8</p></td>
+<td><p>70-75</p></td>
+</tr>
+<tr class="row-odd"><td><p>80</p></td>
+<td><p>9</p></td>
+<td><p>75-80</p></td>
+</tr>
+<tr class="row-even"><td><p>200</p></td>
+<td><p>10</p></td>
+<td><p>&gt;80</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>So the <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code> values directly depends on the <code class="docutils literal notranslate"><span class="pre">Iso</span> <span class="pre">levels</span> <span class="pre">in</span> <span class="pre">dB</span></code> thresholds. When applying a style (see below), you must check that this parameter feets with the classes defined in the <code class="docutils literal notranslate"><span class="pre">.sld</span></code> file.</p>
+</div>
+</section>
+<section id="sld-file">
+<h3>SLD file<a class="headerlink" href="#sld-file" title="Permalink to this heading"></a></h3>
+<p>For each of the color schemes presented below, a cartographic style, following the “<a class="reference external" href="https://www.ogc.org/standards/sld">Style Layer Descriptor</a>” formalism, is provided as an <code class="docutils literal notranslate"><span class="pre">.sld</span></code> file.
+This <code class="docutils literal notranslate"><span class="pre">.sld</span></code> file can be loaded in many GIS applications, such as <a class="reference external" href="https://qgis.org/">QGIS</a>. The classification is made on the <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code> column, in the <code class="docutils literal notranslate"><span class="pre">CONTOURING_NOISE_MAP</span></code> table.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For those who are new to GIS and want to get started with QGIS, we advise you to follow <a class="reference external" href="https://docs.qgis.org/3.22/en/docs/training_manual/basic_map/index.html">this tutorial</a> as a start.</p>
+<p>To know how to load an <code class="docutils literal notranslate"><span class="pre">.sld</span></code> file, you can also consult the NoiseModelling tutorial <a class="reference internal" href="Noise_Map_From_Point_Source.html"><span class="doc">Noise Map from Point Source - GUI</span></a> in the section “<code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">3</span> <span class="pre">-</span> <span class="pre">Apply</span> <span class="pre">a</span> <span class="pre">color</span> <span class="pre">palette</span> <span class="pre">adapted</span> <span class="pre">to</span> <span class="pre">acoustics</span></code>”</p>
+</div>
+</section>
+</section>
+<section id="french-nf-s31-130">
+<h2>French NF S31-130<a class="headerlink" href="#french-nf-s31-130" title="Permalink to this heading"></a></h2>
+<p>The “<a class="reference external" href="https://www.boutique.afnor.org/fr-fr/norme/nf-s31130/acoustique-cartographie-du-bruit-en-milieu-exterieur-elaboration-des-cartes/fa151801/32365">NF S31-130</a>” is the standard currently in force in France.</p>
+<ul class="simple">
+<li><p><strong>French title</strong>: “Acoustique Cartographie du bruit en milieu extérieur Élaboration des cartes et représentation graphique”</p></li>
+<li><p><strong>English title</strong>: “Acoustics - Cartography of outside environment noise - Drawing up of maps and graphical representation”</p></li>
+<li><p><strong>Last update</strong>: 2008</p></li>
+</ul>
+<section id="color-scheme">
+<h3>Color scheme<a class="headerlink" href="#color-scheme" title="Permalink to this heading"></a></h3>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/style_nf_s_31_130.png"><img alt="_images/style_nf_s_31_130.png" src="_images/style_nf_s_31_130.png" style="width: 60%;" /></a>
+</figure>
+</section>
+<section id="id1">
+<h3>SLD file<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<p>The SLD representation of this color scheme is available here : <a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/v4.0.2/Docs/styles/style_nf_s31-130.sld">Style NF S31-130</a></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This style will work only if you specified <code class="docutils literal notranslate"><span class="pre">Iso</span> <span class="pre">levels</span> <span class="pre">in</span> <span class="pre">dB</span></code> = <code class="docutils literal notranslate"><span class="pre">45,</span> <span class="pre">50,</span> <span class="pre">55,</span> <span class="pre">60,</span> <span class="pre">65,</span> <span class="pre">70,</span> <span class="pre">75,</span> <span class="pre">200</span></code> when exectuting the <code class="docutils literal notranslate"><span class="pre">Acoustic_Tools:Create_Isosurface</span></code> script</p>
+</div>
+</section>
+</section>
+<section id="german-din-18005-2-1991">
+<h2>German DIN 18005-2:1991<a class="headerlink" href="#german-din-18005-2-1991" title="Permalink to this heading"></a></h2>
+<p>The “<a class="reference external" href="https://www.beuth.de/de/norm/din-18005-2/1741135">DIN 18005-2:1991</a>” is the standard currently in force in Germany.</p>
+<ul class="simple">
+<li><p><strong>German title</strong>: “Schallschutz im Städtebau; Lärmkarten; Kartenmäßige Darstellung von Schallimmissionen”</p></li>
+<li><p><strong>English title</strong>: “Noise abatement in town planning; noise maps; graphical representation of noise pollution”</p></li>
+<li><p><strong>Last update</strong>: 1991</p></li>
+</ul>
+<section id="id2">
+<h3>Color scheme<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/style_din_18005-2.png"><img alt="_images/style_din_18005-2.png" src="_images/style_din_18005-2.png" style="width: 60%;" /></a>
+</figure>
+</section>
+<section id="id3">
+<h3>SLD file<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
+<p>The SLD representation of this color scheme is available here : <a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/v4.0.2/Docs/styles/style_din_18005-2.sld">Style DIN 18005-2:1991</a></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This style will work only if you specified <code class="docutils literal notranslate"><span class="pre">Iso</span> <span class="pre">levels</span> <span class="pre">in</span> <span class="pre">dB</span></code> = <code class="docutils literal notranslate"><span class="pre">35,</span> <span class="pre">40,</span> <span class="pre">45,</span> <span class="pre">50,</span> <span class="pre">55,</span> <span class="pre">60,</span> <span class="pre">65,</span> <span class="pre">70,</span> <span class="pre">75,</span> <span class="pre">80,</span> <span class="pre">200</span></code> when exectuting the <code class="docutils literal notranslate"><span class="pre">Acoustic_Tools:Create_Isosurface</span></code> script</p>
+</div>
+</section>
+</section>
+<section id="italian-normativa-tecnica-uni-9884">
+<h2>Italian Normativa tecnica UNI 9884<a class="headerlink" href="#italian-normativa-tecnica-uni-9884" title="Permalink to this heading"></a></h2>
+<p>The “<a class="reference external" href="https://www.beuth.de/de/norm/din-18005-2/1741135">Normativa tecnica UNI 9884</a>” is a standard currently used in Italy.</p>
+<ul class="simple">
+<li><p><strong>Italian title</strong>: “Acustica. Caratterizzazione acustica del territorio mediante la descrizione del rumore ambientale”</p></li>
+<li><p><strong>English title</strong>: “Acoustics. Acoustic characterisation of the territory through the description of environmental noise”</p></li>
+<li><p><strong>Last update</strong>: 1991</p></li>
+</ul>
+<section id="id4">
+<h3>Color scheme<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h3>
+<table class="docutils align-default" id="id11">
+<caption><span class="caption-text">Norma UNI 9884 - Convenzioni per la rappresentazione delle mappe di rumore</span><a class="headerlink" href="#id11" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Zone di rumore dB(A)</p></th>
+<th class="head"><p>Colore</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Sotto 35</p></td>
+<td><p>Verde chiaro</p></td>
+</tr>
+<tr class="row-odd"><td><p>Da 35 a 40</p></td>
+<td><p>Verde</p></td>
+</tr>
+<tr class="row-even"><td><p>Da 40 a 45</p></td>
+<td><p>Verde scuro</p></td>
+</tr>
+<tr class="row-odd"><td><p>Da 45 a 50</p></td>
+<td><p>Giallo</p></td>
+</tr>
+<tr class="row-even"><td><p>Da 50 a 55</p></td>
+<td><p>Ocra</p></td>
+</tr>
+<tr class="row-odd"><td><p>Da 55 a 60</p></td>
+<td><p>Arancione</p></td>
+</tr>
+<tr class="row-even"><td><p>Da 60 a 65</p></td>
+<td><p>Vermiglio</p></td>
+</tr>
+<tr class="row-odd"><td><p>Da 65 a 70</p></td>
+<td><p>Carminio</p></td>
+</tr>
+<tr class="row-even"><td><p>Da 70 a 75</p></td>
+<td><p>Rosso violetto</p></td>
+</tr>
+<tr class="row-odd"><td><p>Da 75 a 80</p></td>
+<td><p>Blu</p></td>
+</tr>
+<tr class="row-even"><td><p>Sopra 80</p></td>
+<td><p>Blu scuro</p></td>
+</tr>
+</tbody>
+</table>
+<p>We can see that the thresholds and colors defined in the table above are the same values as the ones defined in “German DIN 18005-2:1991”.</p>
+</section>
+<section id="id5">
+<h3>SLD file<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h3>
+<p>Since this norm is almost the same as “German DIN 18005-2:1991”, you are invited to use the German SLD file, available here : <a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/v4.0.2/Docs/styles/style_din_18005-2.sld">Style DIN 18005-2:1991</a></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This style will work only if you specified <code class="docutils literal notranslate"><span class="pre">Iso</span> <span class="pre">levels</span> <span class="pre">in</span> <span class="pre">dB</span></code> = <code class="docutils literal notranslate"><span class="pre">35,</span> <span class="pre">40,</span> <span class="pre">45,</span> <span class="pre">50,</span> <span class="pre">55,</span> <span class="pre">60,</span> <span class="pre">65,</span> <span class="pre">70,</span> <span class="pre">75,</span> <span class="pre">80,</span> <span class="pre">200</span></code> when exectuting the <code class="docutils literal notranslate"><span class="pre">Acoustic_Tools:Create_Isosurface</span></code> script</p>
+</div>
+</section>
+</section>
+<section id="coloring-noise">
+<h2>Coloring Noise<a class="headerlink" href="#coloring-noise" title="Permalink to this heading"></a></h2>
+<p>The “<a class="reference external" href="https://www.coloringnoise.com/theoretical_background/new-color-scheme/">Coloring Noise</a>” scheme is a proposition made by Beate Tomio, within her PhD.</p>
+<ul class="simple">
+<li><p><strong>English title</strong>: Coloring Noise - A color scheme for visualizing noise immission in maps</p></li>
+<li><p><strong>Description</strong>: The creation process of this color scheme is presented on <a class="reference external" href="https://www.coloringnoise.com/">Beate’s website</a></p></li>
+<li><p><strong>Last update</strong>: 2016</p></li>
+</ul>
+<section id="id8">
+<h3>Color scheme<a class="headerlink" href="#id8" title="Permalink to this heading"></a></h3>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/style_beate_tomio.png"><img alt="_images/style_beate_tomio.png" src="_images/style_beate_tomio.png" style="width: 60%;" /></a>
+</figure>
+</section>
+<section id="id9">
+<h3>SLD file<a class="headerlink" href="#id9" title="Permalink to this heading"></a></h3>
+<p>The SLD representation of this color scheme is available here : <a class="reference external" href="https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/v4.0.2/Docs/styles/style_beate_tomio.sld">Style Coloring Noise</a></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This style will work only if you specified <code class="docutils literal notranslate"><span class="pre">Iso</span> <span class="pre">levels</span> <span class="pre">in</span> <span class="pre">dB</span></code> = <code class="docutils literal notranslate"><span class="pre">35,</span> <span class="pre">40,</span> <span class="pre">45,</span> <span class="pre">50,</span> <span class="pre">55,</span> <span class="pre">60,</span> <span class="pre">65,</span> <span class="pre">70,</span> <span class="pre">75,</span> <span class="pre">80,</span> <span class="pre">200</span></code> when exectuting the <code class="docutils literal notranslate"><span class="pre">Acoustic_Tools:Create_Isosurface</span></code> script</p>
+</div>
+</section>
+</section>
+<section id="create-your-own-sld-file">
+<h2>Create your own .SLD file<a class="headerlink" href="#create-your-own-sld-file" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">.sld</span></code> is an <code class="docutils literal notranslate"><span class="pre">.xml</span></code> file that may be opened and edited in most of the text editor. So you can easily modify existing <code class="docutils literal notranslate"><span class="pre">.sld</span></code> files to feet with your needs.</p>
+<section id="sld-structure">
+<h3>SLD structure<a class="headerlink" href="#sld-structure" title="Permalink to this heading"></a></h3>
+<p>An <code class="docutils literal notranslate"><span class="pre">.sld</span></code> file is made of <code class="docutils literal notranslate"><span class="pre">rules</span></code> (<code class="docutils literal notranslate"><span class="pre">&lt;se:Rule&gt;</span></code>). A rule has a name (<code class="docutils literal notranslate"><span class="pre">&lt;se:Name&gt;</span></code>), a description (<code class="docutils literal notranslate"><span class="pre">&lt;se:Title&gt;</span></code>) and is applied on some specific values (Filter) and for one symbol.</p>
+<section id="filter">
+<h4>Filter<a class="headerlink" href="#filter" title="Permalink to this heading"></a></h4>
+<p>The rule is applied:</p>
+<ul class="simple">
+<li><p>thanks to an operator that indicates how to filter the table values. In the example below <code class="docutils literal notranslate"><span class="pre">PropertyIsEqualTo</span></code> indicates that an equality test will be made to select values. If the value in the column match with the one defined in the rule, the object (geometry) will be selected to apply the rule.</p></li>
+<li><p>on a specific column : <code class="docutils literal notranslate"><span class="pre">&lt;ogc:PropertyName&gt;</span></code>. In the example below, <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code>. If the column does not exist in the table or if the name is not written exactly in the same way, your rule will not work.</p></li>
+<li><p>for a specific value : <code class="docutils literal notranslate"><span class="pre">&lt;ogc:Literal&gt;</span></code>. In the example below, <code class="docutils literal notranslate"><span class="pre">1</span></code>. So for each objetcs that have <code class="docutils literal notranslate"><span class="pre">1</span></code> in the column <code class="docutils literal notranslate"><span class="pre">ISOLVL</span></code> the rule will be applied</p></li>
+</ul>
+</section>
+<section id="symbol">
+<h4>Symbol<a class="headerlink" href="#symbol" title="Permalink to this heading"></a></h4>
+<p>For one rule, we can define how the symbol will be displayed. In our case, the symbol is a polygon (the isosufrce). In the SLD langage, a polygon is called a <code class="docutils literal notranslate"><span class="pre">PolygonSymbolizer</span></code>. This object has two main caracteristics:</p>
+<ul>
+<li><dl>
+<dt>The fill<span class="classifier"><code class="docutils literal notranslate"><span class="pre">&lt;se:Fill&gt;</span></code></span></dt><dd><ul class="simple">
+<li><p>a color, exprimed with an hexadecimal code. In the example below, <a class="reference external" href="https://www.color-hex.com/color/a0bbbf">#a0bbbf</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>The stroke<span class="classifier"><code class="docutils literal notranslate"><span class="pre">&lt;se:Stroke&gt;</span></code></span></dt><dd><ul class="simple">
+<li><p>a color, exprimed with an hexadecimal code. In the example below, <a class="reference external" href="https://www.color-hex.com/color/a0bbbf">#a0bbbf</a> <em>(we choosed to have the same color for fill and stroke for esthetic purpose, but you can change it)</em></p></li>
+<li><p>a width (<code class="docutils literal notranslate"><span class="pre">stroke-width</span></code>). In the example below, 1</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">stroke-linejoin</span></code> option that defines how two segments may join. <code class="docutils literal notranslate"><span class="pre">bevel</span></code> is the default option</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Below is an extraction from an <code class="docutils literal notranslate"><span class="pre">.sld</span></code> file that illustrates all these points seen before.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">Rule</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">Name</span><span class="o">&gt;</span><span class="mi">35</span><span class="o">-</span><span class="mi">40</span><span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">Name</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">Description</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">Title</span><span class="o">&gt;</span><span class="mi">35</span><span class="o">-</span><span class="mi">40</span><span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">Title</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">Description</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">ogc</span><span class="p">:</span><span class="n">Filter</span> <span class="n">xmlns</span><span class="p">:</span><span class="n">ogc</span><span class="o">=</span><span class="s2">&quot;http://www.opengis.net/ogc&quot;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">ogc</span><span class="p">:</span><span class="n">PropertyIsEqualTo</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="n">ogc</span><span class="p">:</span><span class="n">PropertyName</span><span class="o">&gt;</span><span class="n">ISOLVL</span><span class="o">&lt;/</span><span class="n">ogc</span><span class="p">:</span><span class="n">PropertyName</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="n">ogc</span><span class="p">:</span><span class="n">Literal</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">ogc</span><span class="p">:</span><span class="n">Literal</span><span class="o">&gt;</span>
+        <span class="o">&lt;/</span><span class="n">ogc</span><span class="p">:</span><span class="n">PropertyIsEqualTo</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">ogc</span><span class="p">:</span><span class="n">Filter</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">PolygonSymbolizer</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">Fill</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">SvgParameter</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;fill&quot;</span><span class="o">&gt;</span><span class="c1">#a0bbbf&lt;/se:SvgParameter&gt;</span>
+        <span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">Fill</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">Stroke</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">SvgParameter</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;stroke&quot;</span><span class="o">&gt;</span><span class="c1">#a0bbbf&lt;/se:SvgParameter&gt;</span>
+          <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">SvgParameter</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;stroke-width&quot;</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">SvgParameter</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="n">se</span><span class="p">:</span><span class="n">SvgParameter</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;stroke-linejoin&quot;</span><span class="o">&gt;</span><span class="n">bevel</span><span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">SvgParameter</span><span class="o">&gt;</span>
+        <span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">Stroke</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">PolygonSymbolizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">se</span><span class="p">:</span><span class="n">Rule</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Rapport.html" class="btn btn-neutral float-left" title="Rapport de Tests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Support.html" class="btn btn-neutral float-right" title="Support" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UMRAE - Lab-STICC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
