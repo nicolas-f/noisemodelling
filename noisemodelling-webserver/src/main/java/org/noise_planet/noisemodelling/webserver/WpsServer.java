@@ -24,28 +24,30 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class WpsServer {
-    private static final String BASE_PACKAGE = "org.noise_planet.noisemodelling.scripts";
-
-    private static final String SCRIPTS_ROOT =
-            "./noisemodelling-scripts/src/main/groovy/"
-                    + BASE_PACKAGE.replace('.', '/');
+//    private static final String BASE_PACKAGE = "org.noise_planet.noisemodelling.scripts";
+//
+//    private static final String SCRIPTS_ROOT =
+//            "./noisemodelling-scripts/src/main/groovy/"
+//                    + BASE_PACKAGE.replace('.', '/');
     static ScriptWrapper scriptWrapper = new ScriptWrapper("org.noise_planet.noisemodelling.scripts","./noisemodelling-scripts/src/main/groovy/");
     static Map<String, List<String>> scripts = scriptWrapper.scanScriptsGrouped();
     public static void main(String[] args) {
-        System.out.println("WPS Server debut "+SCRIPTS_ROOT);
+        //System.out.println("WPS Server debut "+SCRIPTS_ROOT);
 
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("static/wpsbuilder", Location.CLASSPATH);
         }).start(8000);
-        System.out.println("WPS Server debutt "+SCRIPTS_ROOT);
+        //System.out.println("WPS Server debutt "+SCRIPTS_ROOT);
 
         app.get("/wps", ctx -> {
             String request = ctx.queryParam("request");
             if ("GetCapabilities".equalsIgnoreCase(request)) {
-                ctx.contentType("text/xml");
+                ctx.contentType("text/xml; charset=UTF-8");
                 try {
                     ctx.result(buildCapabilitiesXml(scripts));
                     System.out.println("WPS here");
@@ -55,7 +57,7 @@ public class WpsServer {
                 }
             } else if ("DescribeProcess".equalsIgnoreCase(request)) {
                 System.out.println("WPS Server here " + request);
-                ctx.contentType("text/xml");
+                ctx.contentType("text/xml; charset=UTF-8");
                 //ctx.result(buildDescribeProcessXml(ctx.queryParam("identifier")));
                 ctx.result(buildDescribeProcessXml(ctx.queryParam("identifier"), scripts));
             }else {
@@ -85,7 +87,7 @@ public class WpsServer {
                 String packageName = parts[0];
                 String scriptName = parts[1];
 
-                File scriptFile = findScript(packageName, scriptName);
+                File scriptFile = findScript(scripts,packageName, scriptName);
                 if (scriptFile == null) {
                     ctx.status(404).result("Script introuvable");
                     return;
@@ -112,7 +114,7 @@ public class WpsServer {
                 String scriptName = ctx.pathParam("script");
                 Map<String,Object> params = ctx.bodyAsClass(Map.class);
 
-                File scriptFile = findScript(pkg, scriptName);
+                File scriptFile = findScript(scripts,pkg, scriptName);
                 if (scriptFile == null) {
                     ctx.status(404).result("Script introuvable");
                     return;
@@ -148,15 +150,14 @@ public class WpsServer {
 
         System.out.println("Création ServiceIdentification");
         ServiceIdentificationType serviceId = Ows11Factory.eINSTANCE.createServiceIdentificationType();
+        LanguageStringType title = Ows11Factory.eINSTANCE.createLanguageStringType();
+        title.setValue("Prototype GeoServer WPS");
+        serviceId.getTitle().add(title);
         CodeType serviceType = Ows11Factory.eINSTANCE.createCodeType();
         serviceType.setValue("WPS");
         serviceId.setServiceType(serviceType);
         serviceId.setServiceTypeVersion("1.0.0");
 
-
-        LanguageStringType title = Ows11Factory.eINSTANCE.createLanguageStringType();
-        title.setValue("Prototype GeoServer WPS");
-        serviceId.getTitle().add(title);
         //serviceId.getAbstract().add();
 
         LanguageStringType abs = Ows11Factory.eINSTANCE.createLanguageStringType();
@@ -189,7 +190,7 @@ public class WpsServer {
         for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
             String group = entry.getKey();
             for (String process : entry.getValue()) {
-                File scriptFile = findScript(group, process);
+                File scriptFile = findScript(grouped,group, process);
                 if (scriptFile == null) throw new Exception("Script non trouvee: " + group+":"+process);
 
                 Map<String, Object> metadata = parseGroovyScriptMetadata(scriptFile);
@@ -214,7 +215,17 @@ public class WpsServer {
         }
         capabilities.setProcessOfferings(offerings);
 
-        System.out.println("etat capabilitie:"+capabilities.toString());
+        LanguagesType1 languages = Wps10Factory.eINSTANCE.createLanguagesType1();
+        DefaultType2 defaultLang = Wps10Factory.eINSTANCE.createDefaultType2();
+        defaultLang.setLanguage("en-US");
+        languages.setDefault(defaultLang);
+        LanguagesType supported = Wps10Factory.eINSTANCE.createLanguagesType();
+        supported.getLanguage().add("en-US");
+        languages.setSupported(supported);
+
+        capabilities.setLanguages(languages);
+
+       // System.out.println("etat capabilitie:"+capabilities.toString());
 
 
         Encoder encoder = new Encoder(new WPSConfiguration());
@@ -235,6 +246,7 @@ public class WpsServer {
             encoder.encode(capabilities,
                     new QName("http://www.opengis.net/wps/1.0.0", "Capabilities"),
                     out);
+            System.out.println("wpstest"+ out.toString(StandardCharsets.UTF_8));
             return out.toString(StandardCharsets.UTF_8);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -264,7 +276,7 @@ public class WpsServer {
     }
 
 
-    private static String buildDescribeProcessXml(String identifier,Map<String, List<String>> grouped) throws Exception {
+    private static String buildDescribeProcessXml(String identifier,Map<String, List<String>> scripts) throws Exception {
         ProcessDescriptionsType processDescriptions = Wps10Factory.eINSTANCE.createProcessDescriptionsType();
         processDescriptions.setLang("en");
         processDescriptions.setService("WPS");
@@ -272,18 +284,18 @@ public class WpsServer {
 
         if (identifier == null || identifier.isEmpty() || identifier.equalsIgnoreCase("all")) {
             //Map<String, List<String>> grouped = scanScriptsGrouped();
-            for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
+            for (Map.Entry<String, List<String>> entry : scripts.entrySet()) {
                 String group = entry.getKey();
                 for (String process : entry.getValue()) {
                     try {
-                        addProcessDescription(processDescriptions, group + ":" + process);
+                        addProcessDescription(scripts,processDescriptions, group + ":" + process);
                     } catch (Exception e) {
                         System.err.println("Erreur   processus " + group + ":" + process + ": " + e.getMessage());
                     }
                 }
             }
         } else {
-            addProcessDescription(processDescriptions, identifier);
+            addProcessDescription(scripts,processDescriptions, identifier);
         }
 
         Encoder encoder = new Encoder(new WPSConfiguration());
@@ -300,12 +312,12 @@ public class WpsServer {
         return out.toString(StandardCharsets.UTF_8);
     }
 
-    private static void addProcessDescription(ProcessDescriptionsType processDescriptions, String identifier) throws Exception {
+    private static void addProcessDescription(Map<String, List<String>> scripts,ProcessDescriptionsType processDescriptions, String identifier) throws Exception {
         String[] parts = identifier.split(":");
         if (parts.length != 2) throw new IllegalArgumentException("Identifiant doit être au format 'Groupe:Nom'");
         String group = parts[0], processName = parts[1];
 
-        File scriptFile = findScript(group, processName);
+        File scriptFile = findScript(scripts,group, processName);
         if (scriptFile == null) throw new Exception("Script non trouvé: " + identifier);
 
         Map<String, Object> metadata = parseGroovyScriptMetadata(scriptFile);
@@ -406,41 +418,130 @@ public class WpsServer {
         input.setLiteralData(literalInput);
     }
 
-    private static Map<String, Object> parseGroovyScriptMetadata(File scriptFile) throws IOException {
-        Map<String, Object> metadata = new HashMap<>();
-        metadata.put("title", scriptFile.getName().replace(".groovy", ""));
-        metadata.put("description", "");
-        metadata.put("inputs", new HashMap<String, Map<String,Object>>());
-        metadata.put("outputs", new HashMap<String, Map<String,Object>>());
+//    private static Map<String, Object> parseGroovyScriptMetadata(File scriptFile) throws IOException {
+//        Map<String, Object> metadata = new HashMap<>();
+//        metadata.put("title", scriptFile.getName().replace(".groovy", ""));
+//        metadata.put("description", "");
+//        metadata.put("inputs", new HashMap<String, Map<String,Object>>());
+//        metadata.put("outputs", new HashMap<String, Map<String,Object>>());
+//
+//        try {
+//            List<String> lines = Files.readAllLines(scriptFile.toPath(), StandardCharsets.UTF_8);
+//            String scriptContent = String.join("\n", lines);
+//
+//            Binding binding = new Binding();
+//            binding.setVariable("String", String.class);
+//            binding.setVariable("Integer", Integer.class);
+//            binding.setVariable("Double", Double.class);
+//            binding.setVariable("Boolean", Boolean.class);
+//
+//            GroovyShell shell = new GroovyShell(binding);
+//            shell.evaluate(scriptContent);
+//
+//            if (binding.hasVariable("title")) metadata.put("title", binding.getVariable("title"));
+//            if (binding.hasVariable("description")) metadata.put("description", binding.getVariable("description"));
+//            if (binding.hasVariable("inputs")) metadata.put("inputs", binding.getVariable("inputs"));
+//            if (binding.hasVariable("outputs")) metadata.put("outputs", binding.getVariable("outputs"));
+//
+//        } catch (Exception e) {
+//            System.err.println("Erreur evaluation du script " + scriptFile.getName() + ": " + e.getMessage());
+//
+//        }
+//
+//        return metadata;
+//    }
 
-        try {
-            List<String> lines = Files.readAllLines(scriptFile.toPath(), StandardCharsets.UTF_8);
-            String scriptContent = String.join("\n", lines);
+private static Map<String, Object> parseGroovyScriptMetadata(File scriptFile) throws IOException {
+    Map<String, Object> metadata = new HashMap<>();
+    metadata.put("title", scriptFile.getName().replace(".groovy", ""));
+    metadata.put("description", "");
+    metadata.put("inputs", new HashMap<String, Map<String,Object>>());
+    metadata.put("outputs", new HashMap<String, Map<String,Object>>());
 
-            Binding binding = new Binding();
-            binding.setVariable("String", String.class);
-            binding.setVariable("Integer", Integer.class);
-            binding.setVariable("Double", Double.class);
-            binding.setVariable("Boolean", Boolean.class);
-
-            GroovyShell shell = new GroovyShell(binding);
-            shell.evaluate(scriptContent);
-
-            if (binding.hasVariable("title")) metadata.put("title", binding.getVariable("title"));
-            if (binding.hasVariable("description")) metadata.put("description", binding.getVariable("description"));
-            if (binding.hasVariable("inputs")) metadata.put("inputs", binding.getVariable("inputs"));
-            if (binding.hasVariable("outputs")) metadata.put("outputs", binding.getVariable("outputs"));
-
-        } catch (Exception e) {
-            System.err.println("Erreur evaluation du script " + scriptFile.getName() + ": " + e.getMessage());
-
-        }
-
-        return metadata;
+    String content = Files.readString(scriptFile.toPath(), StandardCharsets.UTF_8);
+    Matcher mTitle = Pattern.compile("(?m)^\\s*title\\s*=\\s*(.+)").matcher(content);
+    if (mTitle.find()) {
+        metadata.put("title", parseGroovyString(mTitle.group(1)));
     }
 
+    Matcher mDesc = Pattern.compile("(?m)^\\s*description\\s*=\\s*(.+?)(?=\\n\\s*inputs\\s*=)", Pattern.DOTALL).matcher(content);
+    if (mDesc.find()) {
+        metadata.put("description", parseGroovyString(mDesc.group(1)));
+    }
+    String inputsBlock = extractBlock(content, "inputs");
+    if (!inputsBlock.isEmpty()) {
+        Map<String, Map<String,Object>> inputsMap = parseInputsOrOutputsBlock(inputsBlock);
+        metadata.put("inputs", inputsMap);
+    }
+    String outputsBlock = extractBlock(content, "outputs");
+    if (!outputsBlock.isEmpty()) {
+        Map<String, Map<String,Object>> outputsMap = parseInputsOrOutputsBlock(outputsBlock);
+        metadata.put("outputs", outputsMap);
+    }
 
+    return metadata;
+}
+    private static String extractBlock(String content, String blockName) {
+        int start = content.indexOf(blockName + " = [");
+        if (start == -1) return "";
+        start += (blockName + " = ").length();
 
+        int depth = 0;
+        int end = start;
+        while (end < content.length()) {
+            char c = content.charAt(end);
+            if (c == '[') depth++;
+            else if (c == ']') {
+                depth--;
+                if (depth == 0) break;
+            }
+            end++;
+        }
+        return content.substring(start, end + 1);
+    }
+
+    private static String parseGroovyString(String input) {
+        StringBuilder sb = new StringBuilder();
+        Matcher m = Pattern.compile("'([^']*)'").matcher(input);
+        while (m.find()) {
+            sb.append(m.group(1));
+        }
+        return sb.toString().trim();
+    }
+
+    private static Map<String, Map<String,Object>> parseInputsOrOutputsBlock(String block) {
+        Map<String, Map<String,Object>> result = new HashMap<>();
+        Matcher entryMatcher = Pattern.compile("(\\w+)\\s*:\\s*\\[(.*?)](,|$)", Pattern.DOTALL).matcher(block);
+
+        while (entryMatcher.find()) {
+            String id = entryMatcher.group(1);
+            String body = entryMatcher.group(2);
+
+            Map<String, Object> props = new HashMap<>();
+
+            Matcher kv = Pattern.compile("(\\w+)\\s*:\\s*((?:'[^']*'(?:\\s*\\+\\s*)?)*)", Pattern.DOTALL).matcher(body);
+            while (kv.find()) {
+                String key = kv.group(1);
+                String value = parseGroovyString(kv.group(2));
+                props.put(key, value);
+            }
+
+            Matcher typeM = Pattern.compile("type\\s*:\\s*(\\w+)\\.class").matcher(body);
+            if (typeM.find()) {
+                String typeStr = typeM.group(1);
+                switch (typeStr) {
+                    case "String":  props.put("type", String.class); break;
+                    case "Integer": props.put("type", Integer.class); break;
+                    case "Double":  props.put("type", Double.class); break;
+                    case "Boolean": props.put("type", Boolean.class); break;
+                    default:        props.put("type", String.class); break;
+                }
+            }
+
+            result.put(id, props);
+        }
+        return result;
+    }
 
 
     private static String extractProcessName(ExecuteType execute) {
@@ -464,37 +565,14 @@ public class WpsServer {
         return inputsMap;
     }
 
-    private static Map<String, List<String>> scanScriptsGrouped() {
-        System.out.println("Scan des scripts a partir de : " + SCRIPTS_ROOT);
-        Map<String, List<String>> grouped = new TreeMap<>();
-        File baseDir = new File(SCRIPTS_ROOT);
-        if (!baseDir.exists()) return grouped;
-
-        scanRecursive(baseDir, BASE_PACKAGE, grouped);
-        return grouped;
-    }
-
-    private static void scanRecursive(File dir, String currentPackage, Map<String, List<String>> grouped) {
-        File[] files = dir.listFiles();
-        if (files == null) return;
-
-        for (File f : files) {
-            System.out.println("file name :" +f.getName());
-            if (f.isDirectory()) {
-                scanRecursive(f, currentPackage + "." + f.getName(), grouped);
-            } else if (f.getName().endsWith(".groovy")) {
-                String scriptName = f.getName().replace(".groovy", "");
-                String groupName = currentPackage.substring(BASE_PACKAGE.length() + 1);
-                if (groupName.isEmpty()) groupName = "Root";
-                grouped.computeIfAbsent(groupName, k -> new ArrayList<>()).add(scriptName);
-            }
+    private static File findScript(Map<String, List<String>> allScripts,String group, String scriptName) {
+        if (allScripts.containsKey(group) && allScripts.get(group).contains(scriptName)) {
+            String path = scriptWrapper.SCRIPTS_ROOT + "/" + group.replace('.', '/') + "/" + scriptName + ".groovy";
+            File f = new File(path);
+            return f.exists() ? f : null;
         }
-    }
+        return null;
 
-    private static File findScript(String group, String scriptName) {
-        String path = SCRIPTS_ROOT + "/" + group.replace('.', '/') + "/" + scriptName + ".groovy";
-        File f = new File(path);
-        return f.exists() ? f : null;
     }
 
     private static Connection openDatabaseConnection() throws SQLException, ClassNotFoundException {
