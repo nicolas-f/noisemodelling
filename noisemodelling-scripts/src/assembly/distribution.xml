@@ -43,8 +43,14 @@
                 <include>start.bat</include>
                 <include>get_started_tutorial.sh</include>
                 <include>get_started_tutorial.groovy</include>
-                <include>README.md</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.parent.basedir}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
                 <include>LICENSE</include>
+                <include>README.md</include>
             </includes>
         </fileSet>
         <fileSet>
