@@ -190,7 +190,6 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.service.jdbc</artifactId>
             <version>1.0.0</version>
-            <scope>provided</scope>
         </dependency>
 
 
@@ -204,6 +203,11 @@
             <artifactId>groovy</artifactId>
             <version>${groovy.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin</artifactId>
+            <version>6.1.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.groovy</groupId>
@@ -223,9 +227,25 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>2.0.16</version>
-            <scope>test</scope>
+            <version>1.7.36</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -238,26 +258,26 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.3</version>
                 <executions>
                     <execution>
-                        <id>copy-groovy-scripts</id>
-                        <phase>process-classes</phase>
+                        <id>create-distribution</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.outputDirectory}/scripts</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/groovy/org/noise_planet/noisemodelling/scripts</directory>
-                                    <includes>
-                                        <include>**/*.groovy</include>
-                                    </includes>
-                                </resource>
-                            </resources>
+                            <finalName>NoiseModelling_without_geoserver</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>src/assembly/distribution.xml</descriptor>
+                            </descriptors>
+                            <formats>
+                                <format>zip</format>
+                            </formats>
                         </configuration>
+
                     </execution>
                 </executions>
             </plugin>
@@ -296,6 +316,14 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

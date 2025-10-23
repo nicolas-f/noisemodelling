@@ -137,7 +137,7 @@ public class Main {
 
 
     public static void main(String... args) throws Exception {
-        PropertyConfigurator.configure(Main.class.getResource("log4j.properties"));
+        PropertyConfigurator.configure(Main.class.getClassLoader().getResource("scripts/log4j.properties"));
 
         // Arguments parser
         Options options = new Options();
