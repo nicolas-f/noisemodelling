@@ -11,36 +11,25 @@
     <includeBaseDirectory>true</includeBaseDirectory>
 
     <fileSets>
+        <!-- Include appassembler-generated scripts and lib directory -->
+        <fileSet>
+            <directory>${project.build.directory}/appassembler</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
         <fileSet>
             <directory>${project.basedir}/src/main/groovy/org/noise_planet/noisemodelling/scripts</directory>
             <outputDirectory>/noisemodelling/scripts</outputDirectory>
         </fileSet>
-
-        <fileSet>
-            <directory>${project.build.outputDirectory}</directory>
-            <outputDirectory>/noisemodelling/server</outputDirectory>
-            <includes>
-                <include>**/*.class</include>
-            </includes>
-        </fileSet>
-
-        <fileSet>
-            <directory>${project.basedir}/bin</directory>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>0755</fileMode>
-            <includes>
-                <include>*.sh</include>
-                <include>*.bat</include>
-            </includes>
-        </fileSet>
-
         <fileSet>
             <directory>${project.basedir}</directory>
             <outputDirectory>/</outputDirectory>
             <fileMode>0755</fileMode>
             <includes>
-                <include>start.sh</include>
-                <include>start.bat</include>
                 <include>get_started_tutorial.sh</include>
                 <include>get_started_tutorial.groovy</include>
             </includes>
@@ -58,13 +47,4 @@
             <outputDirectory>/resources</outputDirectory>
         </fileSet>
     </fileSets>
-    <dependencySets>
-        <dependencySet>
-            <outputDirectory>/lib</outputDirectory>
-            <useProjectArtifact>true</useProjectArtifact>
-            <unpack>false</unpack>
-            <scope>runtime</scope>
-        </dependencySet>
-    </dependencySets>
-
 </assembly>
