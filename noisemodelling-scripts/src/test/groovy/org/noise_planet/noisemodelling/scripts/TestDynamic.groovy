@@ -341,7 +341,7 @@ class TestDynamic{
 
         // Export result table
         new Export_Table().exec(connection,
-                [exportPath: new File(tutorialOutputFolder, NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME+".shp").absolutePath,
+                [exportPath: new File(tutorialOutputFolder.toString(), NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME+".shp").absolutePath,
                  tableToExport: NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
 
         // This step is optional, it compute the L10, L50 and L90 at each receiver from the table RECEIVERS_LEVEL
@@ -363,7 +363,7 @@ class TestDynamic{
 
         // Export result table
         new Export_Table().exec(connection,
-                [exportPath: new File(tutorialOutputFolder, "CONTOURING_NOISE_MAP.shp").absolutePath,
+                [exportPath: new File(tutorialOutputFolder.toString(), "CONTOURING_NOISE_MAP.shp").absolutePath,
                  tableToExport: "CONTOURING_NOISE_MAP"])
 
         assertEquals(expected.size(), periods.size())

@@ -384,10 +384,10 @@ static def exec(Connection connection, input) {
                     isOutside = true
                     continue;
                 }
-                double activityStart = Double.isNaN(activity.getStartTime()) ? 0 : activity.getStartTime();
-                double activityEnd = Double.isNaN(activity.getEndTime())
+                double activityStart = !activity.getStartTime().isDefined() ? 0 : activity.getStartTime().seconds()
+                double activityEnd = !activity.getEndTime().isDefined()
                         ? 86400 + 4 * 3600
-                        : activity.getEndTime();
+                        : activity.getEndTime().seconds();
                 double timeWeight = 0.0;
 
                 if (activityStart >= activityEnd) {
