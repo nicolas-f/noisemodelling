@@ -11,7 +11,14 @@
  */
 
 package org.noise_planet.noisemodelling.scripts
-import org.junit.Test
+
+
+import org.h2gis.functions.factory.H2GISDBFactory
+import org.h2gis.utilities.JDBCUtilities
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.noise_planet.noisemodelling.scripts.Data_Assimilation.*
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
@@ -21,7 +28,24 @@ import org.noise_planet.noisemodelling.scripts.Receivers.Regular_Grid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class TestDataAssimilation extends JdbcTestCase {
+import java.sql.Connection
+
+
+
+class TestDataAssimilation{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
     Logger logger = LoggerFactory.getLogger(TestDataAssimilation.class)
 
     @Test

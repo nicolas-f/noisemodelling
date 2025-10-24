@@ -6,7 +6,8 @@
     <parent>
         <groupId>org.noise-planet</groupId>
         <artifactId>noisemodelling-parent</artifactId>
-        <version>5.0.1-SNAPSHOT</version>
+        <version>5.0.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>noisemodelling-scripts</artifactId>
@@ -16,31 +17,6 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <repositories>
-        <repository>
-            <id>osgeo</id>
-            <url>https://repo.osgeo.org/repository/release/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>orbisgis</id>
-            <url>https://maven.orbisgis.org/releases</url>
-        </repository>
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-        <repository>
-            <id>matsim</id>
-            <name>MATSim Maven repository</name>
-            <url>https://repo.matsim.org/repository/matsim/</url>
-        </repository>
-    </repositories>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -83,7 +59,7 @@
             <artifactId>osmosis-xml</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-templates</artifactId>
         </dependency>
         <dependency>
@@ -175,61 +151,89 @@
             <artifactId>groovy-json</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-jsr223</artifactId>
-            <version>2.5.5</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
-            <version>1.7.36</version>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
-        <plugins>        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>appassembler-maven-plugin</artifactId>
-            <version>2.1.0</version>
-            <executions>
-                <execution>
-                    <id>assemble</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>assemble</goal>
-                    </goals>
-                </execution>
-            </executions>
-            <configuration>
-                <programs>
-                    <program>
-                        <mainClass>org.noise_planet.noisemodelling.webserver.Main</mainClass>
-                        <name>WebServer</name>
-                    </program>
-                    <program>
-                        <mainClass>org.noise_planet.noisemodelling.scripts.Main</mainClass>
-                        <name>Scripts</name>
-                    </program>
-                </programs>
-                <!-- This ensures all dependencies are included -->
-                <repositoryLayout>flat</repositoryLayout>
-                <repositoryName>lib</repositoryName>
-            </configuration>
-        </plugin>
+        <plugins>
+            <!-- GMavenPlus plugin for compiling Groovy -->
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>4.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>addSources</goal>
+                            <goal>addTestSources</goal>
+                            <goal>compile</goal>
+                            <goal>compileTests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sources>
+                        <source>
+                            <directory>${project.basedir}/src/main/groovy</directory>
+                            <includes>
+                                <include>**/*.groovy</include>
+                            </includes>
+                        </source>
+                    </sources>
+                    <testSources>
+                        <testSource>
+                            <directory>${project.basedir}/src/test/groovy</directory>
+                            <includes>
+                                <include>**/*.groovy</include>
+                            </includes>
+                        </testSource>
+                    </testSources>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>2.1.0</version>
+                <executions>
+                    <execution>
+                        <id>assemble</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <programs>
+                        <program>
+                            <mainClass>org.noise_planet.noisemodelling.webserver.Main</mainClass>
+                            <id>WebServer</id>
+                        </program>
+                        <program>
+                            <mainClass>org.noise_planet.noisemodelling.scripts.Main</mainClass>
+                            <id>Scripts</id>
+                        </program>
+                    </programs>
+                    <!-- This ensures all dependencies are included -->
+                    <repositoryLayout>flat</repositoryLayout>
+                    <repositoryName>lib</repositoryName>
+                </configuration>
+            </plugin>
 
             <!-- Assembly plugin runs after appassembler -->
             <plugin>
@@ -275,7 +279,7 @@
                 <configuration>
                     <instructions>
                         <Public-Package>org.noise_planet.noisemodelling.propagation.*</Public-Package>
-                        <Bundle-Vendor>UMRAE team (Eiffel University), DECIDE team (Lab-STICC) </Bundle-Vendor>
+                        <Bundle-Vendor>UMRAE team (Eiffel University), DECIDE team (Lab-STICC)</Bundle-Vendor>
                         <Import-Package>org.slf4j;version="[1.6.0,2)",!org.h2.*,*</Import-Package>
                         <Implementation-Build>${buildNumber}</Implementation-Build>
                     </instructions>

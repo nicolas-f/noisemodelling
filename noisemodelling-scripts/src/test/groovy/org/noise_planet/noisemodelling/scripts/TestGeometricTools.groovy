@@ -13,11 +13,18 @@
 package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
+
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.functions.io.shp.SHPRead
 import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.TableLocation
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.sql.Connection
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.TestInfo
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Change_SRID
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Clean_Buildings_Table
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Enrich_DEM_with_road
@@ -27,10 +34,26 @@ import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_Asc_File
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 /**
  * Test parsing of zip file using H2GIS database
  */
-class TestGeometricTools extends JdbcTestCase {
+
+
+class TestGeometricTools{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
     Logger LOGGER = LoggerFactory.getLogger(TestGeometricTools.class)
 
     @Test
@@ -66,7 +89,7 @@ class TestGeometricTools extends JdbcTestCase {
         String screen2 = "LINESTRING (224206.98 6757997.9, 224213.9 6757964.7, 224210.24 6757964.29, 224206.98 6757997.9)"
         def sql = new Sql(connection)
         sql.execute("CREATE TABLE SCREENS(pk serial, the_geom geometry, height double)")
-        sql.executeInsert("INSERT INTO SCREENS(pk, THE_GEOM, HEIGHT) VALUES (2001,?, 66), (2002,?, 99)", [screen1, screen2])
+        sql.executeInsert("INSERT INTO SCREENS(pk, THE_GEOM, HEIGHT) VALUES (2001,?, 66), (2002,?, 99)", [screen1, screen2] as List<Object>)
         SHPRead.importTable(connection, TestGeometricTools.getResource("buildings.shp").getPath())
 
         String res = new Change_SRID().exec(connection,
@@ -136,11 +159,12 @@ class TestGeometricTools extends JdbcTestCase {
 
         // Check if there is remaining intersecting buildings
         assertEquals(0, sql.firstRow("select COUNT(*) COUNTINTERS FROM buildings S1, buildings S2 WHERE ST_AREA(S1.THE_GEOM) < ST_AREA(S2.THE_GEOM) AND S1.THE_GEOM && S2.THE_GEOM AND ST_DISTANCE(S1.THE_GEOM, S2.THE_GEOM) <= 0.05;")[0] as Integer)
-        assertEquals(30, sql.firstRow("select AVG(POP) FROM buildings")[0] as Integer, 1e-3)
+        assertEquals(30.0d, sql.firstRow("select AVG(POP) FROM buildings")[0] as Double, 1e-3d)
         assertEquals(2154, srid)
         assertEquals(2154, srid2)
     }
 
+    @Test
     void testEnrichRoad() {
 
         new Import_Asc_File().exec(connection,

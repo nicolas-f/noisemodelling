@@ -13,18 +13,21 @@
 package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
+
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.TableLocation
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.io.TempDir
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
 import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Create_Isosurface
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Display_Database
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Table_Visualization_Data
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Agent_Exposure
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Import_Activities
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Noise_From_Attenuation_Matrix_MatSim
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Receivers_From_Activities_Closest
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Traffic_From_Events
+import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.*
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_Folder
@@ -39,17 +42,33 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.sql.Connection
 import java.util.zip.ZipFile
 
-import static org.junit.jupiter.api.Assertions.assertTrue
-
+import static org.junit.jupiter.api.Assertions.*
 /**
  * Test parsing of zip file using H2GIS database
  */
-class TestTutorials extends JdbcTestCase {
+
+class TestTutorials{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
+
     Logger LOGGER = LoggerFactory.getLogger(TestTutorials.class)
 
 
+    @Test
     void testTutorialGetStarted() {
         Sql sql = new Sql(connection)
 
@@ -103,7 +122,8 @@ class TestTutorials extends JdbcTestCase {
 
 
 
-    void testTutorialPointSource() {
+    @Test
+    void testTutorialPointSource(@TempDir Path testFolder) {
         Sql sql = new Sql(connection)
 
         // Check empty database
@@ -153,21 +173,22 @@ class TestTutorials extends JdbcTestCase {
         assertTrue(output.contains("PERIOD"))
 
         // Check export geojson
-        File testPath = new File("build/tmp/tutoPointSource.geojson")
+        File testPath =new File(testFolder.toString(), "tutoPointSource.geojson")
 
         if(testPath.exists()) {
             testPath.delete()
         }
 
         new Export_Table().exec(connection,
-                ["exportPath"   : "build/tmp/tutoPointSource.geojson",
+                ["exportPath"   : testPath.toString(),
                  "tableToExport": NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
 
 
     }
 
 
-    void testTutorialPointSourceDirectivity() {
+    @Test
+    void testTutorialPointSourceDirectivity(@TempDir Path testFolder) {
         Logger logger = LoggerFactory.getLogger(TestTutorials.class)
 
         Sql sql = new Sql(connection)
@@ -207,12 +228,12 @@ class TestTutorials extends JdbcTestCase {
         assertTrue(res.contains("DEM"))
 
         // generate a grid of receivers using the buildings as envelope
-        logger.info(new Delaunay_Grid().exec(connection, [maxArea: 60, tableBuilding: "BUILDINGS",
+       logger.info(new Delaunay_Grid().exec(connection, [maxArea: 60, tableBuilding: "BUILDINGS",
                                                           sourcesTableName : "POINT_SOURCE" , height: 1.6]));
 
 
-        new Export_Table().exec(connection, [exportPath:"build/tmp/receivers.shp", tableToExport: "RECEIVERS"])
-        new Export_Table().exec(connection, [exportPath:"build/tmp/TRIANGLES.shp", tableToExport: "TRIANGLES"])
+        new Export_Table().exec(connection, [exportPath: new File(testFolder.toString(), "receivers.shp").toString(), tableToExport: "RECEIVERS"])
+        new Export_Table().exec(connection, [exportPath: new File(testFolder.toString(), "TRIANGLES.shp").toString(), tableToExport: "TRIANGLES"])
 
         new Noise_level_from_source().exec(connection, [tableBuilding: "BUILDINGS", tableSources:"POINT_SOURCE",
                                                         tableReceivers : "RECEIVERS",
@@ -227,10 +248,10 @@ class TestTutorials extends JdbcTestCase {
                 [resultTable: NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME,
                  smoothCoefficient : 0.4])
 
-        new Export_Table().exec(connection, [exportPath:"build/tmp/CONTOURING_NOISE_MAP.shp", tableToExport: "CONTOURING_NOISE_MAP"])
+        new Export_Table().exec(connection, [exportPath:  new File(testFolder.toString(),"CONTOURING_NOISE_MAP.shp").toString(), tableToExport: "CONTOURING_NOISE_MAP"])
 
         new Export_Table().exec(connection,
-                [exportPath:"build/tmp/TUTO_DIR_RECEIVERS_LEVEL.shp",
+                [exportPath:  new File(testFolder.toString(), "TUTO_DIR_RECEIVERS_LEVEL.shp").toString(),
                  tableToExport: NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
 
         def columnNames = JDBCUtilities.getColumnNames(connection, NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME)
@@ -243,16 +264,15 @@ class TestTutorials extends JdbcTestCase {
     }
 
 
-    void testTutorialMatsim() {
+    @Test
+    void testTutorialMatsim(@TempDir Path tempDataDir) {
         Logger logger = LoggerFactory.getLogger(TestTutorials.class)
         Sql sql = new Sql(connection)
-
-        Path tempDataDir = new File("build/tmp/matsim/").toPath();
 
         Files.createDirectories(tempDataDir);
 
         // URL of the file to download
-        String fileUrl = "https://github.com/Symexpo/matsim-noisemodelling/releases/download/v5.0.0/scenario_matsim.zip";
+        String fileUrl = "https://github.com/Universite-Gustave-Eiffel/NoiseModelling/releases/download/v5.X-Matsim-Test-Scenario/scenario_matsim.zip";
 
         // Create a temporary directory
         Path zipFilePath = tempDataDir.resolve("scenario_matsim.zip");
@@ -261,7 +281,7 @@ class TestTutorials extends JdbcTestCase {
         String matsimFolder = tempDataDir.toString();
         String resultsFolder = tempDataDir.toString() + "/results/";
         Files.createDirectories(Path.of(resultsFolder));
-        String populationFactor = "0.001"; // 0.001 for 1/1000 of the population
+        String populationFactor = "0.01"; // 0.001 for 1/1000 of the population
 
         int timeBinSize = 900;
         int timeBinMin = 0;
@@ -352,31 +372,21 @@ class TestTutorials extends JdbcTestCase {
         params.put("tableBuilding", "BUILDINGS");
         params.put("tableReceivers", "ACTIVITIES_RECEIVERS");
         params.put("tableSources", "MATSIM_ROADS");
+        params.put("tableSourcesEmission", "MATSIM_ROADS_LW");
         params.put("confMaxSrcDist", 50);
         params.put("confMaxReflDist", 10);
         params.put("confReflOrder", 0);
         params.put("confSkipLevening", true);
         params.put("confSkipLnight", true);
         params.put("confSkipLden", true);
-        params.put("confExportSourceId", true);
+        params.put("confExportSourceId", false);
         params.put("confDiffVertical", false);
         params.put("confDiffHorizontal", false);
 
         new Noise_level_from_source().exec(connection, params);
 
-        sql.execute("DROP TABLE IF EXISTS ATTENUATION_TRAFFIC");
-        sql.execute("ALTER TABLE RECEIVERS_LEVEL RENAME TO ATTENUATION_TRAFFIC");
-
-        new Noise_From_Attenuation_Matrix_MatSim().exec(connection, Map.of(
-                "matsimRoads", "MATSIM_ROADS",
-                "matsimRoadsLw", "MATSIM_ROADS_LW",
-                "attenuationTable", "ATTENUATION_TRAFFIC",
-                "receiversTable", "ACTIVITIES_RECEIVERS",
-                "outTableName", "RESULT_GEOM",
-                "timeBinSize", timeBinSize,
-                "timeBinMin", timeBinMin,
-                "timeBinMax", timeBinMax
-        ));
+        sql.execute("DROP TABLE IF EXISTS ACTIVITIES_RECEIVERS_LEVEL");
+        sql.execute("ALTER TABLE RECEIVERS_LEVEL RENAME TO ACTIVITIES_RECEIVERS_LEVEL");
 
         params = new HashMap<>();
         params.put("experiencedPlansFile", Paths.get(matsimFolder, "output_experienced_plans.xml.gz"));
@@ -385,7 +395,7 @@ class TestTutorials extends JdbcTestCase {
         params.put("SRID", srid);
         params.put("receiversTable", "ACTIVITIES_RECEIVERS");
         params.put("outTableName", "EXPOSURES");
-        params.put("dataTable", "RESULT_GEOM");
+        params.put("dataTable", "ACTIVITIES_RECEIVERS_LEVEL");
         params.put("timeBinSize", timeBinSize);
         params.put("timeBinMin", timeBinMin);
         params.put("timeBinMax", timeBinMax);
@@ -398,11 +408,17 @@ class TestTutorials extends JdbcTestCase {
         ));
 
         new Export_Table().exec(connection, Map.of(
-                "tableToExport", "RESULT_GEOM",
-                "exportPath", Paths.get(resultsFolder, "RESULT_GEOM.shp")
+                "tableToExport", "ACTIVITIES_RECEIVERS_LEVEL",
+                "exportPath", Paths.get(resultsFolder, "ACTIVITIES_RECEIVERS_LEVEL.shp")
         ));
 
-        assertTrue(Paths.get(resultsFolder, "RESULT_GEOM.shp").toFile().exists());
+        new Export_Table().exec(connection, Map.of(
+                "tableToExport", "EXPOSURES",
+                "exportPath", Paths.get(resultsFolder, "EXPOSURES.shp")
+        ));
+
+        assertTrue(Paths.get(resultsFolder, "ACTIVITIES_RECEIVERS_LEVEL.shp").toFile().exists());
+        assertTrue(Paths.get(resultsFolder, "EXPOSURES.shp").toFile().exists());
         assertTrue(buildingsPath.toFile().exists());
         assertTrue(roadsPath.toFile().exists());
     }

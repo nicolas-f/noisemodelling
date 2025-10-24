@@ -166,7 +166,7 @@ public class OwsController {
     private void handleWFSGet(Context ctx) throws Exception {
         String request = ctx.queryParam("request");
         if ("GetCapabilities".equalsIgnoreCase(request)) {
-            try (InputStream xmlStream = getClass().getClassLoader().getResourceAsStream("org/noise_planet/noisemodelling/static/xmlFiles/wfs.xml")) {
+            try (InputStream xmlStream = getClass().getClassLoader().getResourceAsStream("static/xmlFiles/wfs.xml")) {
                 ctx.result(xmlStream.readAllBytes());
             }
         } else {
@@ -189,7 +189,7 @@ public class OwsController {
     private void handleWCSGet(Context ctx) throws Exception {
         String request = ctx.queryParam("request");
         if ("GetCapabilities".equalsIgnoreCase(request)) {
-            try (InputStream xmlStream = getClass().getClassLoader().getResourceAsStream("org/noise_planet/noisemodelling/static/xmlFiles/wcs.xml")) {
+            try (InputStream xmlStream = getClass().getClassLoader().getResourceAsStream("static/xmlFiles/wcs.xml")) {
                 ctx.result(xmlStream.readAllBytes());
             }
         } else {
