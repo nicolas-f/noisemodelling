@@ -221,11 +221,11 @@
                     <programs>
                         <program>
                             <mainClass>org.noise_planet.noisemodelling.webserver.Main</mainClass>
-                            <name>WebServer</name>
+                            <id>WebServer</id>
                         </program>
                         <program>
                             <mainClass>org.noise_planet.noisemodelling.scripts.Main</mainClass>
-                            <name>Scripts</name>
+                            <id>Scripts</id>
                         </program>
                     </programs>
                     <!-- This ensures all dependencies are included -->

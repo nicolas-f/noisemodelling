@@ -15,10 +15,8 @@
  * @Author Ignacio Soto Molina, Ministry for Ecological Transition (MITECO), Spain
  */
 
-package org.noise_planet.noisemodelling.wps.Acoustic_Tools
+package org.noise_planet.noisemodelling.scripts.Acoustic_Tools
 
-import geoserver.GeoServer
-import geoserver.catalog.Store
 import groovy.sql.Sql
 import org.geotools.jdbc.JDBCDataStore
 import org.h2gis.utilities.GeometryTableUtilities
@@ -89,28 +87,6 @@ outputs = [
                 type: String.class
         ]
 ]
-
-// -------------------
-// Open Connection to Geoserver (same pattern as Template)
-// -------------------
-static Connection openGeoserverDataStoreConnection(String dbName) {
-    if (dbName == null || dbName.isEmpty()) {
-        dbName = new GeoServer().catalog.getStoreNames().get(0)
-    }
-    Store store = new GeoServer().catalog.getStore(dbName)
-    JDBCDataStore jdbcDataStore = (JDBCDataStore) store.getDataStoreInfo().getDataStore(null)
-    return jdbcDataStore.getDataSource().getConnection()
-}
-
-// -------------------
-// run() wrapper (same pattern as Template)
-// -------------------
-def run(input) {
-    String dbName = "h2gisdb"
-    openGeoserverDataStoreConnection(dbName).withCloseable { Connection connection ->
-        return [result: exec(connection, input)]
-    }
-}
 
 // -------------------
 // Main function (same structure as Template.exec)
