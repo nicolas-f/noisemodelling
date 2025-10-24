@@ -192,9 +192,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope> Initialize self4j to output text to the console and a log file.
-            Create org/noise_planet/noisemodelling/... for resources.
-            Adapt the GitHub Actions workflow (which uses Gradle assembleDist) to the Maven version, since we no longer use Gradle.
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
