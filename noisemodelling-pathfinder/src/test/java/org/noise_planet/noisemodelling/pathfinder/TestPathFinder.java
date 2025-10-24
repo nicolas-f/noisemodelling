@@ -15,12 +15,13 @@ import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.noise_planet.noisemodelling.pathfinder.path.Scene;
-import org.noise_planet.noisemodelling.pathfinder.profilebuilder.ProfileBuilder;
+import org.noise_planet.noisemodelling.pathfinder.profilebuilder.*;
 import org.noise_planet.noisemodelling.pathfinder.utils.geometry.JTSUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -91,7 +92,7 @@ public class TestPathFinder {
         Coordinate p1 = new Coordinate(2, 6.5, 1.6);
         Coordinate p2 = new Coordinate(14, 6.5, 1.6);
 
-        List<Coordinate> ray = computeRays.computeSideHull(true, p1, p2, profileBuilder);
+        List<Coordinate> ray = computeRays.computeSideHull(true, p1, p2);
         int i = 0;
         assertEquals(0, p1.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(9, 11).distance(ray.get(i++)), 0.02);
@@ -99,7 +100,7 @@ public class TestPathFinder {
         assertEquals(0, new Coordinate(13, 10).distance(ray.get(i++)), 0.02);
         assertEquals(0, p2.distance(ray.get(i)), 0.02);
 
-        ray = computeRays.computeSideHull(false, p1, p2, profileBuilder);
+        ray = computeRays.computeSideHull(false, p1, p2);
         i = 0;
         assertEquals(0, p1.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(6, 5).distance(ray.get(i++)), 0.02);
@@ -107,7 +108,7 @@ public class TestPathFinder {
         assertEquals(0, new Coordinate(11, 4).distance(ray.get(i++)), 0.02);
         assertEquals(0, p2.distance(ray.get(i)), 0.02);
 
-        ray = computeRays.computeSideHull(false, p2, p1, profileBuilder);
+        ray = computeRays.computeSideHull(false, p2, p1);
         i = 0;
         assertEquals(0, p2.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(13, 10).distance(ray.get(i++)), 0.02);
@@ -115,7 +116,7 @@ public class TestPathFinder {
         assertEquals(0, new Coordinate(9, 11).distance(ray.get(i++)), 0.02);
         assertEquals(0, p1.distance(ray.get(i)), 0.02);
 
-        ray = computeRays.computeSideHull(true, p2, p1, profileBuilder);
+        ray = computeRays.computeSideHull(true, p2, p1);
         i = 0;
         assertEquals(0, p2.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(11, 4).distance(ray.get(i++)), 0.02);
@@ -188,27 +189,27 @@ public class TestPathFinder {
         assertEquals(0, new Coordinate(5, 5).distance(b1OffsetRoof.get(i++)), 2 * ProfileBuilder.wideAngleTranslationEpsilon);
 
 
-        List<Coordinate> ray = computeRays.computeSideHull(true, p1, p2, profileBuilder);
+        List<Coordinate> ray = computeRays.computeSideHull(true, p1, p2);
         i = 0;
         assertEquals(0, p1.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(5, 8).distance(ray.get(i++)), 0.02);
         assertEquals(0, p2.distance(ray.get(i++)), 0.02);
 
 
-        ray = computeRays.computeSideHull(false, p1, p2, profileBuilder);
+        ray = computeRays.computeSideHull(false, p1, p2);
         i = 0;
         assertEquals(0, p1.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(7, 5).distance(ray.get(i++)), 0.02);
         assertEquals(0, p2.distance(ray.get(i++)), 0.02);
 
 
-        ray = computeRays.computeSideHull(false, p2, p1, profileBuilder);
+        ray = computeRays.computeSideHull(false, p2, p1);
         i = 0;
         assertEquals(0, p2.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(5, 8).distance(ray.get(i++)), 0.02);
         assertEquals(0, p1.distance(ray.get(i++)), 0.02);
 
-        ray = computeRays.computeSideHull(true, p2, p1, profileBuilder);
+        ray = computeRays.computeSideHull(true, p2, p1);
         i = 0;
         assertEquals(0, p2.distance(ray.get(i++)), 0.02);
         assertEquals(0, new Coordinate(7, 5).distance(ray.get(i++)), 0.02);
@@ -240,13 +241,13 @@ public class TestPathFinder {
         Coordinate p1 = new Coordinate(4.5, 6.5, 1.6);
         Coordinate p2 = new Coordinate(14, 6.5, 1.6);
 
-        List<Coordinate> ray = computeRays.computeSideHull(true, p1, p2, profileBuilder);
+        List<Coordinate> ray = computeRays.computeSideHull(true, p1, p2);
         assertTrue(ray.isEmpty());
-        ray = computeRays.computeSideHull(false, p1, p2, profileBuilder);
+        ray = computeRays.computeSideHull(false, p1, p2);
         assertTrue(ray.isEmpty());
-        ray = computeRays.computeSideHull(false, p2, p1, profileBuilder);
+        ray = computeRays.computeSideHull(false, p2, p1);
         assertTrue(ray.isEmpty());
-        ray = computeRays.computeSideHull(true, p2, p1, profileBuilder);
+        ray = computeRays.computeSideHull(true, p2, p1);
         assertTrue(ray.isEmpty());
     }
 
@@ -278,8 +279,31 @@ public class TestPathFinder {
 
         PathFinder computeRays = new PathFinder(processData);
 
-        List<Coordinate> ray = computeRays.computeSideHull(false, receiver, source, profileBuilder);
+        List<Coordinate> ray = computeRays.computeSideHull(false, receiver, source);
         assertTrue(ray.isEmpty());
 
+    }
+
+    @Test
+    public void testMegaHeight() {
+        // create cut profile
+
+        CutProfile cutProfile = new CutProfile();
+        cutProfile.cutPoints.add(new CutPointSource(new Coordinate(843938.5179467835, 6519642.72565055, 0.05)));
+        cutProfile.cutPoints.add(new CutPointWall(13489, new Coordinate(844060.5664716291, 6519616.108346815, 1649.0),
+                new LineSegment(new Coordinate(844062.998140139, 6519613.740667035, 1649.0),
+                                new Coordinate(844060.4359994413, 6519616.235385661, 1649.0)),
+                Arrays.asList(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)));
+        cutProfile.cutPoints.add(new CutPointWall(13482, new Coordinate(844086.1833603203, 6519610.521613932, 1649.0),
+                new LineSegment(new Coordinate(844086.6283247864, 6519610.685363031, 1649.0),
+                                new Coordinate(844083.275146627, 6519609.451377079, 1649.0)),
+                Arrays.asList(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)));
+        cutProfile.cutPoints.add(new CutPointReceiver(new Coordinate(844089.2305787631, 6519609.85705253, 4.0)));
+        cutProfile.hasBuildingIntersection = true;
+
+        List<Coordinate> pts2d = cutProfile.computePts2D(true);
+        for(Coordinate pt : pts2d) {
+            assertFalse(Double.isNaN(pt.y));
+        }
     }
 }
