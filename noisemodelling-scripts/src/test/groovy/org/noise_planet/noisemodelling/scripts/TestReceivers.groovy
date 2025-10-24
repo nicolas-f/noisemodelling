@@ -28,11 +28,13 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.io.TempDir
 import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.geom.GeometryFactory
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Clean_Buildings_Table
 import org.noise_planet.noisemodelling.scripts.Receivers.*
 
+import java.nio.file.Path
 import java.sql.Connection
 
 import static org.junit.jupiter.api.Assertions.*
@@ -413,7 +415,7 @@ class TestReceivers{
 
 
     @Test
-    void testRegularGridFenceGeom() {
+    void testRegularGridFenceGeom(@TempDir Path testFolder) {
 
         def sql = new Sql(connection)
 
@@ -438,7 +440,7 @@ class TestReceivers{
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
 
-        SHPWrite.exportTable(connection, "build/tmp/regular.shp", "RECEIVERS", ValueBoolean.TRUE)
+        SHPWrite.exportTable(connection, new File(testFolder.toString(), "regular.shp").toString(), "RECEIVERS", ValueBoolean.TRUE)
 
     }
 

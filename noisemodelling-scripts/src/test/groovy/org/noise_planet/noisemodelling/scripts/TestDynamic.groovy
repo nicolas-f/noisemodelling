@@ -6,6 +6,10 @@ import org.h2gis.utilities.JDBCUtilities
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+
+import java.nio.file.Path
+
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.TestInfo
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
@@ -270,13 +274,7 @@ class TestDynamic{
      * as OSM input
      */
     @Test
-    void testDynamicFlowTutorialPoisson() {
-
-        File tutorialOutputFolder = new File("build/tmp/TUTO_DYNAMIC_POISSON/")
-
-        if(!tutorialOutputFolder.exists()) {
-            assertTrue(tutorialOutputFolder.mkdir())
-        }
+    void testDynamicFlowTutorialPoisson(@TempDir Path tutorialOutputFolder) {
 
         // Import the road network (with predicted traffic flows) and buildings from an OSM file
         new Import_OSM().exec(connection, [
@@ -290,12 +288,12 @@ class TestDynamic{
 
         // Export result table
         new Export_Table().exec(connection,
-                [exportPath: new File(tutorialOutputFolder, "BUILDINGS.shp").absolutePath,
+                [exportPath: new File(tutorialOutputFolder.toString(), "BUILDINGS.shp").absolutePath,
                  tableToExport: "BUILDINGS"])
 
         // Export result table
         new Export_Table().exec(connection,
-                [exportPath: new File(tutorialOutputFolder, "ROADS.shp").absolutePath,
+                [exportPath: new File(tutorialOutputFolder.toString(), "ROADS.shp").absolutePath,
                  tableToExport: "ROADS"])
 
         // Create a receiver grid

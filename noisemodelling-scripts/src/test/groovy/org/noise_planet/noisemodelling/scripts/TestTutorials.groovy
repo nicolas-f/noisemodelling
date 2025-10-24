@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.io.TempDir
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
 import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Create_Isosurface
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Display_Database
@@ -122,7 +123,7 @@ class TestTutorials{
 
 
     @Test
-    void testTutorialPointSource() {
+    void testTutorialPointSource(@TempDir Path testFolder) {
         Sql sql = new Sql(connection)
 
         // Check empty database
@@ -172,14 +173,14 @@ class TestTutorials{
         assertTrue(output.contains("PERIOD"))
 
         // Check export geojson
-        File testPath = new File("build/tmp/tutoPointSource.geojson")
+        File testPath =new File(testFolder.toString(), "tutoPointSource.geojson")
 
         if(testPath.exists()) {
             testPath.delete()
         }
 
         new Export_Table().exec(connection,
-                ["exportPath"   : "build/tmp/tutoPointSource.geojson",
+                ["exportPath"   : testPath.toString(),
                  "tableToExport": NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
 
 
@@ -187,7 +188,7 @@ class TestTutorials{
 
 
     @Test
-    void testTutorialPointSourceDirectivity() {
+    void testTutorialPointSourceDirectivity(@TempDir Path testFolder) {
         Logger logger = LoggerFactory.getLogger(TestTutorials.class)
 
         Sql sql = new Sql(connection)
@@ -231,8 +232,8 @@ class TestTutorials{
                                                           sourcesTableName : "POINT_SOURCE" , height: 1.6]));
 
 
-        new Export_Table().exec(connection, [exportPath:"build/tmp/receivers.shp", tableToExport: "RECEIVERS"])
-        new Export_Table().exec(connection, [exportPath:"build/tmp/TRIANGLES.shp", tableToExport: "TRIANGLES"])
+        new Export_Table().exec(connection, [exportPath: new File(testFolder.toString(), "receivers.shp").toString(), tableToExport: "RECEIVERS"])
+        new Export_Table().exec(connection, [exportPath: new File(testFolder.toString(), "TRIANGLES.shp").toString(), tableToExport: "TRIANGLES"])
 
         new Noise_level_from_source().exec(connection, [tableBuilding: "BUILDINGS", tableSources:"POINT_SOURCE",
                                                         tableReceivers : "RECEIVERS",
@@ -247,10 +248,10 @@ class TestTutorials{
                 [resultTable: NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME,
                  smoothCoefficient : 0.4])
 
-        new Export_Table().exec(connection, [exportPath:"build/tmp/CONTOURING_NOISE_MAP.shp", tableToExport: "CONTOURING_NOISE_MAP"])
+        new Export_Table().exec(connection, [exportPath:  new File(testFolder.toString(),"CONTOURING_NOISE_MAP.shp").toString(), tableToExport: "CONTOURING_NOISE_MAP"])
 
         new Export_Table().exec(connection,
-                [exportPath:"build/tmp/TUTO_DIR_RECEIVERS_LEVEL.shp",
+                [exportPath:  new File(testFolder.toString(), "TUTO_DIR_RECEIVERS_LEVEL.shp").toString(),
                  tableToExport: NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
 
         def columnNames = JDBCUtilities.getColumnNames(connection, NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME)
@@ -264,11 +265,9 @@ class TestTutorials{
 
 
     @Test
-    void testTutorialMatsim() {
+    void testTutorialMatsim(@TempDir Path tempDataDir) {
         Logger logger = LoggerFactory.getLogger(TestTutorials.class)
         Sql sql = new Sql(connection)
-
-        Path tempDataDir = new File("build/tmp/matsim/").toPath();
 
         Files.createDirectories(tempDataDir);
 

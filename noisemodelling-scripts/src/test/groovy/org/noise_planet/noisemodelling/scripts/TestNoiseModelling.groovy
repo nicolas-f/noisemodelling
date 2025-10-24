@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.io.TempDir
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Set_Height
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table
@@ -30,6 +31,7 @@ import org.noise_planet.noisemodelling.scripts.NoiseModelling.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.nio.file.Path
 import java.sql.Connection
 
 import static org.junit.jupiter.api.Assertions.*
@@ -68,7 +70,7 @@ class TestNoiseModelling {
     }
 
     @Test
-    void testRailWayEmissionFromDEN() {
+    void testRailWayEmissionFromDEN(@TempDir Path testFolder) {
 
         def sql = new Sql(connection)
 
@@ -125,7 +127,7 @@ class TestNoiseModelling {
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME+" WHERE PERIOD = 'D'")
 
         new Export_Table().exec(connection,
-                ["exportPath"   : "build/tmp/RECEIVERS_LEVEL.geojson",
+                ["exportPath"   : new File(testFolder.toString(), "RECEIVERS_LEVEL.geojson").toString(),
                  "tableToExport": NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
 
         assertEquals(688, receiversCount[0]["CPT"] as Integer)

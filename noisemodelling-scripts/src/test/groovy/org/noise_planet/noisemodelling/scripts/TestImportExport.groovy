@@ -20,6 +20,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.io.TempDir
 import org.locationtech.jts.geom.Geometry
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Display_Database
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Table_Visualization_Data
@@ -28,6 +29,7 @@ import org.noise_planet.noisemodelling.scripts.Import_and_Export.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.nio.file.Path
 import java.sql.Connection
 import java.sql.SQLException
 
@@ -150,10 +152,10 @@ class TestImportExport{
     }
 
     @Test
-    void testExportFile() {
+    void testExportFile(@TempDir Path tutorialOutputFolder) {
 
         // Check export geojson
-        File testPath = new File("build/tmp/test.geojson")
+        File testPath = new File(tutorialOutputFolder.toString() + "/test.geojson")
 
         if (testPath.exists()) {
             testPath.delete()
@@ -162,7 +164,7 @@ class TestImportExport{
         SHPRead.importTable(connection, TestImportExport.getResource("receivers.shp").getPath())
 
         String res = new Export_Table().exec(connection,
-                ["exportPath"   : "build/tmp/test.geojson",
+                ["exportPath"   : testPath.getAbsolutePath(),
                  "tableToExport": "RECEIVERS"])
 
 
