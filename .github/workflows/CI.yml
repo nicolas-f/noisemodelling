@@ -33,7 +33,7 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_SECRET_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Building
-        run: mvn test install javadoc:test-javadoc javadoc:jar -B
+        run: mvn test package javadoc:test-javadoc javadoc:jar -B
       - name: Maven Deploy
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
@@ -41,3 +41,17 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         if: ${{ (env.MAVEN_USERNAME != null) && (github.ref == 'refs/heads/main') }}
         run: mvn clean deploy -B
+      - name: Build NoiseModelling WebServer package with Maven
+        run: mvn -B clean package -DskipTests
+        working-directory: ./noisemodelling-scripts
+
+      - name: Unzip webserver artifacts
+        run: unzip target/NoiseModelling_*.zip -d NoiseModelling_WebServer
+        working-directory: ./noisemodelling-scripts
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: NoiseModelling_WebServer
+          path: noisemodelling-scripts/NoiseModelling_WebServer/
+

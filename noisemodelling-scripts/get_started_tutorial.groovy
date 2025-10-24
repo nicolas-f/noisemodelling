@@ -45,19 +45,19 @@ def exec(Connection connection, input) {
 
     // Step 4: Upload files to database
     runScript(connection, "noisemodelling/scripts/Import_and_Export/Import_File.groovy",
-            ["pathFile":"resources/scripts/ground_type.shp"])
+            ["pathFile":"resources/org/noise_planet/noisemodelling/scripts/ground_type.shp"])
 
     runScript(connection, "noisemodelling/scripts/Import_and_Export/Import_File.groovy",
-            ["pathFile":"resources/scripts/buildings.shp"])
+            ["pathFile":"resources/org/noise_planet/noisemodelling/scripts/buildings.shp"])
 
     runScript(connection, "noisemodelling/scripts/Import_and_Export/Import_File.groovy",
-            ["pathFile":"resources/scripts/receivers.shp"])
+            ["pathFile":"resources/org/noise_planet/noisemodelling/scripts/receivers.shp"])
 
     runScript(connection, "noisemodelling/scripts/Import_and_Export/Import_File.groovy",
-            ["pathFile":"resources/scripts/ROADS2.shp"])
+            ["pathFile":"resources/org/noise_planet/noisemodelling/scripts/ROADS2.shp"])
 
     runScript(connection, "noisemodelling/scripts/Import_and_Export/Import_File.groovy",
-            ["pathFile":"resources/scripts/dem.geojson"])
+            ["pathFile":"resources/org/noise_planet/noisemodelling/scripts/dem.geojson"])
 
     // Step 5: Run Calculation
     runScript(connection, "noisemodelling/scripts/NoiseModelling/Noise_level_from_traffic.groovy",

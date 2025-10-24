@@ -32,7 +32,7 @@ public class WpsScriptWrapper {
 
     Path devScripts = projectRoot.resolve("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts");
 
-    Path zipScripts = projectRoot.resolve("noisemodelling/scripts");
+    Path zipScripts = projectRoot.getParent().resolve("noisemodelling/scripts");
 
     /**
      * Default constructor for the WpsScriptWrapper class.
