@@ -1,29 +1,47 @@
 package org.noise_planet.noisemodelling.scripts
 
-import groovy.sql.Sql
+
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.utilities.JDBCUtilities
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.TestInfo
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
-import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Create_Isosurface;
-import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.DynamicIndicators;
-import org.noise_planet.noisemodelling.scripts.Database_Manager.Add_Primary_Key;
-import org.noise_planet.noisemodelling.scripts.Dynamic.Flow_2_Noisy_Vehicles;
-import org.noise_planet.noisemodelling.scripts.Dynamic.Ind_Vehicles_2_Noisy_Vehicles;
-import org.noise_planet.noisemodelling.scripts.Dynamic.Noise_From_Attenuation_Matrix;
-import org.noise_planet.noisemodelling.scripts.Dynamic.Point_Source_From_Network
-import org.noise_planet.noisemodelling.scripts.Dynamic.Split_Sources_Period;
+import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Create_Isosurface
+import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.DynamicIndicators
+import org.noise_planet.noisemodelling.scripts.Database_Manager.Add_Primary_Key
+import org.noise_planet.noisemodelling.scripts.Dynamic.*
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Set_Height
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table;
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File;
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_OSM;
+import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table
+import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
+import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_OSM
 import org.noise_planet.noisemodelling.scripts.NoiseModelling.Noise_level_from_source
 import org.noise_planet.noisemodelling.scripts.Receivers.Regular_Grid
 
+import java.sql.Connection
 
-class TestDynamic extends JdbcTestCase {
 
+
+class TestDynamic{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
     /**
      * as SUMO or SYMUVIA or Drone input
      */
+    @Test
     void testDynamicIndividualVehiclesTutorial() {
 
         // Import Buildings for your study area
@@ -114,6 +132,7 @@ class TestDynamic extends JdbcTestCase {
     /**
      * as OSM input
      */
+    @Test
     void testDynamicFlowTutorialProbabilisticWithAttenuationMatrix() {
 
         // Import the road network (with predicted traffic flows) and buildings from an OSM file
@@ -181,6 +200,7 @@ class TestDynamic extends JdbcTestCase {
     /**
      * as OSM input
      */
+    @Test
     void testDynamicFlowTutorialProba() {
 
         // Import the road network (with predicted traffic flows) and buildings from an OSM file
@@ -249,6 +269,7 @@ class TestDynamic extends JdbcTestCase {
     /**
      * as OSM input
      */
+    @Test
     void testDynamicFlowTutorialPoisson() {
 
         File tutorialOutputFolder = new File("build/tmp/TUTO_DYNAMIC_POISSON/")
@@ -357,6 +378,7 @@ class TestDynamic extends JdbcTestCase {
     /**
      * as MATSIM input
      */
+    @Test
     void testDynamicFluctuatingFlowTutorial() {
 
         // Import Buildings for your study area

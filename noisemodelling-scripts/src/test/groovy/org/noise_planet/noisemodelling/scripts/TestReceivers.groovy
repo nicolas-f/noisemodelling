@@ -13,25 +13,47 @@
 package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
+
 import org.h2.value.ValueBoolean
 import org.h2.value.ValueGeometry
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.functions.io.shp.SHPRead
 import org.h2gis.functions.io.shp.SHPWrite
 import org.h2gis.functions.spatial.crs.ST_SetSRID
 import org.h2gis.functions.spatial.crs.ST_Transform
 import org.h2gis.utilities.GeometryTableUtilities
+import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.TableLocation
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.geom.GeometryFactory
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Clean_Buildings_Table
-import org.noise_planet.noisemodelling.scripts.Receivers.Building_Grid
-import org.noise_planet.noisemodelling.scripts.Receivers.Building_Grid3D
-import org.noise_planet.noisemodelling.scripts.Receivers.Delaunay_Grid
-import org.noise_planet.noisemodelling.scripts.Receivers.Random_Grid
-import org.noise_planet.noisemodelling.scripts.Receivers.Regular_Grid
+import org.noise_planet.noisemodelling.scripts.Receivers.*
 
-class TestReceivers extends JdbcTestCase {
+import java.sql.Connection
 
+import static org.junit.jupiter.api.Assertions.*
+
+
+
+class TestReceivers{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
+    @Test
     void testBuildingGrid3D() {
         def sql = new Sql(connection)
 
@@ -54,13 +76,14 @@ class TestReceivers extends JdbcTestCase {
 
         def average_receiver_min_distance = sql.firstRow("SELECT AVG((select ST_3DLength(ST_MakeLine(R.THE_GEOM, RR.THE_GEOM)) dist from receivers rr where rr.pk_building = r.pk_building and r.pk != rr.pk ORDER BY ST_DISTANCE(R.THE_GEOM, RR.THE_GEOM) LIMIT 1)) avgdist from receivers r")[0] as Double
 
-        assertEquals(4.55, average_receiver_min_distance, 0.1)
+        assertEquals(4.55d, average_receiver_min_distance, 0.1d)
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
 
 
     }
 
+    @Test
     void testBuildingGrid3DNoFence() {
         def sql = new Sql(connection)
 
@@ -82,7 +105,7 @@ class TestReceivers extends JdbcTestCase {
 
         def average_receiver_min_distance = sql.firstRow("SELECT AVG((select ST_3DLength(ST_MakeLine(R.THE_GEOM, RR.THE_GEOM)) dist from receivers rr where rr.pk_building = r.pk_building and r.pk != rr.pk ORDER BY ST_DISTANCE(R.THE_GEOM, RR.THE_GEOM) LIMIT 1)) avgdist from receivers r")[0] as Double
 
-        assertEquals(4.55, average_receiver_min_distance, 0.1)
+        assertEquals(4.55d, average_receiver_min_distance, 0.1d)
 
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
@@ -95,6 +118,7 @@ class TestReceivers extends JdbcTestCase {
 
     }
 
+    @Test
     void testBuildingGrid3DWithPop() {
         def sql = new Sql(connection)
 
@@ -117,12 +141,13 @@ class TestReceivers extends JdbcTestCase {
 
         def average_receiver_min_distance = sql.firstRow("SELECT AVG((select ST_3DLength(ST_MakeLine(R.THE_GEOM, RR.THE_GEOM)) dist from receivers rr where rr.pk_building = r.pk_building and r.pk != rr.pk ORDER BY ST_DISTANCE(R.THE_GEOM, RR.THE_GEOM) LIMIT 1)) avgdist from receivers r")[0] as Double
 
-        assertEquals(4.55, average_receiver_min_distance, 0.1)
+        assertEquals(4.55d, average_receiver_min_distance, 0.1d)
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
 
     }
 
+    @Test
     void testBuildingGrid() {
         def sql = new Sql(connection)
 
@@ -149,11 +174,12 @@ class TestReceivers extends JdbcTestCase {
 
         def average_receiver_min_distance = sql.firstRow("SELECT AVG((select ST_DISTANCE(R.THE_GEOM, RR.THE_GEOM) dist from receivers rr where rr.build_pk = r.build_pk and r.pk != rr.pk ORDER BY ST_DISTANCE(R.THE_GEOM, RR.THE_GEOM) LIMIT 1)) avgdist from receivers r")[0] as Double
 
-        assertEquals(5, average_receiver_min_distance, 0.6)
+        assertEquals(5d, average_receiver_min_distance, 0.6d)
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
     }
 
+    @Test
     void testBuildingGridWithPop() {
         def sql = new Sql(connection)
 
@@ -174,12 +200,13 @@ class TestReceivers extends JdbcTestCase {
 
         def buildings_pop = sql.firstRow("SELECT sum(pop) from buildings where pk in (select distinct build_pk from receivers)")[0] as Double
 
-        assertEquals(0, buildings_pop - receivers_pop, 0.1);
+        assertEquals(0d, buildings_pop - receivers_pop, 0.1d);
 
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
 
     }
+    @Test
     void testBuildingGridFence() {
         def sql = new Sql(connection)
 
@@ -188,7 +215,7 @@ class TestReceivers extends JdbcTestCase {
         sql.execute("CREATE INDEX bheight ON BUILDINGS(height)")
 
         GeometryFactory f = new GeometryFactory();
-        def g = f.toGeometry(new Envelope(223556.5, 223765.7,6758256.91, 6758576.3))
+        def g = f.toGeometry(new Envelope(223556.5d, 223765.7d,6758256.91d, 6758576.3d))
         g.setSRID(2154)
         def gFence = ST_Transform.ST_Transform(connection, g, 4326)
         new Building_Grid().exec(connection,  ["tableBuilding" : "BUILDINGS",
@@ -196,7 +223,7 @@ class TestReceivers extends JdbcTestCase {
                                                "height" : 6,
                                                "fence" : gFence.toString()]) // in WPS Fence is an instance of geoscript.geom.Polygon not jts
 
-        assertTrue(sql.firstRow("SELECT count(*) cpt from receivers")[0] > 0)
+        assertTrue(sql.firstRow("SELECT count(*) cpt from receivers")[0] as Integer > 0)
 
         def receivers_pop = sql.firstRow("SELECT count(*) cpt from receivers r where not ST_Intersects(r.the_geom, :g)", [g : g])[0] as Integer
 
@@ -207,6 +234,7 @@ class TestReceivers extends JdbcTestCase {
 
     }
 
+    @Test
     void testDelaunayGridReduceExtent() {
         def sql = new Sql(connection)
 
@@ -222,9 +250,10 @@ class TestReceivers extends JdbcTestCase {
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
         Envelope envelope = GeometryTableUtilities.getEnvelope(connection, TableLocation.parse("RECEIVERS")).envelopeInternal
-        assertEquals(1127409.17, envelope.getArea(), 1.0)
+        assertEquals(1127409.17d, envelope.getArea(), 1.0d)
     }
 
+    @Test
     void testDelaunayGrid() {
         def sql = new Sql(connection)
 
@@ -248,11 +277,12 @@ class TestReceivers extends JdbcTestCase {
         def max_dist_a = res[0] as Double
         def max_dist_b = res[1] as Double
         def max_dist_c = res[2] as Double
-        assertEquals(0.0, max_dist_a, 1e-6d);
-        assertEquals(0.0, max_dist_b, 1e-6d);
-        assertEquals(0.0, max_dist_c, 1e-6d);
+        assertEquals(0.0d, max_dist_a, 1e-6d);
+        assertEquals(0.0d, max_dist_b, 1e-6d);
+        assertEquals(0.0d, max_dist_c, 1e-6d);
     }
 
+    @Test
     void testDelaunayGridClean() {
         def sql = new Sql(connection)
 
@@ -278,12 +308,13 @@ class TestReceivers extends JdbcTestCase {
         def max_dist_a = res[0] as Double
         def max_dist_b = res[1] as Double
         def max_dist_c = res[2] as Double
-        assertEquals(0.0, max_dist_a, 1e-6d);
-        assertEquals(0.0, max_dist_b, 1e-6d);
-        assertEquals(0.0, max_dist_c, 1e-6d);
+        assertEquals(0.0d, max_dist_a, 1e-6d);
+        assertEquals(0.0d, max_dist_b, 1e-6d);
+        assertEquals(0.0d, max_dist_c, 1e-6d);
     }
 
-    public void testRandomGrid() {
+    @Test
+    void testRandomGrid() {
 
         def sql = new Sql(connection)
 
@@ -298,7 +329,8 @@ class TestReceivers extends JdbcTestCase {
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
     }
 
-    public void testRandomGridFence() {
+    @Test
+    void testRandomGridFence() {
 
         def sql = new Sql(connection)
 
@@ -315,7 +347,8 @@ class TestReceivers extends JdbcTestCase {
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
     }
 
-    public void testRandomGridFence2() {
+    @Test
+    void testRandomGridFence2() {
 
         def sql = new Sql(connection)
 
@@ -342,8 +375,8 @@ class TestReceivers extends JdbcTestCase {
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
     }
 
-
-    public void testRegularGridFence() {
+    @Test
+    void testRegularGridFence() {
 
         def sql = new Sql(connection)
 
@@ -351,7 +384,7 @@ class TestReceivers extends JdbcTestCase {
         SHPRead.importTable(connection, TestReceivers.getResource("roads.shp").getPath())
 
         GeometryFactory f = new GeometryFactory();
-        def g = f.toGeometry(new Envelope(223556.5, 223765.7,6758256.91, 6758576.3))
+        def g = f.toGeometry(new Envelope(223556.5d, 223765.7d,6758256.91d, 6758576.3d))
         def gFence = ST_Transform.ST_Transform(connection, ST_SetSRID.setSRID(g, 2154), 4326)
 
         new Regular_Grid().exec(connection,  ["buildingTableName": "BUILDINGS",
@@ -362,7 +395,8 @@ class TestReceivers extends JdbcTestCase {
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("RECEIVERS")))
     }
 
-    public void testRegularGridFenceTable() {
+    @Test
+    void testRegularGridFenceTable() {
 
         def sql = new Sql(connection)
 
@@ -378,14 +412,13 @@ class TestReceivers extends JdbcTestCase {
     }
 
 
-    public void testRegularGridFenceGeom() {
+    @Test
+    void testRegularGridFenceGeom() {
 
         def sql = new Sql(connection)
 
         SHPRead.importTable(connection, TestReceivers.getResource("buildings.shp").getPath())
         SHPRead.importTable(connection, TestReceivers.getResource("roads.shp").getPath())
-
-        GeometryFactory f = new GeometryFactory();
 
         def g = ValueGeometry.get("SRID=2154;POLYGON ((223994.2 6757775.9, 223930.2 6757890.1, 223940.2 6757895.7, 224001.6 6757783.2, 223994.2 6757775.9))").geometry
         def gNoReceiver = ValueGeometry.get("SRID=2154;POLYGON ((223938 6757827.1, 223957.4 6757836.6, 223947.4 6757851.4, 223940.2 6757833, 223938 6757827.1))").geometry;
@@ -409,7 +442,8 @@ class TestReceivers extends JdbcTestCase {
 
     }
 
-    public void testRegularGridWithTriangleTable() {
+    @Test
+    void testRegularGridWithTriangleTable() {
 
         def sql = new Sql(connection)
 

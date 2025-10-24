@@ -13,11 +13,17 @@
 package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
+
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.functions.io.shp.SHPRead
 import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.TableLocation
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
+import static org.junit.jupiter.api.Assertions.*;
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
 import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Add_Laeq_Leq_columns
 import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Create_Isosurface
@@ -27,15 +33,31 @@ import org.noise_planet.noisemodelling.scripts.Receivers.Delaunay_Grid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-
+import java.sql.Connection
 import java.sql.SQLException
 
 /**
  * Test parsing of zip file using H2GIS database
  */
-class TestAcousticTools extends JdbcTestCase {
-    Logger LOGGER = LoggerFactory.getLogger(TestAcousticTools.class)
 
+
+class TestAcousticTools {
+    Logger LOGGER = LoggerFactory.getLogger(TestAcousticTools.class)
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
+
+    @Test
     void testAddLeqLaeqColumns1() {
 
         SHPRead.importTable(connection, TestAcousticTools.getResource("ROADS2.shp").getPath())
@@ -44,12 +66,13 @@ class TestAcousticTools extends JdbcTestCase {
                 ["tableRoads": "ROADS2"])
 
         String res = new Add_Laeq_Leq_columns().exec(connection,
-                ["prefix": "HZ",
+                ["prefix"   : "HZ",
                  "tableName": "LW_ROADS"])
 
         assertEquals("This table does not contain column with this suffix : HZ", res)
     }
 
+    @Test
     void testAddLeqLaeqColumns2() {
 
         SHPRead.importTable(connection, TestAcousticTools.getResource("ROADS2.shp").getPath())
@@ -58,7 +81,7 @@ class TestAcousticTools extends JdbcTestCase {
                 ["tableRoads": "ROADS2"])
 
         String res = new Add_Laeq_Leq_columns().exec(connection,
-                ["prefix": "HZD",
+                ["prefix"   : "HZD",
                  "tableName": "LW_ROADS"])
 
         List<String> fields = JDBCUtilities.getColumnNames(connection, "LW_ROADS")
@@ -66,6 +89,7 @@ class TestAcousticTools extends JdbcTestCase {
         assertEquals(true, fields.contains("LEQ"))
     }
 
+    @Test
     void testCreateIsosurface() {
         def sql = new Sql(connection)
 
@@ -74,18 +98,18 @@ class TestAcousticTools extends JdbcTestCase {
         sql.execute("CREATE SPATIAL INDEX ON BUILDINGS(THE_GEOM)")
         sql.execute("CREATE SPATIAL INDEX ON ROADS2(THE_GEOM)")
 
-        new Delaunay_Grid().exec(connection, ["buildingTableName": "BUILDINGS",
-                                              "sourcesTableName" : "ROADS2",
+        new Delaunay_Grid().exec(connection, ["buildingTableName"  : "BUILDINGS",
+                                              "sourcesTableName"   : "ROADS2",
                                               "sourceDensification": 0]);
 
 
-        new Noise_level_from_traffic().exec(connection, [tableBuilding :"BUILDINGS", tableRoads: "ROADS2",
-                                                         tableReceivers: "RECEIVERS",
-                                                         confMaxSrcDist:100, confTemperature:20, confHumidity:50,
+        new Noise_level_from_traffic().exec(connection, [tableBuilding                  : "BUILDINGS", tableRoads: "ROADS2",
+                                                         tableReceivers                 : "RECEIVERS",
+                                                         confMaxSrcDist                 : 100, confTemperature: 20, confHumidity: 50,
                                                          confFavorableOccurrencesDefault: "0.5, 0.1, 0.1, 0.1, 0.2, 0.5," +
                                                                  " 0.7, 0.8, 0.8, 0.6, 0.5, 0.5, 0.5, 0.5, 0.5, 0.2"])
 
-        new Create_Isosurface().exec(connection, [resultTable : NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
+        new Create_Isosurface().exec(connection, [resultTable: NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME])
 
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse("ROADS2")))
         assertEquals(2154, GeometryTableUtilities.getSRID(connection, TableLocation.parse(NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME)))
@@ -103,6 +127,7 @@ class TestAcousticTools extends JdbcTestCase {
         assertTrue(fieldValues.contains("7"));
     }
 
+    @Test
     void testUpdateZ() throws SQLException, IOException {
         SHPRead.importTable(connection, TestAcousticTools.getResource("receivers.shp").getPath())
         def st = new Sql(connection)

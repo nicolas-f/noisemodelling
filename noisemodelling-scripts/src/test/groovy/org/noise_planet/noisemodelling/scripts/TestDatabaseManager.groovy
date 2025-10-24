@@ -12,8 +12,10 @@
 
 package org.noise_planet.noisemodelling.scripts
 
+
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.functions.io.shp.SHPRead
-import org.junit.Test
+import org.h2gis.utilities.JDBCUtilities
 import org.locationtech.jts.geom.MultiPoint
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Add_Primary_Key
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Clean_Database
@@ -23,13 +25,36 @@ import org.noise_planet.noisemodelling.scripts.Database_Manager.Table_Visualizat
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Table_Visualization_Map
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
+
+import java.sql.Connection
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.Statement
 
 /**
  * Test parsing of zip file using H2GIS database
  */
-class TestDatabaseManager extends JdbcTestCase {
+
+
+class TestDatabaseManager{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
     Logger LOGGER = LoggerFactory.getLogger(TestDatabaseManager.class)
 
     @Test

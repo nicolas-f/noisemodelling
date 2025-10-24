@@ -12,34 +12,51 @@
 
 package org.noise_planet.noisemodelling.scripts
 
-import groovy.sql.Sql
+
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.functions.io.shp.SHPRead
-import org.junit.Assert
-import org.junit.Test
+import org.h2gis.utilities.JDBCUtilities
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
+import org.locationtech.jts.geom.Geometry
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Display_Database
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Table_Visualization_Data
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Table_Visualization_Map
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_Asc_Folder
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_OSM
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_OSM_Pedestrian
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_Symuvia
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_Asc_File
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_Folder
+import org.noise_planet.noisemodelling.scripts.Import_and_Export.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.sql.Connection
+import java.sql.SQLException
+
+import static org.junit.jupiter.api.Assertions.*
 /**
  * Test parsing of zip file using H2GIS database
  */
-class TestImportExport extends JdbcTestCase {
+
+
+class TestImportExport{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
     Logger LOGGER = LoggerFactory.getLogger(TestImportExport.class)
 
     @Test
     void testImportSymuvia() {
         // Check empty database
-        Object res = new Display_Database().exec(connection, [])
+        String res = new Display_Database().exec(connection, [])
 
         assertEquals("", res)
         // Import OSM file
@@ -68,17 +85,17 @@ class TestImportExport extends JdbcTestCase {
 
     @Test
     void testImportFile2() {
-        try {
+        Exception exception = assertThrows(Exception.class, () -> {
             String res = new Import_File().exec(connection,
                     ["pathFile" : TestImportExport.getResource("receivers.shp").getPath(),
                      "inputSRID": "4362",
                      "tableName": "receivers"])
-        }
-        catch (Exception e) {
-            String expectedMessage = "ERROR : The table already has a different SRID than the one you gave.";
-            Assert.assertEquals("Exception message must be correct", expectedMessage, e.getMessage());
-        }
+        });
 
+        String expectedMessage = "ERROR : The table already has a different SRID than the one you gave.";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
@@ -113,9 +130,9 @@ class TestImportExport extends JdbcTestCase {
                 ["pathFolder": file.getPath(),
                  "inputSRID" : 2154])
 
-        res = new Table_Visualization_Map().exec(connection, ["tableName": "DEM"]).getNumPoints()
+        Geometry g = new Table_Visualization_Map().exec(connection, ["tableName": "DEM"]) as Geometry
 
-        assertTrue(res == "598")
+        assertTrue(g.getNumPoints() == 598)
     }
 
     @Test

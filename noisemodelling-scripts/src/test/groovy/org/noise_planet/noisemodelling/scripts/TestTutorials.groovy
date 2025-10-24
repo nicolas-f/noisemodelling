@@ -13,18 +13,20 @@
 package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
+
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.utilities.GeometryTableUtilities
 import org.h2gis.utilities.JDBCUtilities
 import org.h2gis.utilities.TableLocation
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
 import org.noise_planet.noisemodelling.scripts.Acoustic_Tools.Create_Isosurface
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Display_Database
 import org.noise_planet.noisemodelling.scripts.Database_Manager.Table_Visualization_Data
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Agent_Exposure
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Import_Activities
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Noise_From_Attenuation_Matrix_MatSim
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Receivers_From_Activities_Closest
-import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.Traffic_From_Events
+import org.noise_planet.noisemodelling.scripts.Experimental_Matsim.*
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_Folder
@@ -39,17 +41,33 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.sql.Connection
 import java.util.zip.ZipFile
 
-import static org.junit.jupiter.api.Assertions.assertTrue
-
+import static org.junit.jupiter.api.Assertions.*
 /**
  * Test parsing of zip file using H2GIS database
  */
-class TestTutorials extends JdbcTestCase {
+
+class TestTutorials{
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
+
     Logger LOGGER = LoggerFactory.getLogger(TestTutorials.class)
 
 
+    @Test
     void testTutorialGetStarted() {
         Sql sql = new Sql(connection)
 
@@ -103,6 +121,7 @@ class TestTutorials extends JdbcTestCase {
 
 
 
+    @Test
     void testTutorialPointSource() {
         Sql sql = new Sql(connection)
 
@@ -167,6 +186,7 @@ class TestTutorials extends JdbcTestCase {
     }
 
 
+    @Test
     void testTutorialPointSourceDirectivity() {
         Logger logger = LoggerFactory.getLogger(TestTutorials.class)
 
@@ -207,7 +227,7 @@ class TestTutorials extends JdbcTestCase {
         assertTrue(res.contains("DEM"))
 
         // generate a grid of receivers using the buildings as envelope
-        logger.info(new Delaunay_Grid().exec(connection, [maxArea: 60, tableBuilding: "BUILDINGS",
+       logger.info(new Delaunay_Grid().exec(connection, [maxArea: 60, tableBuilding: "BUILDINGS",
                                                           sourcesTableName : "POINT_SOURCE" , height: 1.6]));
 
 
@@ -243,6 +263,7 @@ class TestTutorials extends JdbcTestCase {
     }
 
 
+    @Test
     void testTutorialMatsim() {
         Logger logger = LoggerFactory.getLogger(TestTutorials.class)
         Sql sql = new Sql(connection)

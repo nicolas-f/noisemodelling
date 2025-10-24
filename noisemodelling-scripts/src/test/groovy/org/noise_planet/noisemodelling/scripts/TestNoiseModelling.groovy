@@ -13,29 +13,49 @@
 package org.noise_planet.noisemodelling.scripts
 
 import groovy.sql.Sql
+
 import org.h2.value.ValueBoolean
-import org.h2gis.functions.io.dbf.DBFRead
+import org.h2gis.functions.factory.H2GISDBFactory
 import org.h2gis.functions.io.shp.SHPRead
 import org.h2gis.utilities.JDBCUtilities
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.noise_planet.noisemodelling.jdbc.NoiseMapDatabaseParameters
 import org.noise_planet.noisemodelling.scripts.Geometric_Tools.Set_Height
-import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
 import org.noise_planet.noisemodelling.scripts.Import_and_Export.Export_Table
-import org.noise_planet.noisemodelling.scripts.NoiseModelling.GenerateAtmosphericSettingsTemplate
-import org.noise_planet.noisemodelling.scripts.NoiseModelling.Noise_level_from_source
-import org.noise_planet.noisemodelling.scripts.NoiseModelling.Noise_level_from_traffic
-import org.noise_planet.noisemodelling.scripts.NoiseModelling.Railway_Emission_from_Traffic
-import org.noise_planet.noisemodelling.scripts.NoiseModelling.Road_Emission_from_Traffic
+import org.noise_planet.noisemodelling.scripts.Import_and_Export.Import_File
+import org.noise_planet.noisemodelling.scripts.NoiseModelling.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.sql.Connection
+
+import static org.junit.jupiter.api.Assertions.*
 /**
  * Test parsing of zip file using H2GIS database
  */
-class TestNoiseModelling extends JdbcTestCase {
+
+
+class TestNoiseModelling {
     Logger LOGGER = LoggerFactory.getLogger(TestNoiseModelling.class)
+    private Connection connection;
+
+    @BeforeEach
+    void tearUp(TestInfo testInfo) throws Exception {
+        connection = JDBCUtilities.wrapConnection(H2GISDBFactory.createSpatialDataBase(testInfo.getDisplayName(), true, ""));
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+    }
 
 
+    @Test
     void testRoadEmissionFromDEN() {
 
         SHPRead.importTable(connection, TestDatabaseManager.getResource("ROADS2.shp").getPath())
@@ -47,6 +67,7 @@ class TestNoiseModelling extends JdbcTestCase {
         assertEquals("Calculation Done ! The table LW_ROADS has been created.", res)
     }
 
+    @Test
     void testRailWayEmissionFromDEN() {
 
         def sql = new Sql(connection)
@@ -110,6 +131,7 @@ class TestNoiseModelling extends JdbcTestCase {
         assertEquals(688, receiversCount[0]["CPT"] as Integer)
     }
 
+    @Test
     void testLdayFromTraffic() {
 
         SHPRead.importTable(connection, TestNoiseModelling.getResource("ROADS2.shp").getPath())
@@ -139,56 +161,57 @@ class TestNoiseModelling extends JdbcTestCase {
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'D'")
 
-        assertEquals(87, leqs[0] as Double, 2.0)
-        assertEquals(78, leqs[1] as Double, 2.0)
-        assertEquals(78, leqs[2] as Double, 2.0)
-        assertEquals(79, leqs[3] as Double, 2.0)
-        assertEquals(82, leqs[4] as Double, 2.0)
-        assertEquals(80, leqs[5] as Double, 2.0)
-        assertEquals(71, leqs[6] as Double, 2.0)
-        assertEquals(62, leqs[7] as Double, 2.0)
+        assertEquals(87d, leqs[0] as Double, 2.0d)
+        assertEquals(78d, leqs[1] as Double, 2.0d)
+        assertEquals(78d, leqs[2] as Double, 2.0d)
+        assertEquals(79d, leqs[3] as Double, 2.0d)
+        assertEquals(82d, leqs[4] as Double, 2.0d)
+        assertEquals(80d, leqs[5] as Double, 2.0d)
+        assertEquals(71d, leqs[6] as Double, 2.0d)
+        assertEquals(62d, leqs[7] as Double, 2.0d)
 
         leqs = sql.firstRow("SELECT MAX(HZ63) , MAX(HZ125), MAX(HZ250), MAX(HZ500), MAX(HZ1000)," +
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'E'")
 
-        assertEquals(81, leqs[0] as Double, 2.0)
-        assertEquals(74, leqs[1] as Double, 2.0)
-        assertEquals(73, leqs[2] as Double, 2.0)
-        assertEquals(75, leqs[3] as Double, 2.0)
-        assertEquals(77, leqs[4] as Double, 2.0)
-        assertEquals(75, leqs[5] as Double, 2.0)
-        assertEquals(66, leqs[6] as Double, 2.0)
-        assertEquals(57, leqs[7] as Double, 2.0)
+        assertEquals(81d, leqs[0] as Double, 2.0d)
+        assertEquals(74d, leqs[1] as Double, 2.0d)
+        assertEquals(73d, leqs[2] as Double, 2.0d)
+        assertEquals(75d, leqs[3] as Double, 2.0d)
+        assertEquals(77d, leqs[4] as Double, 2.0d)
+        assertEquals(75d, leqs[5] as Double, 2.0d)
+        assertEquals(66d, leqs[6] as Double, 2.0d)
+        assertEquals(57d, leqs[7] as Double, 2.0d)
 
         leqs = sql.firstRow("SELECT MAX(HZ63) , MAX(HZ125), MAX(HZ250), MAX(HZ500), MAX(HZ1000)," +
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'N'")
 
-        assertEquals(78, leqs[0] as Double, 2.0)
-        assertEquals(71, leqs[1] as Double, 2.0)
-        assertEquals(70, leqs[2] as Double, 2.0)
-        assertEquals(72, leqs[3] as Double, 2.0)
-        assertEquals(74, leqs[4] as Double, 2.0)
-        assertEquals(72, leqs[5] as Double, 2.0)
-        assertEquals(63, leqs[6] as Double, 2.0)
-        assertEquals(54, leqs[7] as Double, 2.0)
+        assertEquals(78d, leqs[0] as Double, 2.0d)
+        assertEquals(71d, leqs[1] as Double, 2.0d)
+        assertEquals(70d, leqs[2] as Double, 2.0d)
+        assertEquals(72d, leqs[3] as Double, 2.0d)
+        assertEquals(74d, leqs[4] as Double, 2.0d)
+        assertEquals(72d, leqs[5] as Double, 2.0d)
+        assertEquals(63d, leqs[6] as Double, 2.0d)
+        assertEquals(54d, leqs[7] as Double, 2.0d)
 
         leqs = sql.firstRow("SELECT MAX(HZ63) , MAX(HZ125), MAX(HZ250), MAX(HZ500), MAX(HZ1000)," +
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'DEN'")
 
-        assertEquals(87, leqs[0] as Double, 2.0)
-        assertEquals(79, leqs[1] as Double, 2.0)
-        assertEquals(79, leqs[2] as Double, 2.0)
-        assertEquals(80, leqs[3] as Double, 2.0)
-        assertEquals(83, leqs[4] as Double, 2.0)
-        assertEquals(81, leqs[5] as Double, 2.0)
-        assertEquals(72, leqs[6] as Double, 2.0)
-        assertEquals(63, leqs[7] as Double, 2.0)
+        assertEquals(87d, leqs[0] as Double, 2.0d)
+        assertEquals(79d, leqs[1] as Double, 2.0d)
+        assertEquals(79d, leqs[2] as Double, 2.0d)
+        assertEquals(80d, leqs[3] as Double, 2.0d)
+        assertEquals(83d, leqs[4] as Double, 2.0d)
+        assertEquals(81d, leqs[5] as Double, 2.0d)
+        assertEquals(72d, leqs[6] as Double, 2.0d)
+        assertEquals(63d, leqs[7] as Double, 2.0d)
     }
 
 
+    @Test
     void testLdayFromTrafficWithBuildingsZ() {
 
         def sql = new Sql(connection)
@@ -225,56 +248,57 @@ class TestNoiseModelling extends JdbcTestCase {
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'D'")
 
-        assertEquals(87, leqs[0] as Double, 2.0)
-        assertEquals(78, leqs[1] as Double, 2.0)
-        assertEquals(78, leqs[2] as Double, 2.0)
-        assertEquals(79, leqs[3] as Double, 2.0)
-        assertEquals(82, leqs[4] as Double, 2.0)
-        assertEquals(80, leqs[5] as Double, 2.0)
-        assertEquals(71, leqs[6] as Double, 2.0)
-        assertEquals(62, leqs[7] as Double, 2.0)
+        assertEquals(87d, leqs[0] as Double, 2.0d)
+        assertEquals(78d, leqs[1] as Double, 2.0d)
+        assertEquals(78d, leqs[2] as Double, 2.0d)
+        assertEquals(79d, leqs[3] as Double, 2.0d)
+        assertEquals(82d, leqs[4] as Double, 2.0d)
+        assertEquals(80d, leqs[5] as Double, 2.0d)
+        assertEquals(71d, leqs[6] as Double, 2.0d)
+        assertEquals(62d, leqs[7] as Double, 2.0d)
 
         leqs = sql.firstRow("SELECT MAX(HZ63) , MAX(HZ125), MAX(HZ250), MAX(HZ500), MAX(HZ1000)," +
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'E'")
 
-        assertEquals(81, leqs[0] as Double, 2.0)
-        assertEquals(74, leqs[1] as Double, 2.0)
-        assertEquals(73, leqs[2] as Double, 2.0)
-        assertEquals(75, leqs[3] as Double, 2.0)
-        assertEquals(77, leqs[4] as Double, 2.0)
-        assertEquals(75, leqs[5] as Double, 2.0)
-        assertEquals(66, leqs[6] as Double, 2.0)
-        assertEquals(57, leqs[7] as Double, 2.0)
+        assertEquals(81d, leqs[0] as Double, 2.0d)
+        assertEquals(74d, leqs[1] as Double, 2.0d)
+        assertEquals(73d, leqs[2] as Double, 2.0d)
+        assertEquals(75d, leqs[3] as Double, 2.0d)
+        assertEquals(77d, leqs[4] as Double, 2.0d)
+        assertEquals(75d, leqs[5] as Double, 2.0d)
+        assertEquals(66d, leqs[6] as Double, 2.0d)
+        assertEquals(57d, leqs[7] as Double, 2.0d)
 
         leqs = sql.firstRow("SELECT MAX(HZ63) , MAX(HZ125), MAX(HZ250), MAX(HZ500), MAX(HZ1000)," +
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'N'")
 
-        assertEquals(78, leqs[0] as Double, 2.0)
-        assertEquals(71, leqs[1] as Double, 2.0)
-        assertEquals(70, leqs[2] as Double, 2.0)
-        assertEquals(72, leqs[3] as Double, 2.0)
-        assertEquals(74, leqs[4] as Double, 2.0)
-        assertEquals(72, leqs[5] as Double, 2.0)
-        assertEquals(63, leqs[6] as Double, 2.0)
-        assertEquals(54, leqs[7] as Double, 2.0)
+        assertEquals(78d, leqs[0] as Double, 2.0d)
+        assertEquals(71d, leqs[1] as Double, 2.0d)
+        assertEquals(70d, leqs[2] as Double, 2.0d)
+        assertEquals(72d, leqs[3] as Double, 2.0d)
+        assertEquals(74d, leqs[4] as Double, 2.0d)
+        assertEquals(72d, leqs[5] as Double, 2.0d)
+        assertEquals(63d, leqs[6] as Double, 2.0d)
+        assertEquals(54d, leqs[7] as Double, 2.0d)
 
         leqs = sql.firstRow("SELECT MAX(HZ63) , MAX(HZ125), MAX(HZ250), MAX(HZ500), MAX(HZ1000)," +
                 " MAX(HZ2000), MAX(HZ4000), MAX(HZ8000) FROM " +
                 NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " WHERE PERIOD = 'DEN'")
 
-        assertEquals(87, leqs[0] as Double, 2.0)
-        assertEquals(79, leqs[1] as Double, 2.0)
-        assertEquals(79, leqs[2] as Double, 2.0)
-        assertEquals(80, leqs[3] as Double, 2.0)
-        assertEquals(83, leqs[4] as Double, 2.0)
-        assertEquals(81, leqs[5] as Double, 2.0)
-        assertEquals(72, leqs[6] as Double, 2.0)
-        assertEquals(63, leqs[7] as Double, 2.0)
+        assertEquals(87d, leqs[0] as Double, 2.0d)
+        assertEquals(79d, leqs[1] as Double, 2.0d)
+        assertEquals(79d, leqs[2] as Double, 2.0d)
+        assertEquals(80d, leqs[3] as Double, 2.0d)
+        assertEquals(83d, leqs[4] as Double, 2.0d)
+        assertEquals(81d, leqs[5] as Double, 2.0d)
+        assertEquals(72d, leqs[6] as Double, 2.0d)
+        assertEquals(63d, leqs[7] as Double, 2.0d)
     }
 
 
+    @Test
     void testLdenFromEmission() {
 
         SHPRead.importTable(connection, TestNoiseModelling.getResource("ROADS2.shp").getPath())
@@ -301,6 +325,7 @@ class TestNoiseModelling extends JdbcTestCase {
         assertTrue(res.contains(NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME))
     }
 
+    @Test
     void testLdenFromEmission1khz() {
 
         SHPRead.importTable(connection, TestNoiseModelling.getResource("ROADS2.shp").getPath())
@@ -337,6 +362,7 @@ class TestNoiseModelling extends JdbcTestCase {
         assertArrayEquals(["IDRECEIVER","PERIOD","THE_GEOM", "HZ1000", "LAEQ", "LEQ"].toArray(), fields.toArray())
     }
 
+    @Test
     void testAtmosphericSettings() {
 
         Sql sql = new Sql(connection)
