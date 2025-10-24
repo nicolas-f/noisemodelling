@@ -2,7 +2,13 @@ package org.noise_planet.noisemodelling.webserver;
 
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.*;
 import java.util.concurrent.Executors;
 
@@ -18,16 +24,20 @@ public class Main {
      * @throws IOException If an I/O error occurs during file operations or server setup.
      */
     public static void main(String[] args) throws IOException {
+        final Logger logger = LoggerFactory.getLogger(Main.class);
+        PropertyConfigurator.configure(org.noise_planet.noisemodelling.scripts.Main.class.getClassLoader().getResource("org/noise_planet/noisemodelling/scripts/log4j.properties"));
 
         Path scriptsDir = Path.of(System.getProperty("user.dir"));
-        if (!Files.exists(scriptsDir)) {
-            Path devDir = Paths.get("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts");
-            if (Files.exists(devDir)) {
-                scriptsDir = devDir;
-            } else {
-                System.out.println(scriptsDir);
-                throw new RuntimeException("Impossible de trouver le répertoire des scripts !");
-            }
+
+        Path devScripts = scriptsDir.resolve("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts");
+
+        Path zipScripts = scriptsDir.getParent().resolve("noisemodelling/scripts");
+        if (Files.exists(devScripts)) {
+            scriptsDir = devScripts;
+        } else if (Files.exists(zipScripts)) {
+            scriptsDir = zipScripts;
+        } else {
+            throw new RuntimeException("Scripts not found in expected locations");
         }
 
         WatchService watchService = FileSystems.getDefault().newWatchService();
@@ -48,8 +58,13 @@ public class Main {
         OwsController owsController = new OwsController();
 
         Javalin app = Javalin.create(config -> {
-            config.staticFiles.add("static/wpsbuilder", Location.CLASSPATH);
+            config.staticFiles.add("org/noise_planet/noisemodelling/static/wpsbuilder", Location.CLASSPATH);
         }).start(8000);
+
+        int port = app.port();
+        String url = "http://localhost:" + port + "/";
+        logger.info("Start NoiseModelling: " + url);
+        openBrowser(url);
 
         app.get("/ows", owsController::handleGet);
         app.post("/ows", owsController::handleWPSPost);
@@ -88,5 +103,15 @@ public class Main {
                 e.printStackTrace();
             }
         }));
+    }
+
+    public static void openBrowser(String url) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI(url));
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to open the browser : " + e.getMessage());
+        }
     }
 }
