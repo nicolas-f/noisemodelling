@@ -6,7 +6,7 @@
 # Step 4: Upload files to database
 # create (or load existing) database and load a shape file into the database
 ./bin/Scripts -w ./ -s noisemodelling/scripts/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/scripts/ground_type.shp
-./bin/Scripts -w ./ -s noisemodelling/scripts/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/scripts/wps/buildings.shp
+./bin/Scripts -w ./ -s noisemodelling/scripts/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/scripts/buildings.shp
 ./bin/Scripts -w ./ -s noisemodelling/scripts/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/scripts/receivers.shp
 ./bin/Scripts -w ./ -s noisemodelling/scripts/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/scripts/ROADS2.shp
 ./bin/Scripts -w ./ -s noisemodelling/scripts/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/scripts/dem.geojson

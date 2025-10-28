@@ -20,7 +20,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.RollingFileAppender;
@@ -137,7 +136,7 @@ public class Main {
 
 
     public static void main(String... args) throws Exception {
-        PropertyConfigurator.configure(Main.class.getClassLoader().getResource("scripts/log4j.properties"));
+        PropertyConfigurator.configure(Main.class.getResource("static/log4j.properties"));
 
         // Arguments parser
         Options options = new Options();

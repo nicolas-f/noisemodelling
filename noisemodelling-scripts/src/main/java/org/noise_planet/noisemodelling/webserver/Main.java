@@ -25,8 +25,6 @@ public class Main {
      */
     public static void main(String[] args) throws IOException {
         final Logger logger = LoggerFactory.getLogger(Main.class);
-        PropertyConfigurator.configure(org.noise_planet.noisemodelling.scripts.Main.class.getClassLoader().getResource("org/noise_planet/noisemodelling/scripts/log4j.properties"));
-
         Path scriptsDir = Path.of(System.getProperty("user.dir"));
 
         Path devScripts = scriptsDir.resolve("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts");
@@ -39,6 +37,7 @@ public class Main {
         } else {
             throw new RuntimeException("Scripts not found in expected locations");
         }
+        PropertyConfigurator.configure(org.noise_planet.noisemodelling.scripts.Main.class.getResource("static/log4j.properties"));
 
         WatchService watchService = FileSystems.getDefault().newWatchService();
 
@@ -58,7 +57,7 @@ public class Main {
         OwsController owsController = new OwsController();
 
         Javalin app = Javalin.create(config -> {
-            config.staticFiles.add("org/noise_planet/noisemodelling/static/wpsbuilder", Location.CLASSPATH);
+            config.staticFiles.add("org/noise_planet/noisemodelling/scripts/static/wpsbuilder", Location.CLASSPATH);
         }).start(8000);
 
         int port = app.port();

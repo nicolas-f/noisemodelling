@@ -43,7 +43,7 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}/src/test/resources/org/noise_planet/noisemodelling/scripts/static</directory>
+            <directory>${project.basedir}/src/test/resources</directory>
             <outputDirectory>/resources</outputDirectory>
         </fileSet>
     </fileSets>
