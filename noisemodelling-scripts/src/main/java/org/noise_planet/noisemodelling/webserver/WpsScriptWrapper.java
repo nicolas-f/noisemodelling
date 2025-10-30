@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,11 +29,7 @@ public class WpsScriptWrapper {
      * grouped, and processed within the WpsScriptWrapper class.
      */
     private Path scriptsRoot;
-    Path projectRoot = Path.of(System.getProperty("user.dir"));
-
-    Path devScripts = projectRoot.resolve("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts");
-
-    Path zipScripts = projectRoot.getParent().resolve("noisemodelling/scripts");
+    Path projectRoot = Paths.get(System.getProperty("user.dir"));
 
     /**
      * Default constructor for the WpsScriptWrapper class.
@@ -44,6 +41,12 @@ public class WpsScriptWrapper {
      * "noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts".
      */
     public WpsScriptWrapper() {
+        while (!Files.exists(projectRoot.resolve("noisemodelling-scripts")) && projectRoot.getParent() != null) {
+            projectRoot = projectRoot.getParent();
+        }
+        Path devScripts = projectRoot.resolve(Paths.get("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts")).normalize();
+
+        Path zipScripts = projectRoot.getParent().resolve("noisemodelling/scripts");
         if (Files.exists(devScripts)) {
             this.scriptsRoot = devScripts;
         } else if (Files.exists(zipScripts)) {

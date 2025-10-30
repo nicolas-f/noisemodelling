@@ -47,7 +47,7 @@ public class OwsController {
      * handling WPS operations by mapping process identifiers to their corresponding
      * Groovy script implementations.
      */
-    private static List<ScriptWrapper> wpsScripts;
+    static List<ScriptWrapper> wpsScripts;
     /**
      * An instance of WpsScriptWrapper used to manage the execution of WPS (Web Processing Service) scripts.
      * This wrapper facilitates the interaction between the application and the underlying scripting engine
