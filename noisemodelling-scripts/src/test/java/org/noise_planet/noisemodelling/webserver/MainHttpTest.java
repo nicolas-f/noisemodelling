@@ -28,40 +28,40 @@ class MainHttpTest {
     private static Javalin app;
 
     /**
-     * The base URL for the server connection used during HTTP-based tests.
+     * The default port number on which the HTTP server will listen.
      *
-     * This variable is initialized to point to the local host, and the port can be appended
-     * dynamically when required. It serves as the foundational URL for constructing full
-     * endpoints for testing various HTTP requests within the test suite.
+     * This constant defines the port number used to establish server connections.
+     * It is primarily used during the setup phase of the server and
+     * in test cases to ensure proper server communication and resource access.
      *
-     * Example usage includes forming URLs for GET, POST, or other HTTP methods
-     * targeting the application under test.
-     *
-     * This variable is private and static, ensuring it is consistent across all instances
-     * of the test class and cannot be directly modified outside its scope.
+     * Modifying this value may require corresponding updates in client-side
+     * configurations and resource endpoints to maintain compatibility.
      */
-    private static  String BASE_URL = "http://localhost:";
+    private static final int PORT = 8000;
+    /**
+     * The base URL for the OWS (OGC Web Services) endpoints used in the test cases.
+     * It dynamically constructs the URL using the `localhost` domain and the value
+     * of the `PORT` variable defined in the class.
+     *
+     * This URL serves as the base endpoint for various HTTP requests made during
+     * the execution of the test suite and is primarily used for testing capabilities,
+     * descriptions, and process execution of the WPS (Web Processing Service).
+     */
+    private static final String BASE_URL = "http://localhost:" + PORT + "/ows";
 
     /**
-     * Sets up the testing environment before all test methods are executed.
+     * Sets up the test environment for the HTTP-based tests.
+     * This method is executed once before all tests in the test class.
      *
-     * This method is annotated with {@code @BeforeAll}, indicating that it is executed once
-     * before any other test method in the test class. It is responsible for initializing
-     * and starting the application server in a test-specific configuration, disabling
-     * the browser auto-launch to facilitate backend testing.
+     * During the setup, a Javalin server instance is initialized by invoking the
+     * {@code Main.startServer} method with the browser opening disabled. The server
+     * instance is assigned to the static field {@code app}.
      *
-     * The method performs the following setup operations:
-     * 1. Starts the server by invoking {@code Main.startServer(false)}, which initializes
-     *    a Javalin server instance without opening a browser.
-     * 2. Assigns the base URL for the tests by obtaining the server's port and appending
-     *    the path "/ows" to it, enabling HTTP requests targeting the server.
-     *
-     * @throws IOException if an error occurs while starting the server or during related I/O operations.
+     * @throws IOException if an I/O error occurs while starting the server.
      */
     @BeforeAll
     public static void setUp() throws IOException {
         app = Main.startServer(false);
-        BASE_URL = app.port() + "/ows";
     }
 
     /**
@@ -83,23 +83,6 @@ class MainHttpTest {
         }
     }
 
-    /**
-     * Tests the GetCapabilities response of the Web Processing Service (WPS).
-     *
-     * This method performs the following steps:
-     * - Constructs an HTTP GET request for the WPS GetCapabilities operation.
-     * - Sends the request using the {@link HttpClient} and obtains the response.
-     * - Validates that the HTTP status code is 200 (OK).
-     * - Verifies that the response body is not null.
-     * - Checks that the response body contains specific XML elements and expected
-     *   content related to the WPS capabilities, such as:
-     *   - The presence of `<wps:Capabilities>` indicating a valid capabilities XML.
-     *   - Process information, including `NoiseModelling:Road_Emission_from_Traffic`.
-     *   - Descriptions for specific process functionalities, e.g., propagation
-     *     computations for sound sources to receivers.
-     *
-     * @throws Exception if an error occurs during the HTTP request or the response validation.
-     */
     @Test
     @Order(1)
     void testGetWPSCapabilities() throws Exception {
@@ -107,7 +90,6 @@ class MainHttpTest {
         String serviceParam = URLEncoder.encode("WPS", StandardCharsets.UTF_8);
         String requestParam = URLEncoder.encode("GetCapabilities", StandardCharsets.UTF_8);
         URI uri = URI.create(BASE_URL + "?service=" + serviceParam + "&VERSION=1.0.0&request=" + requestParam);
-        System.out.println("uri: "+ uri);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -118,7 +100,6 @@ class MainHttpTest {
 
         assertEquals(200, response.statusCode());
         String body = response.body();
-        System.out.println("body: "+ body);
         assertNotNull(body);
         assertTrue(body.contains("<wps:Capabilities "));
         assertTrue(body.contains("NoiseModelling:Road_Emission_from_Traffic"));
@@ -160,7 +141,6 @@ class MainHttpTest {
 
         assertEquals(200, response.statusCode());
         String body = response.body();
-        System.out.println("body: "+ body);
         assertNotNull(body);
         assertTrue(body.contains("wps:ProcessDescriptions "));
         assertTrue(body.contains("Convert screens to building format."));

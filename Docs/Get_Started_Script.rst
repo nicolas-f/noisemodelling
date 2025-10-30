@@ -4,10 +4,10 @@ Pilot NoiseModelling with scripts
 In this tutorial, we describe the different ways to pilot NoiseModelling thanks to scripts. To do so, we will use a dedicated packaging of NoiseModelling, called ``NoiseModelling_5.0.0_without_gui``, in which the GUI has been removed (no more Geoserver and :doc:`WPS_Builder`).
 
 #. Go to the NoiseModelling latest `release page`_
-#. Download and unzip the `NoiseModelling_5.0.0_without_gui`_ file
+#. Download and unzip the `NoiseModelling_5.0.2-SNAPSHOT`_ file
 
 .. _release page : https://github.com/Ifsttar/NoiseModelling/releases/latest
-.. _NoiseModelling_5.0.0_without_gui : https://github.com/Ifsttar/NoiseModelling/releases/download/v5.0.0/NoiseModelling_5.0.0_without_gui.zip
+.. _NoiseModelling_5.0.2-SNAPSHOT : https://github.com/Ifsttar/NoiseModelling/releases/download/v5.0.2/NoiseModelling_5.0.2-SNAPSHOT.zip
 
 From that point, NoiseModelling can be executed in 3 different manners:
 
@@ -35,14 +35,14 @@ Requirements
 
 Using the terminal of your operating system (Java 11 must be in the system path)
 
-Below is an example of a bash instruction, executing the ``Noise_level_from_traffic.groovy`` WPS Script (located in the directory ``/noisemodelling/wps/``). This block has 5 arguments corresponding to the input table names (for buildings, roads, receivers, dem and ground type).
+Below is an example of a bash instruction, executing the ``Noise_level_from_traffic.groovy`` WPS Script (located in the directory ``/noisemodelling/scripts/``). This block has 5 arguments corresponding to the input table names (for buildings, roads, receivers, dem and ground type).
 
 .. literalinclude:: scripts/nm_terminal.bash
    :language: bash
    :linenos:
 
 
-``./bin/wps_scripts`` instruction allows to launch the ``wps_scripts.sh`` or ``wps_scripts.bat`` *(depending on if you are on Linux / Mac or Windows)* file, which is located in the ``bin/`` directory.
+``./bin`` instruction allows to launch the ``Scripts`` or ``Scripts.bat`` *(depending on if you are on Linux / Mac or Windows)* file, which is located in the ``bin/`` directory.
 
 
 .. warning ::

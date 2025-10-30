@@ -14,7 +14,7 @@ NoiseModelling and WPS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Since release v.3.0.0, NoiseModelling comes with various WPS scripts, encapsulated in so-called blocks. These blocks, written in `Groovy`_ language, are executed thanks to the `GeoServer`_ WPS engine.
 
-Physically stored as ``.groovy`` files *(openable in any text editor)*, they are located in the ``NoiseModelling\\data_dir\\scripts\\wps\\`` directory.
+Physically stored as ``.groovy`` files *(openable in any text editor)*, they are located in the ``NoiseModelling_5.0.2-SNAPSHOT/noisemodelling/scripts`` directory.
 
 .. tip::
     To know the functionality of each WPS block, wait a few moments with your mouse on the block, a tooltip text will appear.
@@ -23,7 +23,6 @@ Physically stored as ``.groovy`` files *(openable in any text editor)*, they are
     With each new version, new blocks are added. Be curious and check out the latest version!
 
 
-.. _Geoserver: https://geoserver.org/
 .. _Groovy: https://groovy-lang.org/
 
 Create your own WPS block

@@ -38,7 +38,7 @@ export_table = Template('<p0:Execute xmlns:p0="http://www.opengis.net/wps/1.0.0"
 
 
 def call_geoserver(data):
-    req = urllib.request.Request(url='http://localhost:9580/geoserver/ows', data=bytes(data, encoding="utf8"),
+    req = urllib.request.Request(url='http://localhost:8000/ows', data=bytes(data, encoding="utf8"),
                                  method='POST')
     req.add_header('Content-Type', 'application/xml; charset=utf-8')
 
@@ -49,11 +49,11 @@ def call_geoserver(data):
             print(str(f.read(), encoding="utf8"))
 
 
-call_geoserver(import_file.substitute({"path": "data_dir/data/wpsdata/buildings.shp"}))
-call_geoserver(import_file.substitute({"path": "data_dir/data/wpsdata/ground_type.shp"}))
-call_geoserver(import_file.substitute({"path": "data_dir/data/wpsdata/receivers.shp"}))
-call_geoserver(import_file.substitute({"path": "data_dir/data/wpsdata/roads.shp"}))
-call_geoserver(import_file.substitute({"path": "data_dir/data/wpsdata/dem.geojson"}))
+call_geoserver(import_file.substitute({"path": "resources/org/noise_planet/noisemodelling/scripts/buildings.shp"}))
+call_geoserver(import_file.substitute({"path": "dresources/org/noise_planet/noisemodelling/scripts/ground_type.shp"}))
+call_geoserver(import_file.substitute({"path": "resources/org/noise_planet/noisemodelling/scriptsreceivers.shp"}))
+call_geoserver(import_file.substitute({"path": "resources/org/noise_planet/noisemodelling/scripts/roads.shp"}))
+call_geoserver(import_file.substitute({"path": "resources/org/noise_planet/noisemodelling/scripts/dem.geojson"}))
 
 call_geoserver(get_lday.substitute({"table_receivers": "RECEIVERS", "table_buildings": "BUILDINGS"
                                        , "table_roads": "ROADS", "table_dem": "DEM"}))

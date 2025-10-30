@@ -8,7 +8,7 @@ The OGC Web Processing Service (`WPS`_) Standard provides rules for standardizin
 
 .. _WPS : https://www.ogc.org/standards/wps
 
-WPS scripts for NoiseModelling are written in Groovy language. They are located in the ``NoiseModelling/data_dir/scripts/wps`` directory.
+WPS scripts for NoiseModelling are written in Groovy language. They are located in the ``/NoiseModelling_5.0.2-SNAPSHOT/noisemodelling/scripts`` directory.
 
 To help you build your WPS script, you will find a template in the ``NoiseModelling/data_dir/scripts/template`` directory
 

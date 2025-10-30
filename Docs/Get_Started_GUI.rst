@@ -27,16 +27,16 @@ Download the latest realease of NoiseModelling on `Github`_.
 Step 2: Start NoiseModelling GUI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As seen in the page ":doc:`Architecture`", NoiseModelling can be used through a Graphic User Interface (GUI), thanks to Geoserver and WPS Builder bricks.
+As seen in the page ":doc:`Architecture`", NoiseModelling can be used through a Graphic User Interface (GUI), thanks to WPS Builder bricks.
 
 In this tutorial, we will use the default and already configured H2GIS database.
 
-Those tools (Geoserver, WPS Builder and H2GIS) are already included in the archive. So you don't have to install them before.
+Those tools (WPS Builder and H2GIS) are already included in the archive. So you don't have to install them before.
 
 To launch NoiseModelling with GUI, please execute :
 
-* Windows: ``NoiseModelling.exe`` or ``NoiseModelling_xxx\bin\startup_windows.bat``
-* Linux or Mac: ``NoiseModelling_xxx/bin/startup_linux_mac.sh`` *(check authorize file execution in property of this file before)*
+* Windows: ``NoiseModelling.exe`` or ``NoiseModelling_xxx\bin\WebServer.bat``
+* Linux or Mac: ``NoiseModelling_xxx/bin/WebServer`` *(check authorize file execution in property of this file before)*
 
 and wait until ``INFO:oejs.Server:main:Started`` is written in your command prompt.
 
@@ -50,20 +50,17 @@ NoiseModelling with GUI is now started.
     NoiseModelling will be open as long as the command window is open. If you close it, NoiseModelling will automatically be closed and you will not be able to continue with the tutorial.
 
 
-.. _GeoServer : http://geoserver.org/
 .. _H2GIS : http://www.h2gis.org/
 
 Step 3: Open NoiseModelling GUI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The NoiseModelling GUI is built thanks to the :doc:`WPS_Builder` brick. To open it, just go to http://localhost:9580 using your preferred web browser.
+The NoiseModelling GUI is built thanks to the :doc:`WPS_Builder` brick. It open automatically to http://localhost:8000 using your preferred web browser.
 
 .. figure:: images/tutorial/Tutorial1_nm_open.png
     :align: center
     :width: 80%
 
-.. warning::
-    On former versions of NoiseModelling, the url was: http://localhost:8080/geoserver/web/
 
 You are now ready to discover the power of NoiseModelling!
 
@@ -76,12 +73,12 @@ In this tutorial, we have 5 layers, zoomed in the city center of `Lorient`_ (Fra
 
 .. _Lorient : https://www.openstreetmap.org/relation/30305
 
-In the ``noisemodelling/data_dir/data/wpsdata/`` folder, you will find the 5 files (4 shapefiles and 1 geojson) corresponding to these layers.
+In the ``resources/org/noise_planet/noisemodelling/scripts`` folder, you will find the 5 files (4 shapefiles and 1 geojson) corresponding to these layers.
 
 You can import these layers in your database using the ``Import File`` or ``Import Folder`` blocks.
 
 - Drag ``Import File`` block into the Builder window 
-- Select ``Path of the input File`` box and write ``data_dir/data/wpsdata/buildings.shp`` in the field ``PathFile`` *(on the right-side column)*
+- Select ``Path of the input File`` box and write ``resources/org/noise_planet/noisemodelling/scripts/buildings.shp`` in the field ``PathFile`` *(on the right-side column)*
 - Then click on ``Run Process`` after selecting one of the sub-boxes of your process
 
 .. figure:: images/tutorial/Tutorial1_Image1bis.gif
@@ -89,10 +86,10 @@ You can import these layers in your database using the ``Import File`` or ``Impo
 
 Repeat this operation for the 4 other files:
 
-- ``data_dir/data/wpsdata/ground_type.shp``
-- ``data_dir/data/wpsdata/receivers.shp``
-- ``data_dir/data/wpsdata/ROADS2.shp``
-- ``data_dir/data/wpsdata/dem.geojson``
+- ``resources/org/noise_planet/noisemodelling/scripts/ground_type.shp``
+- ``resources/org/noise_planet/noisemodelling/scripts/receivers.shp``
+- ``resources/org/noise_planet/noisemodelling/scripts/ROADS2.shp``
+- ``resources/org/noise_planet/noisemodelling/scripts/dem.geojson``
 
 Files are uploaded to database when the Console window displays ``The table x has been uploaded to database``.
 
