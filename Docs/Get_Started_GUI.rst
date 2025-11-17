@@ -38,7 +38,7 @@ To launch NoiseModelling with GUI, please execute :
 * Windows: ``NoiseModelling.exe`` or ``NoiseModelling_xxx\bin\WebServer.bat``
 * Linux or Mac: ``NoiseModelling_xxx/bin/WebServer`` *(check authorize file execution in property of this file before)*
 
-and wait until ``INFO:oejs.Server:main:Started`` is written in your command prompt.
+and wait until `<INFO:Start NoiseModelling: http://localhost:8000/>`_ is written in your command prompt.
 
 
 .. warning::
@@ -78,7 +78,7 @@ In the ``resources/org/noise_planet/noisemodelling/scripts`` folder, you will fi
 You can import these layers in your database using the ``Import File`` or ``Import Folder`` blocks.
 
 - Drag ``Import File`` block into the Builder window 
-- Select ``Path of the input File`` box and write ``resources/org/noise_planet/noisemodelling/scripts/buildings.shp`` in the field ``PathFile`` *(on the right-side column)*
+- Select ``Path of the input File`` box and write ``../resources/org/noise_planet/noisemodelling/scripts/buildings.shp`` in the field ``PathFile`` *(on the right-side column)*
 - Then click on ``Run Process`` after selecting one of the sub-boxes of your process
 
 .. figure:: images/tutorial/Tutorial1_Image1bis.gif
@@ -86,10 +86,10 @@ You can import these layers in your database using the ``Import File`` or ``Impo
 
 Repeat this operation for the 4 other files:
 
-- ``resources/org/noise_planet/noisemodelling/scripts/ground_type.shp``
-- ``resources/org/noise_planet/noisemodelling/scripts/receivers.shp``
-- ``resources/org/noise_planet/noisemodelling/scripts/ROADS2.shp``
-- ``resources/org/noise_planet/noisemodelling/scripts/dem.geojson``
+- ``../resources/org/noise_planet/noisemodelling/scripts/ground_type.shp``
+- ``../resources/org/noise_planet/noisemodelling/scripts/receivers.shp``
+- ``../resources/org/noise_planet/noisemodelling/scripts/ROADS2.shp``
+- ``../resources/org/noise_planet/noisemodelling/scripts/dem.geojson``
 
 Files are uploaded to database when the Console window displays ``The table x has been uploaded to database``.
 

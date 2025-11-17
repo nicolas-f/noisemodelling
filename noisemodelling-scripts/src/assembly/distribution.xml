@@ -22,8 +22,8 @@
         </fileSet>
 
         <fileSet>
-            <directory>${project.basedir}/src/main/groovy/org/noise_planet/noisemodelling/scripts</directory>
-            <outputDirectory>/noisemodelling/scripts</outputDirectory>
+            <directory>${project.basedir}/src/main/groovy/org/noise_planet/noisemodelling</directory>
+            <outputDirectory>/noisemodelling</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.basedir}</directory>
@@ -33,6 +33,10 @@
                 <include>get_started_tutorial.sh</include>
                 <include>get_started_tutorial.groovy</include>
             </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/site/apidocs</directory>
+            <outputDirectory>static/javadoc</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.parent.basedir}</directory>

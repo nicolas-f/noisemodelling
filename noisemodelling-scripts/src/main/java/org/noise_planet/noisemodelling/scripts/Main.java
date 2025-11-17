@@ -53,9 +53,25 @@ import org.osgi.service.jdbc.DataSourceFactory;
 
 
 public class Main {
+    /**
+     * A constant indicating the number of seconds between progression log updates during operations
+     * or processes that involve tracking and printing progress.
+     */
     public static final int SECONDS_BETWEEN_PROGRESSION_PRINT = 5;
 
 
+    /**
+     * Creates a DataSource configured for an H2 database, optionally enabling debug logging.
+     * This method initializes the spatial extension for H2 using H2GIS.
+     *
+     * @param user the username for the database connection
+     * @param password the password for the database connection
+     * @param dbDirectory the directory where the database is located or to be created
+     * @param dbName the name of the database
+     * @param debug a flag indicating whether debug logging should be enabled
+     * @return a configured DataSource for the H2 database
+     * @throws SQLException if a database access error occurs
+     */
     public static DataSource createDataSource(String user, String password, String dbDirectory, String dbName, boolean debug) throws SQLException {
         // Create H2 memory DataSource
         org.h2.Driver driver = org.h2.Driver.load();
@@ -77,6 +93,14 @@ public class Main {
 
     }
 
+    /**
+     * Prints the build identifiers of loaded libraries in a formatted output.
+     * This method scans the `META-INF/MANIFEST.MF` files from the classpath, extracts
+     * relevant attributes such as name, last-modified, version, and commit details,
+     * formats them into a tabular structure, and logs the information.
+     *
+     * @param logger the logger instance used to output the formatted information or error messages
+     */
     public static void printBuildIdentifiers(Logger logger) {
         try {
             String columnFormat = "%-35.35s %-35.35s %-20.20s %-30.30s";
@@ -135,6 +159,19 @@ public class Main {
     }
 
 
+    /**
+     * The entry point of the application. This method is responsible for parsing command-line arguments,
+     * setting up configurations, and running the main script specified. It also handles logging, database
+     * initialization, and the execution of Groovy scripts.
+     *
+     * @param args the command-line arguments passed to the application. Supported options:
+     *             - "-w" or "--working-dir" (required): Specifies the path where the database will be located.
+     *             - "-s" or "--script" (required): Path and file name of the script to execute.
+     *             - "-d" or "--database-name" (optional): The database name. Defaults to "h2gisdb" if not provided.
+     *             - "-v" (optional): Flag to print the version of all libraries.
+     *             - "-c" or "--shutdown" (optional): Flag to skip shutting down and compacting the database at the end.
+     * @throws Exception if any error occurs during execution.
+     */
     public static void main(String... args) throws Exception {
         PropertyConfigurator.configure(Main.class.getResource("static/log4j.properties"));
 

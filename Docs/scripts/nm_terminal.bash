@@ -1,3 +1,3 @@
-cd /home/user/NoiseModelling_5.0.0_without_gui/
+cd /home/user/NoiseModelling_5.0.2-SNAPSHOT/
 
-./bin/wps_scripts -w ./ -s noisemodelling/wps/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/wps/ground_type.shp
+./bin/Scripts -w ./ -s noisemodelling/scripts/Import_and_Export/Import_File.groovy -pathFile resources/org/noise_planet/noisemodelling/scripts/ground_type.shp

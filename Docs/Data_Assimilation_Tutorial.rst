@@ -20,8 +20,8 @@ Requirements
 To play with this tutorial, you will need:
 
 * a working installation of NoiseModelling (NM) with at least version 5.0.1. If needed, get the last release on the official `GitHub repository`_,
-* the tutorial's datasets, stored in the folder ``.../NoiseModelling_5.0.2-SNAPSHOT/resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/``,
-* the dedicated WPS ``.groovy`` scripts, stored in the folder ``.../NoiseModelling_5.0.2-SNAPSHOT/noisemodelling/scripts/DataAssimilation/``.
+* the tutorial's datasets, stored in the folder ``./NoiseModelling_5.0.2-SNAPSHOT/resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/``,
+* the dedicated WPS ``.groovy`` scripts, stored in the folder ``./NoiseModelling_5.0.2-SNAPSHOT/noisemodelling/scripts/DataAssimilation/``.
 
 .. _GitHub repository: https://github.com/Universite-Gustave-Eiffel/NoiseModelling/releases
 
@@ -84,7 +84,7 @@ To compute the data assimilation, you will have to execute several WPS ``.groovy
 
 
 * with the NoiseModelling's GUI (Graphic User Interface). In this case, the WPS blocks are listed in the ``Data_Assimilation`` tab *(see screenshot below)*,
-* in command line (see how to :doc:`Get_Started_Script`). In this case, just note that they are stored in the folder ``.../NoiseModelling_5.0.2-SNAPSHOT/noisemodelling/scripts/DataAssimilation/``,
+* in command line (see how to :doc:`Get_Started_Script`). In this case, just note that they are stored in the folder ``./NoiseModelling_5.0.2-SNAPSHOT/noisemodelling/scripts/DataAssimilation/``,
 * in a .groovy script, calling one or various WPS .groovy scripts.
 
 .. image:: ./images/Data_Assimilation/NM_GUI_wps_list.png
@@ -184,7 +184,7 @@ Using the ``Import_File`` WPS script*, import the location of the sensors into t
 
 🌍 Since we are in the Geneva area, we are using the ``CH1903+`` metric coordinate system (identified as `EPSG:2056`_).
 
-* ``pathFile`` : ``.../device_mapping_sf.geojson``
+* ``pathFile`` : ``../resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/device_mapping_sf.geojson``
 * ``inputSRID`` : ``2056``
 * ``tableName`` : ``SENSORS_LOCATION``
 
@@ -233,7 +233,7 @@ For this tutorial, you can fill with these informations:
 * ``startDate`` : ``2024-08-25 06:30:00``
 * ``endDate`` : ``2024-08-25 07:30:00``
 * ``trainingRatio`` : ``0.8``
-* ``workingFolder`` : ``.../resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/`` (enter the full URL e.g ``/home/myUserName/Documents/NoiseModelling_5.0.2-SNAPSHOT/resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/``)
+* ``workingFolder`` : ``../resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/`` (enter the full URL e.g ``/home/myUserName/Documents/NoiseModelling_5.0.2-SNAPSHOT/resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/``)
 * ``targetSRID`` : ``2056``
 
 If you are using the Groovy script
@@ -244,7 +244,7 @@ If you are using the Groovy script
                     "startDate":"2024-08-25 06:30:00",
                     "endDate": "2024-08-25 07:30:00",
                     "trainingRatio": 0.8,
-                    "workingFolder": ".../data_dir/data/wpsdata/dataAssimilation/",
+                    "workingFolder": ".../resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/",
                     "targetSRID": 2056
     ])
 
@@ -272,7 +272,7 @@ Now, using the ``Ìmport_OSM`` block, you can import buildings and road network 
 Execution
 **********
 
-* Path of the OSM file (``pathFile``): ``.../resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/geneva.osm.pbf``
+* Path of the OSM file (``pathFile``): ``../resources/org/noise_planet/noisemodelling/scripts/dataAssimilation/geneva.osm.pbf``
 * Target projection identifier (``targetSRID``): ``2056``
 * Do not import Surface acoustic absorption (``ignoreGround``): ``true``
 * Remove tunnels from OSM data (``removeTunnels``): ``true``

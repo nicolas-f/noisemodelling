@@ -9,13 +9,21 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Provides functionality for managing and connecting to a database.
+ *
+ * This class sets up and manages connections to an H2 database, initializes
+ * GIS functions, and handles database directory management. The default database
+ * name and directory are configured during instantiation.
+ */
 public class DataBaseManager {
 
     /**
      * Represents the name of the currently active database.
-     * This value is initialized during the creation of the {@code DataBaseManager} instance
-     * and can be retrieved using the {@code getCurrentDbName} method.
-     * It is primarily used to build the database connection string.
+     *
+     * This value is initialized during the instantiation of the {@code DataBaseManager} class
+     * with a default value of "db_webserver". It can be accessed using the
+     * {@code getCurrentDbName()} method.
      */
     private  String currentDbName;
     /**

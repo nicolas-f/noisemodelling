@@ -40,7 +40,7 @@ Import the road network (with arbitrary traffic flows) and buildings from an OSM
 
 Use ``Import_OSM`` WPS block
 
-#. ``Path of the osm file``: Enter the path of the provided Open Street map file (can be relative to NoiseModelling): ``data_dir/data/wpsdata/map.osm.gz``
+#. ``Path of the osm file``: Enter the path of the provided Open Street map file (can be relative to NoiseModelling): ``../resources/org/noise_planet/noisemodelling/scripts/map.osm.gz``
 #. ``Target projection identifier``: Enter the official France projection for this tutorial files ``2154``
 #. ``Remove tunnels``: Check it
 #. ``Do not import surface``: Check it as we will not use this output
@@ -163,7 +163,7 @@ Import Buildings for your study area
 
 Use ``Import File`` WPS block
 
-#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``data_dir/data/wpsdata/Dynamic/Z_EXPORT_TEST_BUILDINGS.geojson``
+#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``../resources/org/noise_planet/noisemodelling/scripts/Dynamic/Z_EXPORT_TEST_BUILDINGS.geojson``
 #. ``Projection identifier``: Enter SRID ``2154``
 #. ``Output table name``: Enter ``buildings``
 
@@ -172,7 +172,7 @@ Import the road network
 
 Use ``Import File`` WPS block
 
-#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``data_dir/data/wpsdata/Dynamic/Z_EXPORT_TEST_TRAFFIC.geojson``
+#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``../resources/org/noise_planet/noisemodelling/scripts/Dynamic/Z_EXPORT_TEST_TRAFFIC.geojson``
 #. ``Projection identifier``: Enter SRID ``2154``
 #. ``Output table name``: Enter ``roads``
 
@@ -239,7 +239,7 @@ Import Buildings for your study area
 
 Use ``Import File`` WPS block
 
-#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``data_dir/data/wpsdata/Dynamic/buildings_nm_ready_pop_heights.shp``
+#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``../resources/org/noise_planet/noisemodelling/scripts/Dynamic/buildings_nm_ready_pop_heights.shp``
 #. ``Projection identifier``: Enter SRID ``32635``
 #. ``Output table name``: Enter ``buildings``
 
@@ -248,7 +248,7 @@ Import the receivers (or generate your set of receivers using Regular_Grid scrip
 
 Use ``Import File`` WPS block
 
-#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``data_dir/data/wpsdata/Dynamic/receivers_python_method0_50m_pop.shp``
+#. ``Path of the input File``: Enter the path of building (can be relative to NoiseModelling): ``../resources/org/noise_planet/noisemodelling/scripts/Dynamic/receivers_python_method0_50m_pop.shp``
 #. ``Projection identifier``: Enter SRID ``32635``
 #. ``Output table name``: Enter ``receivers``
 #. ``height``: Enter ``1.5``
@@ -259,7 +259,7 @@ Import the road network
 
 Use ``Import File`` WPS block
 
-#. ``Path of the input File``: Enter ``data_dir/data/wpsdata/Dynamic/network_tartu_32635_.geojson``
+#. ``Path of the input File``: Enter ``../resources/org/noise_planet/noisemodelling/scripts/Dynamic/network_tartu_32635_.geojson``
 #. ``Projection identifier``: Enter SRID ``32635``
 #. ``Output table name``: Enter ``network_tartu``
 
@@ -276,7 +276,7 @@ Import the vehicles trajectories
 
 Use ``Import File`` WPS block
 
-#. ``Path of the input File``: Enter ``data_dir/data/wpsdata/Dynamic/SUMO.geojson``
+#. ``Path of the input File``: Enter ``../resources/org/noise_planet/noisemodelling/scripts/Dynamic/SUMO.geojson``
 #. ``Projection identifier``: Enter SRID ``32635``
 #. ``Output table name``: Enter ``vehicle``
 
@@ -344,4 +344,4 @@ The result table LT_GEOM can be displayed into QGis, if you filter by ``PERIOD``
 
 
 .. note::
-    All this tutorial done with Groovy is written on this unit test source code: `Github source <https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/main/wps_scripts/src/test/groovy/org/noise_planet/noisemodelling/wps/TestDynamic.groovy>`_
+    All this tutorial done with Groovy is written on this unit test source code: `Github source <https://github.com/Universite-Gustave-Eiffel/NoiseModelling/blob/main/noisemodelling-scripts/src/test/groovy/org/noise_planet/noisemodelling/scripts/TestDynamic.groovy>`_
