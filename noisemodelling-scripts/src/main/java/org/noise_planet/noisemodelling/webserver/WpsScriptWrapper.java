@@ -41,12 +41,12 @@ public class WpsScriptWrapper {
      * "noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts".
      */
     public WpsScriptWrapper() {
-        while (!Files.exists(projectRoot.resolve("noisemodelling-scripts")) && projectRoot.getParent() != null) {
+        if (!Files.exists(projectRoot.resolve("noisemodelling-scripts")) && projectRoot.getParent() != null) {
             projectRoot = projectRoot.getParent();
         }
         Path devScripts = projectRoot.resolve(Paths.get("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts")).normalize();
 
-        Path zipScripts = projectRoot.getParent().resolve("noisemodelling/scripts");
+        Path zipScripts = projectRoot.resolve("noisemodelling/scripts");
         if (Files.exists(devScripts)) {
             this.scriptsRoot = devScripts;
         } else if (Files.exists(zipScripts)) {

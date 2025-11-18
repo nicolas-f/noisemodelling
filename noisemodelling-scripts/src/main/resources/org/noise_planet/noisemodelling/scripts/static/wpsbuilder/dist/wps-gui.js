@@ -61117,7 +61117,7 @@ wps.process.prototype.execute = function(options) {
           xmlhttp.onload = function() {
             if (this.status !== 200) {
               if (options.failure) {
-                options.failure.call(options.scope, 'HTTP status error on WPS:Execute request: ' + this.statusText, body);
+                options.failure.call(options.scope, 'HTTP status error on WPS:Execute request: ' + this.responseText, body);
                 return;
               }
             }

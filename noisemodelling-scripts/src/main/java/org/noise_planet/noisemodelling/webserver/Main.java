@@ -40,9 +40,14 @@ public class Main {
         PropertyConfigurator.configure(org.noise_planet.noisemodelling.scripts.Main.class.getResource("static/log4j.properties"));
 
         OwsController owsController = new OwsController();
+        String root = System.getProperty("user.dir");
+        Path staticRoot = Paths.get(root).getParent().resolve("static");
 
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("org/noise_planet/noisemodelling/scripts/static/wpsbuilder", Location.CLASSPATH);
+            if (scriptsDir.startsWith("/home/")){
+                config.staticFiles.add(staticRoot.toString(), Location.EXTERNAL);
+            }
         }).start(8000);
 
         int port = app.port();
@@ -148,13 +153,11 @@ public class Main {
      */
     private static Path finScriptsDir() {
         Path scriptsDir = Paths.get(System.getProperty("user.dir"));
-
-        while (!Files.exists(scriptsDir.resolve("noisemodelling-scripts")) && scriptsDir.getParent() != null) {
+        if (!Files.exists(scriptsDir.resolve("noisemodelling-scripts")) && scriptsDir.getParent() != null) {
             scriptsDir = scriptsDir.getParent();
         }
         Path devScripts = scriptsDir.resolve(Paths.get("noisemodelling-scripts/src/main/groovy/org/noise_planet/noisemodelling/scripts")).normalize();
-
-        Path zipScripts = scriptsDir.getParent().resolve("noisemodelling/scripts");
+        Path zipScripts = scriptsDir.resolve("noisemodelling/scripts");
         if (Files.exists(devScripts)) {
             return devScripts;
         } else if (Files.exists(zipScripts)) {
