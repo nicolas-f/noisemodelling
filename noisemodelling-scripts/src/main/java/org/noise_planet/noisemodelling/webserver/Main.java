@@ -45,7 +45,7 @@ public class Main {
 
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("org/noise_planet/noisemodelling/scripts/static/wpsbuilder", Location.CLASSPATH);
-            if (scriptsDir.startsWith("/home/")){
+            if (!scriptsDir.toString().contains("main/groovy")){
                 config.staticFiles.add(staticRoot.toString(), Location.EXTERNAL);
             }
         }).start(8000);

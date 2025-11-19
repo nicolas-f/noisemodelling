@@ -41,6 +41,10 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         if: ${{ (env.MAVEN_USERNAME != null) && (github.ref == 'refs/heads/main') }}
         run: mvn clean deploy -B
+
+      - name: Install Sphinx requirements
+        run: pip install -r Docs/requirements.txt
+
       - name: Build NoiseModelling WebServer package with Maven
         run: mvn -B clean package -DskipTests
         working-directory: ./noisemodelling-scripts

@@ -186,19 +186,37 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.2</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.1</version>
+
                 <executions>
                     <execution>
-                        <id>generate-doc</id>
-                        <phase>prepare-package</phase>
+                        <id>install-sphinx-deps</id>
+                        <phase>generate-resources</phase>
                         <goals>
-                            <goal>aggregate</goal>
+                            <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/site/apidocs</outputDirectory>
-                            <failOnError>false</failOnError>
+                            <commandlineArgs>-m pip install -r ${project.parent.basedir}/Docs/requirements.txt</commandlineArgs>
+                            <executable>python3</executable>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>build-docs</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sphinx-build</executable>
+                            <arguments>
+                                <argument>-b</argument>
+                                <argument>html</argument>
+                                <argument>${project.parent.basedir}/Docs</argument>
+                                <argument>${project.build.directory}/Docs/_build/html</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>

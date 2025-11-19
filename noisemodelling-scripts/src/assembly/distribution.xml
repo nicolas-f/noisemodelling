@@ -35,8 +35,11 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/site/apidocs</directory>
-            <outputDirectory>static/javadoc</outputDirectory>
+            <directory>${project.build.directory}/Docs/_build/html</directory>
+            <outputDirectory>/static/help</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
         </fileSet>
         <fileSet>
             <directory>${project.parent.basedir}</directory>
