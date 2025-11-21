@@ -189,8 +189,24 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.1</version>
-
                 <executions>
+                    <!-- Create the virtualenv -->
+                    <execution>
+                        <id>create-virtualenv</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>python3</executable>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>venv</argument>
+                                <argument>${project.parent.basedir}/Docs/.venv</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Install dependencies in the virtualenv -->
                     <execution>
                         <id>install-sphinx-deps</id>
                         <phase>generate-resources</phase>
@@ -198,11 +214,11 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <executable>${project.parent.basedir}/Docs/.venv/bin/python</executable>
                             <commandlineArgs>-m pip install -r ${project.parent.basedir}/Docs/requirements.txt</commandlineArgs>
-                            <executable>python3</executable>
                         </configuration>
                     </execution>
-
+                    <!-- Build documentation with the virtualenv sphinx-build -->
                     <execution>
                         <id>build-docs</id>
                         <phase>generate-resources</phase>
@@ -210,7 +226,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>sphinx-build</executable>
+                            <executable>${project.parent.basedir}/Docs/.venv/bin/sphinx-build</executable>
                             <arguments>
                                 <argument>-b</argument>
                                 <argument>html</argument>
@@ -343,6 +359,14 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

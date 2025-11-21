@@ -4,6 +4,7 @@ import io.javalin.http.Context;
 import net.opengis.wps10.ExecuteType;
 import org.geotools.wps.WPSConfiguration;
 import org.geotools.xsd.Parser;
+import org.locationtech.jts.geom.Geometry;
 import org.noise_planet.noisemodelling.scripts.Main;
 
 import java.io.ByteArrayInputStream;
@@ -109,7 +110,7 @@ public class OwsController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            ctx.status(500).result("Erreur serveur : " + e.getMessage());
+            ctx.status(500).result("Server Error: " + e.getMessage());
         }
     }
 
@@ -217,7 +218,7 @@ public class OwsController {
             Object parsed = parser.parse(new ByteArrayInputStream(ctx.bodyAsBytes()));
 
             if (!(parsed instanceof ExecuteType)) {
-                ctx.status(400).result("Requête WPS invalide");
+                ctx.status(400).result("WPS request not valid");
                 return;
             }
 
@@ -226,7 +227,7 @@ public class OwsController {
 
             String[] parts = processId.split(":");
             if (parts.length != 2) {
-                ctx.status(400).result("Identifiant de processus invalide");
+                ctx.status(400).result("Invalid process ID");
                 return;
             }
 
@@ -238,7 +239,7 @@ public class OwsController {
                     .findFirst();
 
             if (wrapperOpt.isEmpty()) {
-                ctx.status(404).result("Script introuvable");
+                ctx.status(404).result("Script not found");
                 return;
             }
             ScriptWrapper wrapper = wrapperOpt.get();
@@ -246,11 +247,16 @@ public class OwsController {
             Connection connection = dataBaseManager.openDatabaseConnection();
             Object result = wrapper.execute(connection, inputs);
 
-            ctx.json(Map.of("result", result));
+            if (result instanceof Geometry) {
+                ctx.contentType("application/wkt");
+                ctx.result(result.toString());
+            } else {
+                ctx.json(Map.of("result", result));
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            ctx.status(500).result("Erreur WPS : " + e.getMessage());
+            ctx.status(500).result("Error WPS : " + e.getMessage());
         }
     }
 }

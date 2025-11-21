@@ -7,6 +7,7 @@ nbactions.xml
 Docs/build
 Docs/.build
 Docs/venv
+Docs/.venv
 profile_*.csv
 venv/
 .DS_Store
