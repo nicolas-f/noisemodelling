@@ -361,4 +361,73 @@ class TestNoiseModelling extends JdbcTestCase {
         assertEquals(raysCount, EXPECTED_NB_RAYS)
     }
 
+    /**
+     * Check if we got the same noise levels if we change the subdivision of the computation area.
+     * The subdivision of the computation area is related to the distribution of the receivers
+     * As we are gathering objects farthest away from the receivers position up the the propagation limit parameter
+     * we are supposed to compute the same noise level
+     */
+    @Test
+    void testCheckSameNoiseLevelsWithVaryingReceiversSets() {
+
+        def computationParameters = ["tableBuilding"   : "BUILDINGS",
+                                     "confDiffHorizontal" : true,
+                                     "confMaxSrcDist" : 600,
+                                     "confMaxReflDist" : 200,
+                                     "confMaxError" : 0,
+                                     "tableSources"   : "LW_ROADS",
+                                     "tableReceivers": "RECEIVERS"]
+
+        new Import_File().exec(connection,
+                ["pathFile" : TestNoiseModelling.getResource("ROADS2.shp").getPath()])
+
+        new Road_Emission_from_Traffic().exec(connection,
+                ["tableRoads": "ROADS2"])
+
+        new Import_File().exec(connection,
+                ["pathFile" : TestNoiseModelling.getResource("buildings.shp").getPath(),
+                 "inputSRID": "2154",
+                 "tableName": "buildings"])
+
+        // Fetch ALL receivers
+        new Import_File().exec(connection,
+                ["pathFile" : TestNoiseModelling.getResource("receivers.shp").getPath(),
+                 "inputSRID": "2154",
+                 "tableName": "receivers"])
+
+
+        String res = new Noise_level_from_source().exec(connection,
+                computationParameters)
+
+        assertTrue(res.contains(NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME))
+
+        // Rename the result table
+        Sql sql = new Sql(connection)
+
+        sql.execute("ALTER TABLE " + NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME + " RENAME TO " +
+                "RECEIVERS_LEVEL_FULL")
+
+        // Limit the receivers to a smaller area
+
+        def deleted = sql.executeUpdate("DELETE FROM RECEIVERS WHERE ST_DISTANCE(THE_GEOM, (SELECT ST_CENTROID(ST_EXTENT(THE_GEOM)) FROM " +
+                "LW_ROADS)) > 400")
+
+        LOGGER.info("Deleted " + deleted + " receivers")
+
+        //Redo the computation
+        res = new Noise_level_from_source().exec(connection,
+                computationParameters)
+
+        // Compare the results
+        def row = sql.firstRow("SELECT AVG(ABS(R1.LAEQ - R2.LAEQ)) AVGLDEN," +
+                " MAX(ABS(R1.LAEQ - R2.LAEQ)) MAXLDEN FROM RECEIVERS_LEVEL_FULL R1, " +
+                NoiseMapDatabaseParameters.DEFAULT_RECEIVERS_LEVEL_TABLE_NAME+" R2 WHERE " +
+                "R1.IDRECEIVER = R2.IDRECEIVER AND R1.PERIOD='DEN' AND R2.PERIOD='DEN'")
+
+        LOGGER.info("Average difference: " + row.AVGLDEN)
+        LOGGER.info("Maximum difference: " + row.MAXLDEN)
+        assertEquals(0, row.AVGLDEN as Double, 0.1)
+        assertEquals(0, row.MAXLDEN as Double, 0.1)
+
+    }
 }
