@@ -8,7 +8,6 @@
  */
 package org.noise_planet.noisemodelling.jdbc;
 
-import org.h2gis.api.EmptyProgressVisitor;
 import org.h2gis.functions.factory.H2GISDBFactory;
 import org.h2gis.functions.io.dbf.DBFRead;
 import org.h2gis.functions.io.shp.SHPRead;
@@ -19,17 +18,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
 import org.noise_planet.noisemodelling.emission.LineSource;
 import org.noise_planet.noisemodelling.emission.railway.RailWayParameters;
 import org.noise_planet.noisemodelling.jdbc.input.DefaultTableLoader;
-import org.noise_planet.noisemodelling.jdbc.input.SceneDatabaseInputSettings;
 import org.noise_planet.noisemodelling.jdbc.railway.RailWayLWGeom;
 import org.noise_planet.noisemodelling.jdbc.railway.RailWayLWIterator;
 import org.noise_planet.noisemodelling.jdbc.railway.RailwayPlatform;
 import org.noise_planet.noisemodelling.jdbc.utils.CellIndex;
-import org.noise_planet.noisemodelling.pathfinder.profilebuilder.Building;
+import org.noise_planet.noisemodelling.jdbc.utils.CornerZCollector;
 import org.noise_planet.noisemodelling.pathfinder.profilebuilder.ProfileBuilder;
 import org.noise_planet.noisemodelling.pathfinder.utils.AcousticIndicatorsFunctions;
 
@@ -42,13 +38,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.noise_planet.noisemodelling.pathfinder.utils.AcousticIndicatorsFunctions.*;
 
 public class TableLoaderTest {
+    private static final double Z_COLLECTOR_EPSILON = 1e-9;
 
     private Connection connection;
     public static double[] aWeightingArray = Arrays.stream(
@@ -510,6 +505,147 @@ public class TableLoaderTest {
         assertEquals(89.6, AcousticIndicatorsFunctions.wToDb(globalLevel), 0.1);
     }
 
+    /**
+     * Tests 3x3 grid with envelope expansion.
+     * Verifies that each corner receives the Z value of its closest DEM point.
+     */
+    @Test
+    public void testGridWithExpansion() {
+        CornerZCollector collector = new CornerZCollector();
 
+        // 3x3 DEM grid, Z = 10*x + y
+        // (0,0,0)   (0,1,1)   (0,2,2)
+        // (1,0,10)  (1,1,11)  (1,2,12)
+        // (2,0,20)  (2,1,21)  (2,2,22)
+        for (int x = 0; x < 3; x++) {
+            for (int y = 0; y < 3; y++) {
+                collector.addCoordinate(new Coordinate(x, y, 10 * x + y));
+            }
+        }
+
+        collector.expandEnvelope(10.0);
+        Coordinate[] corners = collector.getCorners();
+
+        assertNotNull(corners);
+        assertEquals(4, corners.length);
+
+        // Corner 0: Bottom-Left (-10, -10) -> closest DEM point is (0, 0, 0)
+        assertEquals(-10.0, corners[0].x, Z_COLLECTOR_EPSILON);
+        assertEquals(-10.0, corners[0].y, Z_COLLECTOR_EPSILON);
+        assertEquals(0.0, corners[0].getZ(), Z_COLLECTOR_EPSILON);
+
+        // Corner 1: Bottom-Right (12, -10) -> closest DEM point is (2, 0, 20)
+        assertEquals(12.0, corners[1].x, Z_COLLECTOR_EPSILON);
+        assertEquals(-10.0, corners[1].y, Z_COLLECTOR_EPSILON);
+        assertEquals(20.0, corners[1].getZ(), Z_COLLECTOR_EPSILON);
+
+        // Corner 2: Top-Right (12, 12) -> closest DEM point is (2, 2, 22)
+        assertEquals(12.0, corners[2].x, Z_COLLECTOR_EPSILON);
+        assertEquals(12.0, corners[2].y, Z_COLLECTOR_EPSILON);
+        assertEquals(22.0, corners[2].getZ(), Z_COLLECTOR_EPSILON);
+
+        // Corner 3: Top-Left (-10, 12) -> closest DEM point is (0, 2, 2)
+        assertEquals(-10.0, corners[3].x, Z_COLLECTOR_EPSILON);
+        assertEquals(12.0, corners[3].y, Z_COLLECTOR_EPSILON);
+        assertEquals(2.0, corners[3].getZ(), Z_COLLECTOR_EPSILON);
+    }
+
+    /**
+     * Tests behavior without expanding the envelope.
+     */
+    @Test
+    public void testGridWithoutExpansion() {
+        CornerZCollector collector = new CornerZCollector();
+
+        collector.addCoordinate(new Coordinate(0, 0, 100));
+        collector.addCoordinate(new Coordinate(10, 0, 200));
+        collector.addCoordinate(new Coordinate(10, 10, 300));
+        collector.addCoordinate(new Coordinate(0, 10, 400));
+        // Add an interior point that shouldn't be picked for any corner
+        collector.addCoordinate(new Coordinate(5, 5, 999));
+
+        Coordinate[] corners = collector.getCorners();
+
+        assertNotNull(corners);
+        // Bottom-Left (0, 0)
+        assertEquals(100.0, corners[0].getZ(), Z_COLLECTOR_EPSILON);
+        // Bottom-Right (10, 0)
+        assertEquals(200.0, corners[1].getZ(), Z_COLLECTOR_EPSILON);
+        // Top-Right (10, 10)
+        assertEquals(300.0, corners[2].getZ(), Z_COLLECTOR_EPSILON);
+        // Top-Left (0, 10)
+        assertEquals(400.0, corners[3].getZ(), Z_COLLECTOR_EPSILON);
+    }
+
+    /**
+     * Tests empty collector returns null.
+     */
+    @Test
+    public void testEmptyCollector() {
+        CornerZCollector collector = new CornerZCollector();
+
+        // Expanding before any coordinates are added should not throw
+        collector.expandEnvelope(5.0);
+
+        assertNull(collector.getCorners());
+    }
+
+    /**
+     * Tests handling of null coordinates passed to addCoordinate.
+     */
+    @Test
+    public void testNullCoordinate() {
+        CornerZCollector collector = new CornerZCollector();
+
+        collector.addCoordinate(null);
+        assertNull(collector.getCorners());
+
+        // Adding valid coordinate after null
+        collector.addCoordinate(new Coordinate(1, 2, 3));
+        assertNotNull(collector.getCorners());
+    }
+
+    /**
+     * Tests with a single point (envelope has zero dimensions).
+     */
+    @Test
+    public void testSingleCoordinate() {
+        CornerZCollector collector = new CornerZCollector();
+        collector.addCoordinate(new Coordinate(5.0, 5.0, 42.0));
+
+        Coordinate[] corners = collector.getCorners();
+
+        assertNotNull(corners);
+        assertEquals(4, corners.length);
+        for (int i = 0; i < 4; i++) {
+            assertEquals(5.0, corners[i].x, Z_COLLECTOR_EPSILON);
+            assertEquals(5.0, corners[i].y, Z_COLLECTOR_EPSILON);
+            assertEquals(42.0, corners[i].getZ(), Z_COLLECTOR_EPSILON);
+        }
+    }
+
+    /**
+     * Tests that coordinates are defensively copied and not affected
+     * if the caller mutates the Coordinate object after adding it.
+     */
+    @Test
+    public void testDefensiveCopying() {
+        CornerZCollector collector = new CornerZCollector();
+
+        Coordinate mutableCoord = new Coordinate(0, 0, 10);
+        collector.addCoordinate(mutableCoord);
+
+        // Mutate the original instance externally
+        mutableCoord.x = 999;
+        mutableCoord.y = 999;
+        mutableCoord.setZ(999);
+
+        Coordinate[] corners = collector.getCorners();
+        assertNotNull(corners);
+        // Stored coordinate should retain original (0, 0, 10) values
+        assertEquals(0.0, corners[0].x, Z_COLLECTOR_EPSILON);
+        assertEquals(0.0, corners[0].y, Z_COLLECTOR_EPSILON);
+        assertEquals(10.0, corners[0].getZ(), Z_COLLECTOR_EPSILON);
+    }
 
 }
